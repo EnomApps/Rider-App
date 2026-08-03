@@ -461,6 +461,24 @@ abstract class AppLocalizations {
   /// **'We could not load your account. Check your connection and try again.'**
   String get couldNotLoadAccount;
 
+  /// Headline shown when the rider endpoints answer 403 because the signed-in account has another role.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a delivery partner account'**
+  String get notARiderAccountTitle;
+
+  /// Shown when the rider endpoints answer 403. An account's role is fixed when it is created, so no retry will ever clear this.
+  ///
+  /// In en, this message translates to:
+  /// **'This email or mobile number is already registered as a Nexmile customer. Sign out and use a different one to join as a delivery partner.'**
+  String get notARiderAccount;
+
+  /// Action that signs out so a different email or mobile number can be used.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account'**
+  String get useAnotherAccount;
+
   /// Headline of the rider onboarding wizard.
   ///
   /// In en, this message translates to:

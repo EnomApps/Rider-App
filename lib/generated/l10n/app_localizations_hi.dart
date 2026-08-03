@@ -179,6 +179,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get couldNotLoadAccount => 'हम आपका खाता लोड नहीं कर सके। अपना कनेक्शन जाँचकर फिर कोशिश करें।';
 
   @override
+  String get notARiderAccountTitle => 'यह डिलीवरी पार्टनर खाता नहीं है';
+
+  @override
+  String get notARiderAccount => 'यह ईमेल या मोबाइल नंबर पहले से नेक्समाइल ग्राहक के रूप में पंजीकृत है। साइन आउट करके डिलीवरी पार्टनर बनने के लिए दूसरा उपयोग करें।';
+
+  @override
+  String get useAnotherAccount => 'दूसरा खाता उपयोग करें';
+
+  @override
   String get onboardingTitle => 'नेक्समाइल पार्टनर बनें';
 
   @override

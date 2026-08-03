@@ -24,6 +24,7 @@ import 'package:nexmile_rider/features/rider/data/document_catalogue.dart';
 import 'package:nexmile_rider/features/rider/data/kyc_models.dart';
 import 'package:nexmile_rider/features/rider/data/kyc_validators.dart';
 import 'package:nexmile_rider/features/rider/data/picked_document.dart';
+import 'package:nexmile_rider/features/rider/data/rider_failure.dart';
 import 'package:nexmile_rider/features/rider/data/rider_profile.dart';
 import 'package:nexmile_rider/features/rider/data/rider_repository.dart';
 import 'package:nexmile_rider/features/rider/presentation/home/rider_home_screen.dart';
@@ -1432,17 +1433,89 @@ void main() {
       expect(find.byType(OnboardingScreen), findsNothing);
     });
 
-    testWidgets('a profile that will not load offers a retry',
+    testWidgets('a customer account is told so, not that KYC is under review',
         (WidgetTester tester) async {
-      final FakeRiderRepository rider = FakeRiderRepository()
-        ..profileError = const ApiException(kind: ApiErrorKind.network);
-      await signedIn(tester, rider);
+      // Caught on a real device: signing in with an email that already existed
+      // as a customer gets a 403 from the role-gated rider routes, and the
+      // app told the user "Your documents are still being verified" -- for
+      // documents they had never uploaded. A 403 on the profile fetch can only
+      // mean the account is not a rider.
+      await signedIn(
+        tester,
+        FakeRiderRepository()
+          ..profileError = const ApiException(
+            kind: ApiErrorKind.forbidden,
+            statusCode: 403,
+            message: 'This account is not allowed to access this resource.',
+          ),
+      );
 
+      expect(_rider.loadFailure, RiderFailure.notARider);
+      expect(find.text('This is not a delivery partner account'),
+          findsOneWidget);
+      expect(find.textContaining('already registered as a Nexmile customer'),
+          findsOneWidget);
+
+      // The role is fixed at account creation, so a retry could only ever fail
+      // again. The one action offered has to be the one that works.
+      expect(find.text('Your documents are still being verified.'),
+          findsNothing);
+      expect(find.text('Try again'), findsNothing);
+      expect(find.text('Use another account'), findsOneWidget);
+    });
+
+    testWidgets('a rider with no rider row yet gets the wizard, not an error',
+        (WidgetTester tester) async {
+      // A 404 means the account exists but onboarding has never been started,
+      // so there is no rider row to return. That is the wizard's cue, not a
+      // failure -- it is the very first thing a new rider does.
+      await signedIn(
+        tester,
+        FakeRiderRepository()
+          ..profileError = const ApiException(
+            kind: ApiErrorKind.server,
+            statusCode: 404,
+          ),
+      );
+
+      expect(find.byType(OnboardingScreen), findsOneWidget);
+      expect(find.text('About you'), findsOneWidget);
+      expect(_rider.loadFailure, isNull);
+    });
+
+    testWidgets('a network failure is not reported as a server refusal',
+        (WidgetTester tester) async {
+      await signedIn(
+        tester,
+        FakeRiderRepository()
+          ..profileError = const ApiException(kind: ApiErrorKind.network),
+      );
+
+      expect(_rider.loadFailure, RiderFailure.network);
       expect(
         find.text(
-          'We could not load your account. Check your connection and try '
-          'again.',
+          'No internet connection. Check your connection and try again.',
         ),
+        findsOneWidget,
+      );
+      expect(find.text('Try again'), findsOneWidget);
+    });
+
+    testWidgets('a transient failure recovers on retry',
+        (WidgetTester tester) async {
+      // A 500 is the one case where retrying is genuinely the right advice:
+      // nothing about the account is wrong, so the same call may well work a
+      // moment later.
+      final FakeRiderRepository rider = FakeRiderRepository()
+        ..profileError = const ApiException(
+          kind: ApiErrorKind.server,
+          statusCode: 500,
+        );
+      await signedIn(tester, rider);
+
+      expect(_rider.loadFailure, RiderFailure.unknown);
+      expect(
+        find.text('Something went wrong. Please try again.'),
         findsOneWidget,
       );
 
@@ -1451,6 +1524,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
+      expect(_rider.loadFailure, isNull, reason: 'cleared on success');
     });
   });
 

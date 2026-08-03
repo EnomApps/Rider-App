@@ -8,6 +8,15 @@ import '../../../generated/l10n/app_localizations.dart';
 /// in every supported language. The API's own `message` fields are English-only
 /// and are never rendered.
 enum RiderFailure {
+  /// 403 on the rider surface itself — the signed-in account is not a rider.
+  ///
+  /// Happens when someone signs into this app with an account that already
+  /// exists as a customer. `intended_role` only applies when the account is
+  /// created, and the API deliberately refuses to let a user promote
+  /// themselves, so this state is permanent for that account: no retry will
+  /// ever clear it and the only way forward is a different identifier.
+  notARider,
+
   /// 403 on `duty-status` — the licence or the insurance has lapsed. The rider
   /// has to upload current documents before going online.
   documentsExpired,
@@ -41,6 +50,8 @@ enum RiderFailure {
 extension RiderFailureMessage on RiderFailure {
   String message(AppLocalizations l10n) {
     switch (this) {
+      case RiderFailure.notARider:
+        return l10n.notARiderAccount;
       case RiderFailure.documentsExpired:
         return l10n.documentsExpiredMessage;
       case RiderFailure.awaitingVerification:
@@ -76,6 +87,7 @@ extension RiderFailureMessage on RiderFailure {
 RiderFailure riderFailureFrom(
   ApiException error, {
   RiderFailure validationFailure = RiderFailure.invalidDetails,
+  RiderFailure? forbiddenFailure,
 }) {
   switch (error.kind) {
     case ApiErrorKind.network:
@@ -83,6 +95,13 @@ RiderFailure riderFailureFrom(
     case ApiErrorKind.unauthenticated:
       return RiderFailure.sessionExpired;
     case ApiErrorKind.forbidden:
+      // Callers that know what a 403 means for their endpoint say so. Fetching
+      // the profile is the clearest case: the rider routes are role-gated, so
+      // a refusal there means the account is not a rider — it cannot mean
+      // "documents still under review", which is a `duty-status` answer.
+      final RiderFailure? known = forbiddenFailure;
+      if (known != null) return known;
+
       final String message = error.message?.toLowerCase() ?? '';
       if (message.contains('expired')) return RiderFailure.documentsExpired;
       return RiderFailure.awaitingVerification;

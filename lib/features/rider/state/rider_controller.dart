@@ -74,6 +74,11 @@ class RiderController extends ChangeNotifier {
   /// here so a server rejection lands on the right box.
   Map<String, List<String>> _fieldErrors = const <String, List<String>>{};
 
+  /// Why the last [load] failed, so the retry screen can say something more
+  /// useful than "check your connection" when the network was never the
+  /// problem.
+  RiderFailure? _loadFailure;
+
   RiderProfile? get profile => _profile;
 
   KycOverview get kyc => _kyc;
@@ -85,6 +90,8 @@ class RiderController extends ChangeNotifier {
   bool get hasLoaded => _hasLoaded;
 
   Map<String, List<String>> get fieldErrors => _fieldErrors;
+
+  RiderFailure? get loadFailure => _loadFailure;
 
   bool isUploading(String type) => _uploading.contains(type);
 
@@ -180,21 +187,66 @@ class RiderController extends ChangeNotifier {
       _profile = results[0] as RiderProfile;
       _kyc = results[1] as KycOverview;
       _hasLoaded = true;
+      _loadFailure = null;
       return null;
     } on ApiException catch (error) {
-      // A failed refresh leaves the rider with no profile at all; the gate
-      // then reports `unavailable` and the screen offers a retry.
+      // A rider whose account exists but whose rider row does not is not an
+      // error — it is a rider who has not started onboarding. The API has no
+      // profile to return until the first `PATCH /v1/rider/profile` creates
+      // one, so a 404 means "show the wizard", not "something went wrong".
+      if (error.statusCode == 404) {
+        _profile = _emptyProfile();
+        _kyc = KycOverview.empty;
+        _hasLoaded = true;
+        _loadFailure = null;
+        return null;
+      }
+
+      // Anything else genuinely failed. The gate reports `unavailable` and the
+      // screen offers a retry.
       _hasLoaded = _profile != null;
-      return riderFailureFrom(error);
+      _loadFailure = riderFailureFrom(
+        error,
+        // The rider routes are role-gated, so a 403 here means the signed-in
+        // account is not a rider. It cannot mean "documents under review" —
+        // that is what `duty-status` answers with, and telling someone their
+        // documents are being verified before they have uploaded any is worse
+        // than saying nothing.
+        forbiddenFailure: RiderFailure.notARider,
+      );
+      assert(() {
+        debugPrint(
+          'RiderController.load failed: ${error.statusCode} '
+          '${error.kind.name} — ${error.message}',
+        );
+        return true;
+      }());
+      return _loadFailure;
     } catch (_) {
       _hasLoaded = _profile != null;
-      return RiderFailure.unknown;
+      _loadFailure = RiderFailure.unknown;
+      return _loadFailure;
     } finally {
       _isLoading = false;
       _attempted = true;
       notifyListeners();
     }
   }
+
+  /// Stands in for a rider row the backend has not created yet.
+  ///
+  /// Every field is the zero value onboarding starts from, so `stage` resolves
+  /// to `onboarding` and the wizard opens on step 1. The first save replaces
+  /// this with the real thing.
+  RiderProfile _emptyProfile() => const RiderProfile(
+        id: 0,
+        fullName: '',
+        vehicleType: VehicleType.unknown,
+        kyc: RiderKycSummary.empty,
+        dutyStatus: DutyStatus.offline,
+        canAcceptOrders: false,
+        completedDeliveries: 0,
+      );
 
   /// Pull-to-refresh and the "check again" button on the waiting screen.
   Future<RiderFailure?> refresh() => load(silent: true);
@@ -372,6 +424,7 @@ class RiderController extends ChangeNotifier {
     _isSaving = false;
     _uploading.clear();
     _fieldErrors = const <String, List<String>>{};
+    _loadFailure = null;
     notifyListeners();
   }
 }

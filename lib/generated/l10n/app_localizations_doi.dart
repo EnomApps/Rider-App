@@ -179,6 +179,15 @@ class AppLocalizationsDoi extends AppLocalizations {
   String get couldNotLoadAccount => 'We could not load your account. Check your connection and try again.';
 
   @override
+  String get notARiderAccountTitle => 'This is not a delivery partner account';
+
+  @override
+  String get notARiderAccount => 'This email or mobile number is already registered as a Nexmile customer. Sign out and use a different one to join as a delivery partner.';
+
+  @override
+  String get useAnotherAccount => 'Use another account';
+
+  @override
   String get onboardingTitle => 'Become a Nexmile partner';
 
   @override
