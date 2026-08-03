@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>en</string>
+		<key>CFBundleDisplayName</key>
+		<string>Nexmile Rider</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>Nexmile Rider</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<!-- Declares every language Nexmile ships. Without this list iOS reports
+	     only the development region in Locale.preferredLanguages, and the App
+	     Store page would not list the app as localised. -->
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>en</string>
+			<string>ta</string>
+			<string>hi</string>
+			<string>as</string>
+			<string>bn</string>
+			<string>brx</string>
+			<string>doi</string>
+			<string>gu</string>
+			<string>kn</string>
+			<string>ks</string>
+			<string>kok</string>
+			<string>mai</string>
+			<string>ml</string>
+			<string>mni</string>
+			<string>mr</string>
+			<string>ne</string>
+			<string>or</string>
+			<string>pa</string>
+			<string>sa</string>
+			<string>sat</string>
+			<string>sd</string>
+			<string>te</string>
+			<string>ur</string>
+		</array>
+		<!-- KYC document capture. iOS terminates the app if a picker is opened
+	     without the matching usage string, so both are required even though
+	     the rider only ever sees one of them at a time. -->
+		<key>NSCameraUsageDescription</key>
+		<string>Nexmile Rider uses the camera so you can photograph your licence, vehicle papers and profile photo for verification.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Nexmile Rider needs access to your photos so you can attach existing pictures of your documents for verification.</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<!-- Portrait only, matching SystemChrome.setPreferredOrientations in
+	     lib/main.dart. -->
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		</array>
+		<key>UIStatusBarStyle</key>
+		<string>UIStatusBarStyleLightContent</string>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<true/>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UIStatusBarHidden</key>
+		<false/>
+	</dict>
+</plist>

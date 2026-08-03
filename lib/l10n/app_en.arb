@@ -1,0 +1,636 @@
+{
+  "@@locale": "en",
+
+  "appName": "Nexmile Rider",
+  "@appName": {
+    "description": "The application name. Kept as-is (Latin script) in every locale."
+  },
+
+  "tagline": "Fast Delivery. Fresh Smiles.",
+  "@tagline": {
+    "description": "Brand tagline shown under the logo on the splash screen."
+  },
+
+  "chooseLanguageTitle": "Choose your language",
+  "@chooseLanguageTitle": {
+    "description": "Headline of the language selection screen."
+  },
+
+  "chooseLanguageSubtitle": "Pick the language you are most comfortable with. You can change it anytime from Settings.",
+  "@chooseLanguageSubtitle": {
+    "description": "Supporting copy under the language screen headline."
+  },
+
+  "searchLanguageHint": "Search language",
+  "@searchLanguageHint": {
+    "description": "Placeholder text inside the language search field."
+  },
+
+  "noLanguageFound": "No language found",
+  "@noLanguageFound": {
+    "description": "Empty state shown when the search query matches no language."
+  },
+
+  "languagesAvailable": "{count} languages available",
+  "@languagesAvailable": {
+    "description": "Count of languages offered by the app.",
+    "placeholders": {
+      "count": { "type": "int", "example": "23" }
+    }
+  },
+
+  "continueLabel": "Continue",
+  "@continueLabel": {
+    "description": "Generic confirm action."
+  },
+
+  "selectedLabel": "Selected",
+  "@selectedLabel": {
+    "description": "Accessibility label on the currently selected language tile."
+  },
+
+  "defaultLabel": "Default",
+  "@defaultLabel": {
+    "description": "Badge shown on English, the default language."
+  },
+
+  "homeTitle": "Welcome to Nexmile",
+  "@homeTitle": {
+    "description": "Greeting headline on the dashboard."
+  },
+
+  "homeSubtitle": "Fresh groceries, hot food and daily essentials delivered from shops near you.",
+  "@homeSubtitle": {
+    "description": "Supporting copy on the dashboard."
+  },
+
+  "changeLanguage": "Change language",
+  "@changeLanguage": {
+    "description": "Action that reopens the language selection screen."
+  },
+
+  "languageUpdated": "Language updated",
+  "@languageUpdated": {
+    "description": "Snackbar confirmation shown after the language changes."
+  },
+
+  "appLanguageLabel": "App language",
+  "@appLanguageLabel": {
+    "description": "Label preceding the name of the currently active language."
+  },
+
+  "greetingNamed": "Hello, {name}",
+  "@greetingNamed": {
+    "description": "Personalised greeting on the dashboard.",
+    "placeholders": {
+      "name": { "type": "String", "example": "Priya" }
+    }
+  },
+
+  "loginTitle": "Sign in to Nexmile",
+  "@loginTitle": {
+    "description": "Headline of the sign-in screen. Serves new and returning customers alike: the API creates the account on first successful verification."
+  },
+
+  "loginSubtitle": "Enter your email or mobile number and we will send you a verification code.",
+  "@loginSubtitle": {
+    "description": "Supporting copy on the sign-in screen."
+  },
+
+  "emailOrPhoneLabel": "Email or mobile number",
+  "@emailOrPhoneLabel": {
+    "description": "Label of the single sign-in field, which accepts either."
+  },
+
+  "emailOrPhoneHint": "name@example.com or 9876543210",
+  "@emailOrPhoneHint": {
+    "description": "Placeholder showing both accepted formats. Keep the example values as-is; translate only the word 'or'."
+  },
+
+  "invalidEmailOrPhone": "Enter a valid email address or 10-digit mobile number",
+  "@invalidEmailOrPhone": {
+    "description": "Validation error when the sign-in field is neither a valid email nor a valid Indian mobile number."
+  },
+
+  "sendCode": "Send code",
+  "@sendCode": {
+    "description": "Primary button on the sign-in screen."
+  },
+
+  "agreeToTermsOnContinue": "By continuing you agree to our Terms of Service and Privacy Policy.",
+  "@agreeToTermsOnContinue": {
+    "description": "Implicit-consent note under the sign-in button. There is no registration form, so this is the only place terms can be surfaced."
+  },
+
+  "otpTitle": "Verify it is you",
+  "@otpTitle": {
+    "description": "Headline of the code verification screen."
+  },
+
+  "otpSubtitle": "Enter the 6-digit code we sent to {target}",
+  "@otpSubtitle": {
+    "description": "Supporting copy naming the email or mobile number the code went to.",
+    "placeholders": {
+      "target": { "type": "String", "example": "9876543210" }
+    }
+  },
+
+  "verifyCode": "Verify",
+  "@verifyCode": {
+    "description": "Primary button on the code verification screen."
+  },
+
+  "resendCode": "Resend code",
+  "@resendCode": {
+    "description": "Action that requests a fresh code."
+  },
+
+  "resendCodeIn": "Resend code in {seconds}s",
+  "@resendCodeIn": {
+    "description": "Cooldown label. The wait comes from the server's resend_after value.",
+    "placeholders": {
+      "seconds": { "type": "int", "example": "60" }
+    }
+  },
+
+  "codeResent": "A new code has been sent",
+  "@codeResent": {
+    "description": "Snackbar confirming a fresh code."
+  },
+
+  "incorrectCode": "That code is not correct or has expired. Request a new one.",
+  "@incorrectCode": {
+    "description": "Error for a wrong or expired code. Five wrong attempts burn the code, so the copy points at requesting another."
+  },
+
+  "enterFullCode": "Enter all 6 digits",
+  "@enterFullCode": {
+    "description": "Error shown when Verify is pressed with an incomplete code."
+  },
+
+  "accountSuspended": "This account has been suspended. Please contact support.",
+  "@accountSuspended": {
+    "description": "Shown on HTTP 403 from the API."
+  },
+
+  "tooManyAttempts": "Too many attempts. Please wait a while and try again.",
+  "@tooManyAttempts": {
+    "description": "Shown on HTTP 429. Codes are limited to 5 per hour per identifier, 60 seconds apart."
+  },
+
+  "sessionExpired": "Your session has expired. Please sign in again.",
+  "@sessionExpired": {
+    "description": "Shown when the refresh token is rejected and the session cannot be restored."
+  },
+
+  "networkError": "No internet connection. Check your connection and try again.",
+  "@networkError": {
+    "description": "Shown when the request never reached the server."
+  },
+
+  "developmentCode": "Development code",
+  "@developmentCode": {
+    "description": "Label on the card showing the API's debug_code. Only present outside production, while there is no SMS gateway."
+  },
+
+  "signOut": "Sign out",
+  "@signOut": {
+    "description": "Action that ends the session on this device."
+  },
+
+  "signedOut": "You have been signed out",
+  "@signedOut": {
+    "description": "Snackbar after signing out."
+  },
+
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "@somethingWentWrong": {
+    "description": "Generic fallback error."
+  },
+
+  "profileTitle": "Profile",
+  "@profileTitle": {
+    "description": "Title of the profile screen, and the label of the dashboard row that opens it."
+  },
+
+  "viewProfile": "View profile",
+  "@viewProfile": {
+    "description": "Dashboard action that opens the profile screen."
+  },
+
+  "nameLabel": "Name",
+  "@nameLabel": { "description": "Profile field label." },
+
+  "emailLabel": "Email",
+  "@emailLabel": { "description": "Profile field label." },
+
+  "mobileLabel": "Mobile number",
+  "@mobileLabel": { "description": "Profile field label." },
+
+  "accountStatusLabel": "Account status",
+  "@accountStatusLabel": { "description": "Profile field label." },
+
+  "statusActive": "Active",
+  "@statusActive": {
+    "description": "Account status. Customers are active immediately after verifying a code."
+  },
+
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Account status. Not expected for customers — riders await approval, customers do not."
+  },
+
+  "statusSuspended": "Suspended",
+  "@statusSuspended": { "description": "Account status." },
+
+  "verifiedLabel": "Verified",
+  "@verifiedLabel": {
+    "description": "Badge next to a mobile number the customer has verified by code."
+  },
+
+  "notProvided": "Not added",
+  "@notProvided": {
+    "description": "Placeholder for a profile field the customer has not filled in. Signing in with a phone leaves the email empty, and vice versa."
+  },
+
+  "retry": "Try again",
+  "@retry": { "description": "Action on the profile screen when the refresh failed." },
+
+  "loginRiderNote": "This app is for Nexmile delivery partners.",
+  "@loginRiderNote": {
+    "description": "Line under the sign-in copy. The OTP flow is shared with the customer app, so the rider app says plainly which one this is."
+  },
+
+  "checkingYourAccount": "Checking your account",
+  "@checkingYourAccount": {
+    "description": "Shown while the rider profile and KYC file are being fetched after sign-in."
+  },
+
+  "couldNotLoadAccount": "We could not load your account. Check your connection and try again.",
+  "@couldNotLoadAccount": {
+    "description": "Shown when the profile fetch fails and there is nothing to display."
+  },
+
+  "onboardingTitle": "Become a Nexmile partner",
+  "@onboardingTitle": {
+    "description": "Headline of the rider onboarding wizard."
+  },
+
+  "onboardingSubtitle": "A few details and your documents, then our team verifies you. It usually takes up to two working days.",
+  "@onboardingSubtitle": {
+    "description": "Supporting copy on the first step of onboarding."
+  },
+
+  "stepOfSteps": "Step {current} of {total}",
+  "@stepOfSteps": {
+    "description": "Progress label above the onboarding form.",
+    "placeholders": {
+      "current": { "type": "int", "example": "2" },
+      "total": { "type": "int", "example": "7" }
+    }
+  },
+
+  "stepIdentityTitle": "About you",
+  "@stepIdentityTitle": { "description": "Onboarding step 1 headline." },
+
+  "stepIdentitySubtitle": "Enter your name exactly as it appears on your Aadhaar card.",
+  "@stepIdentitySubtitle": { "description": "Onboarding step 1 supporting copy." },
+
+  "stepVehicleTitle": "Your vehicle",
+  "@stepVehicleTitle": { "description": "Onboarding step 2 headline." },
+
+  "stepVehicleSubtitle": "Tell us what you ride and the number plate it carries.",
+  "@stepVehicleSubtitle": { "description": "Onboarding step 2 supporting copy." },
+
+  "stepIdentityNumbersTitle": "Identity numbers",
+  "@stepIdentityNumbersTitle": { "description": "Onboarding step 3 headline." },
+
+  "stepIdentityNumbersSubtitle": "These must match the documents you upload later.",
+  "@stepIdentityNumbersSubtitle": { "description": "Onboarding step 3 supporting copy." },
+
+  "stepLicenceTitle": "Licence and insurance",
+  "@stepLicenceTitle": { "description": "Onboarding step 4 headline." },
+
+  "stepLicenceSubtitle": "Both must be valid on the day you start delivering.",
+  "@stepLicenceSubtitle": { "description": "Onboarding step 4 supporting copy." },
+
+  "stepBankTitle": "Where you get paid",
+  "@stepBankTitle": { "description": "Onboarding step 5 headline." },
+
+  "stepBankSubtitle": "Your earnings are settled to this account. Check it carefully.",
+  "@stepBankSubtitle": { "description": "Onboarding step 5 supporting copy." },
+
+  "stepDocumentsTitle": "Your documents",
+  "@stepDocumentsTitle": { "description": "Onboarding step 6 headline." },
+
+  "stepDocumentsSubtitle": "Photograph each one in good light. JPG, PNG or PDF, up to 5 MB each.",
+  "@stepDocumentsSubtitle": { "description": "Onboarding step 6 supporting copy." },
+
+  "stepReviewTitle": "Check and submit",
+  "@stepReviewTitle": { "description": "Onboarding step 7 headline." },
+
+  "stepReviewSubtitle": "Once you submit, your details are locked until our team has reviewed them.",
+  "@stepReviewSubtitle": { "description": "Onboarding step 7 supporting copy." },
+
+  "saveAndContinue": "Save and continue",
+  "@saveAndContinue": { "description": "Primary action on every onboarding step." },
+
+  "backLabel": "Back",
+  "@backLabel": { "description": "Secondary action that returns to the previous onboarding step." },
+
+  "fullNameLabel": "Full name",
+  "@fullNameLabel": { "description": "Onboarding field label." },
+
+  "fullNameHint": "As printed on your Aadhaar",
+  "@fullNameHint": { "description": "Placeholder in the full name field." },
+
+  "dateOfBirthLabel": "Date of birth",
+  "@dateOfBirthLabel": { "description": "Onboarding field label." },
+
+  "selectDate": "Select a date",
+  "@selectDate": { "description": "Placeholder shown in a date field before a date is picked." },
+
+  "vehicleTypeLabel": "Vehicle type",
+  "@vehicleTypeLabel": { "description": "Onboarding field label." },
+
+  "vehicleMotorcycle": "Motorcycle",
+  "@vehicleMotorcycle": { "description": "Vehicle type option." },
+
+  "vehicleScooter": "Scooter",
+  "@vehicleScooter": { "description": "Vehicle type option." },
+
+  "vehicleEv": "Electric vehicle",
+  "@vehicleEv": { "description": "Vehicle type option." },
+
+  "vehicleBicycle": "Bicycle",
+  "@vehicleBicycle": { "description": "Vehicle type option." },
+
+  "vehicleNumberLabel": "Vehicle number",
+  "@vehicleNumberLabel": { "description": "Onboarding field label." },
+
+  "vehicleNumberHint": "TN01AB1234",
+  "@vehicleNumberHint": {
+    "description": "Placeholder for the number plate. Keep the example as-is in every language."
+  },
+
+  "rcNumberLabel": "RC number",
+  "@rcNumberLabel": {
+    "description": "Onboarding field label. RC is the vehicle registration certificate."
+  },
+
+  "aadhaarLabel": "Aadhaar number",
+  "@aadhaarLabel": { "description": "Onboarding field label." },
+
+  "aadhaarHint": "12 digits",
+  "@aadhaarHint": { "description": "Placeholder in the Aadhaar field." },
+
+  "panLabel": "PAN",
+  "@panLabel": { "description": "Onboarding field label. India's permanent account number." },
+
+  "panHint": "ABCDE1234F",
+  "@panHint": {
+    "description": "Placeholder showing the PAN format. Keep the example as-is in every language."
+  },
+
+  "drivingLicenceNoLabel": "Driving licence number",
+  "@drivingLicenceNoLabel": { "description": "Onboarding field label." },
+
+  "drivingLicenceExpiryLabel": "Licence valid until",
+  "@drivingLicenceExpiryLabel": { "description": "Onboarding date field label." },
+
+  "insuranceNumberLabel": "Insurance policy number",
+  "@insuranceNumberLabel": { "description": "Onboarding field label." },
+
+  "insuranceExpiryLabel": "Insurance valid until",
+  "@insuranceExpiryLabel": { "description": "Onboarding date field label." },
+
+  "bankAccountNameLabel": "Account holder name",
+  "@bankAccountNameLabel": { "description": "Onboarding field label." },
+
+  "bankAccountNumberLabel": "Account number",
+  "@bankAccountNumberLabel": { "description": "Onboarding field label." },
+
+  "bankIfscLabel": "IFSC code",
+  "@bankIfscLabel": { "description": "Onboarding field label. Identifies the bank branch." },
+
+  "bankIfscHint": "SBIN0001234",
+  "@bankIfscHint": {
+    "description": "Placeholder showing the IFSC format. Keep the example as-is in every language."
+  },
+
+  "documentsProgress": "{done} of {total} uploaded",
+  "@documentsProgress": {
+    "description": "Progress line above the document checklist.",
+    "placeholders": {
+      "done": { "type": "int", "example": "3" },
+      "total": { "type": "int", "example": "6" }
+    }
+  },
+
+  "uploadDocument": "Upload",
+  "@uploadDocument": { "description": "Action on an empty document row." },
+
+  "replaceDocument": "Replace",
+  "@replaceDocument": { "description": "Action on a document row that already has a file." },
+
+  "removeDocument": "Remove",
+  "@removeDocument": { "description": "Action that deletes an uploaded document." },
+
+  "takePhoto": "Take a photo",
+  "@takePhoto": { "description": "Option in the document upload sheet." },
+
+  "chooseFromGallery": "Choose from gallery",
+  "@chooseFromGallery": { "description": "Option in the document upload sheet." },
+
+  "chooseFile": "Choose a file",
+  "@chooseFile": { "description": "Option in the document upload sheet, for a PDF." },
+
+  "uploadingLabel": "Uploading",
+  "@uploadingLabel": { "description": "Shown on a document row while its file is in flight." },
+
+  "documentRejected": "Rejected",
+  "@documentRejected": { "description": "Badge on a document an admin turned down." },
+
+  "documentUploaded": "Uploaded",
+  "@documentUploaded": { "description": "Badge on a document that is on file and awaiting review." },
+
+  "documentApproved": "Approved",
+  "@documentApproved": { "description": "Badge on a document an admin accepted." },
+
+  "documentRequired": "Required",
+  "@documentRequired": { "description": "Badge on a document that has not been uploaded yet." },
+
+  "fileTooLarge": "That file is over 5 MB. Try a photo instead of a scan.",
+  "@fileTooLarge": { "description": "Error when the chosen file exceeds the API's limit." },
+
+  "unsupportedFileType": "Choose a JPG, PNG or PDF.",
+  "@unsupportedFileType": { "description": "Error when the chosen file is of a type the API refuses." },
+
+  "pickerUnavailable": "We could not open that. Check the app's camera and photo permissions.",
+  "@pickerUnavailable": { "description": "Error when the camera or file browser could not be opened, usually a denied permission." },
+
+  "uploadFailed": "That upload did not go through. Please try again.",
+  "@uploadFailed": { "description": "Error when the server refused an uploaded document." },
+
+  "submitForVerification": "Submit for verification",
+  "@submitForVerification": { "description": "Final action of the onboarding wizard." },
+
+  "submitConfirmTitle": "Submit for verification?",
+  "@submitConfirmTitle": { "description": "Title of the confirmation dialog before submitting KYC." },
+
+  "submitConfirmBody": "Your details and documents will be locked while our team reviews them. You cannot change them until a decision is made.",
+  "@submitConfirmBody": { "description": "Body of the confirmation dialog before submitting KYC." },
+
+  "cancelLabel": "Cancel",
+  "@cancelLabel": { "description": "Dismisses a dialog without acting." },
+
+  "completeEverythingBeforeSubmitting": "Finish every step and upload all the documents before submitting.",
+  "@completeEverythingBeforeSubmitting": { "description": "Shown when submit is refused because something is outstanding." },
+
+  "checkTheHighlightedFields": "Check the highlighted fields and try again.",
+  "@checkTheHighlightedFields": { "description": "Shown when the server rejects a form with field errors." },
+
+  "underReviewTitle": "We are verifying your documents",
+  "@underReviewTitle": { "description": "Headline of the waiting screen shown while KYC status is submitted." },
+
+  "underReviewBody": "Our team usually reviews within two working days. We will let you know as soon as you are approved.",
+  "@underReviewBody": { "description": "Supporting copy on the waiting screen." },
+
+  "checkAgain": "Check again",
+  "@checkAgain": { "description": "Action on the waiting screen that refetches the KYC status." },
+
+  "stillUnderReview": "Still under review",
+  "@stillUnderReview": { "description": "Snackbar shown when a refresh finds no change." },
+
+  "rejectedTitle": "We could not verify you",
+  "@rejectedTitle": { "description": "Headline shown when KYC is rejected." },
+
+  "rejectedBody": "Fix what our team noted below, then send your documents again.",
+  "@rejectedBody": { "description": "Supporting copy shown when KYC is rejected." },
+
+  "rejectionReasonLabel": "Reason",
+  "@rejectionReasonLabel": { "description": "Label above the admin's rejection note." },
+
+  "fixAndResubmit": "Fix and submit again",
+  "@fixAndResubmit": { "description": "Action that reopens the onboarding wizard after a rejection." },
+
+  "blockedTitle": "You cannot go online yet",
+  "@blockedTitle": { "description": "Headline shown when KYC is verified but the API still refuses to dispatch the rider." },
+
+  "documentsExpiredMessage": "Your licence or insurance has expired. Upload current documents to go online.",
+  "@documentsExpiredMessage": { "description": "Shown on HTTP 403 from duty-status when a document has lapsed." },
+
+  "awaitingVerificationMessage": "Your documents are still being verified.",
+  "@awaitingVerificationMessage": { "description": "Shown on HTTP 403 from duty-status while KYC is under review." },
+
+  "updateDocuments": "Update documents",
+  "@updateDocuments": { "description": "Action that opens the document checklist to replace a lapsed document." },
+
+  "riderHomeTitle": "Ready to ride",
+  "@riderHomeTitle": { "description": "Headline of the rider home screen." },
+
+  "riderHomeSubtitle": "Go online and we will send you nearby deliveries.",
+  "@riderHomeSubtitle": { "description": "Supporting copy on the rider home screen." },
+
+  "dutyStatusLabel": "Duty status",
+  "@dutyStatusLabel": { "description": "Label above the online/offline control." },
+
+  "dutyOnline": "Online",
+  "@dutyOnline": { "description": "Duty status: available for deliveries." },
+
+  "dutyOffline": "Offline",
+  "@dutyOffline": { "description": "Duty status: not working." },
+
+  "dutyOnBreak": "On a break",
+  "@dutyOnBreak": { "description": "Duty status: working but not dispatchable." },
+
+  "goOnline": "Go online",
+  "@goOnline": { "description": "Action that sets duty status to available." },
+
+  "goOffline": "Go offline",
+  "@goOffline": { "description": "Action that sets duty status to offline." },
+
+  "takeABreak": "Take a break",
+  "@takeABreak": { "description": "Action that sets duty status to on a break." },
+
+  "waitingForOrders": "Waiting for orders nearby",
+  "@waitingForOrders": { "description": "Status line shown on the home screen while the rider is online and idle." },
+
+  "youAreOffline": "You are offline. No deliveries will be sent to you.",
+  "@youAreOffline": { "description": "Status line shown on the home screen while the rider is offline." },
+
+  "completedDeliveriesLabel": "Deliveries completed",
+  "@completedDeliveriesLabel": { "description": "Statistic on the rider home screen." },
+
+  "ratingLabel": "Rating",
+  "@ratingLabel": { "description": "Statistic on the rider home screen." },
+
+  "notRatedYet": "Not rated yet",
+  "@notRatedYet": { "description": "Shown in place of a rating before the first rated delivery." },
+
+  "vehicleLabel": "Vehicle",
+  "@vehicleLabel": { "description": "Profile field label." },
+
+  "kycStatusLabel": "Verification",
+  "@kycStatusLabel": { "description": "Profile field label for the KYC status." },
+
+  "kycPending": "Not submitted",
+  "@kycPending": { "description": "KYC status: the rider has not sent the file yet." },
+
+  "kycSubmitted": "Under review",
+  "@kycSubmitted": { "description": "KYC status: with an admin." },
+
+  "kycVerified": "Approved",
+  "@kycVerified": { "description": "KYC status: approved." },
+
+  "kycRejected": "Rejected",
+  "@kycRejected": { "description": "KYC status: turned down." },
+
+  "fieldRequired": "This is required",
+  "@fieldRequired": { "description": "Validation error for an empty required field." },
+
+  "invalidAadhaar": "Enter the 12 digits of your Aadhaar number",
+  "@invalidAadhaar": { "description": "Validation error for the Aadhaar field." },
+
+  "invalidPan": "Enter a valid PAN, like ABCDE1234F",
+  "@invalidPan": { "description": "Validation error for the PAN field. Keep the example as-is." },
+
+  "invalidIfsc": "Enter a valid IFSC code, like SBIN0001234",
+  "@invalidIfsc": { "description": "Validation error for the IFSC field. Keep the example as-is." },
+
+  "invalidVehicleNumber": "Enter the number exactly as it appears on the plate",
+  "@invalidVehicleNumber": { "description": "Validation error for the vehicle number field." },
+
+  "invalidAccountNumber": "Enter a valid account number",
+  "@invalidAccountNumber": { "description": "Validation error for the bank account number field." },
+
+  "dateMustBeFuture": "This date has already passed",
+  "@dateMustBeFuture": { "description": "Validation error when a licence or insurance expiry is in the past." },
+
+  "mustBeEighteen": "You must be at least 18 years old to deliver",
+  "@mustBeEighteen": { "description": "Validation error on the date of birth field." },
+
+  "docAadhaarFront": "Aadhaar card (front)",
+  "@docAadhaarFront": { "description": "KYC document name." },
+
+  "docAadhaarBack": "Aadhaar card (back)",
+  "@docAadhaarBack": { "description": "KYC document name." },
+
+  "docDrivingLicence": "Driving licence",
+  "@docDrivingLicence": { "description": "KYC document name." },
+
+  "docVehicleRc": "Vehicle registration certificate",
+  "@docVehicleRc": { "description": "KYC document name." },
+
+  "docInsurance": "Vehicle insurance",
+  "@docInsurance": { "description": "KYC document name." },
+
+  "docProfilePhoto": "Profile photo",
+  "@docProfilePhoto": { "description": "KYC document name." },
+
+  "docPan": "PAN card",
+  "@docPan": { "description": "KYC document name." },
+
+  "docBankProof": "Cancelled cheque or bank statement",
+  "@docBankProof": { "description": "KYC document name." }
+}
