@@ -467,11 +467,35 @@ abstract class AppLocalizations {
   /// **'This is not a delivery partner account'**
   String get notARiderAccountTitle;
 
-  /// Shown when the rider endpoints answer 403. An account's role is fixed when it is created, so no retry will ever clear this.
+  /// Shown when the signed-in account is not a rider but its role is not known. An account's role is fixed when it is created, so no retry will ever clear this.
   ///
   /// In en, this message translates to:
-  /// **'This email or mobile number is already registered as a Nexmile customer. Sign out and use a different one to join as a delivery partner.'**
+  /// **'This email or mobile number is already registered on another Nexmile account. Sign out and use a different one to join as a delivery partner.'**
   String get notARiderAccount;
+
+  /// Shown when the signed-in account has a role other than rider, naming that role.
+  ///
+  /// In en, this message translates to:
+  /// **'This email or mobile number is already registered as a Nexmile {role}. Sign out and use a different one to join as a delivery partner.'**
+  String notARiderAccountFor(String role);
+
+  /// Account role, used inside notARiderAccountFor. Lower case: it appears mid-sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'customer'**
+  String get roleCustomer;
+
+  /// Account role, used inside notARiderAccountFor. Lower case: it appears mid-sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'merchant'**
+  String get roleMerchant;
+
+  /// Account role, used inside notARiderAccountFor. Lower case: it appears mid-sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'administrator'**
+  String get roleAdmin;
 
   /// Action that signs out so a different email or mobile number can be used.
   ///

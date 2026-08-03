@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,7 @@ import 'package:nexmile_rider/core/localization/app_language.dart';
 import 'package:nexmile_rider/core/widgets/info_tile.dart';
 import 'package:nexmile_rider/core/network/api_client.dart';
 import 'package:nexmile_rider/core/network/api_exception.dart';
+import 'package:nexmile_rider/core/network/api_log.dart';
 import 'package:nexmile_rider/core/router/app_router.dart';
 import 'package:nexmile_rider/core/services/preferences_service.dart';
 import 'package:nexmile_rider/features/auth/data/auth_repository.dart';
@@ -1433,6 +1435,52 @@ void main() {
       expect(find.byType(OnboardingScreen), findsNothing);
     });
 
+    testWidgets('a merchant account is named, without asking the rider API',
+        (WidgetTester tester) async {
+      // Caught on a real device: signing in with an email that belonged to a
+      // merchant. The role is in the otp/verify response, so the app can say
+      // so immediately instead of firing a request it knows will 403.
+      final FakeRiderRepository rider = FakeRiderRepository();
+      _useTallPhone(tester);
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        riderRepository: rider,
+        session: const AuthSession(
+          user: AuthUser(
+            id: 5,
+            name: 'Joseph Vijay',
+            email: 'merchant@example.com',
+            role: UserRole.merchant,
+            status: UserStatus.active,
+          ),
+          accessToken: 'a',
+          refreshToken: 'r',
+          expiresIn: 3600,
+        ),
+      );
+      await _settleSplash(tester);
+
+      expect(find.text('This is not a delivery partner account'),
+          findsOneWidget);
+      expect(find.textContaining('already registered as a Nexmile merchant'),
+          findsOneWidget);
+      expect(find.text('Use another account'), findsOneWidget);
+
+      // The whole point: no wasted round-trip to endpoints that are certain
+      // to refuse this account.
+      expect(rider.profileCount, 0);
+    });
+
+    testWidgets('an unrecognised role is allowed through, not locked out',
+        (WidgetTester tester) async {
+      // A role this build predates must not bar a genuine rider over a backend
+      // deploy. It falls through to the request and the 403 handling catches
+      // it if the API really does refuse.
+      await signedIn(tester, FakeRiderRepository());
+      expect(find.byType(OnboardingScreen), findsOneWidget);
+    });
+
     testWidgets('a customer account is told so, not that KYC is under review',
         (WidgetTester tester) async {
       // Caught on a real device: signing in with an email that already existed
@@ -1453,8 +1501,12 @@ void main() {
       expect(_rider.loadFailure, RiderFailure.notARider);
       expect(find.text('This is not a delivery partner account'),
           findsOneWidget);
-      expect(find.textContaining('already registered as a Nexmile customer'),
-          findsOneWidget);
+      // Reached only when the role check let the account through — so the app
+      // does not know which role it is and must not name one.
+      expect(
+        find.textContaining('already registered on another Nexmile account'),
+        findsOneWidget,
+      );
 
       // The role is fixed at account creation, so a retry could only ever fail
       // again. The one action offered has to be the one that works.
@@ -1808,6 +1860,120 @@ void main() {
       // The gate swaps the body out on its own — no navigation involved.
       expect(find.byType(KycDecisionScreen), findsOneWidget);
       expect(find.text('We are verifying your documents'), findsOneWidget);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  group('API wire log', () {
+    /// Captures what `debugPrint` would have written.
+    List<String> capture(void Function() body) {
+      final List<String> lines = <String>[];
+      final DebugPrintCallback original = debugPrint;
+      debugPrint = (String? message, {int? wrapWidth}) {
+        if (message != null) lines.add(message);
+      };
+      try {
+        body();
+      } finally {
+        debugPrint = original;
+      }
+      return lines;
+    }
+
+    test('an OTP code never reaches the log', () {
+      final List<String> lines = capture(() {
+        ApiLog.request('POST', Uri.parse('https://x/api/v1/auth/otp/verify'),
+            <String, dynamic>{
+              'phone': '9876543210',
+              'code': '123456',
+              'device_name': 'test',
+            });
+      });
+
+      expect(lines.single, contains('/v1/auth/otp/verify'));
+      // The number is fine -- it is the identifier the rider typed. The code
+      // is a live credential for the next five minutes.
+      expect(lines.single, contains('9876543210'));
+      expect(lines.single, isNot(contains('123456')));
+      expect(lines.single, contains('***(6)'));
+    });
+
+    test('tokens and KYC identifiers are masked in responses', () {
+      final List<String> lines = capture(() {
+        ApiLog.response(
+          'POST',
+          Uri.parse('https://x/api/v1/auth/otp/verify'),
+          200,
+          jsonEncode(<String, dynamic>{
+            'data': <String, dynamic>{
+              'access_token': 'secret-access',
+              'refresh_token': 'secret-refresh',
+              'user': <String, dynamic>{'id': 7, 'role': 'rider'},
+            },
+          }),
+          const Duration(milliseconds: 120),
+        );
+      });
+
+      final String line = lines.single;
+      expect(line, contains('200'));
+      expect(line, contains('120ms'));
+      expect(line, contains('rider'), reason: 'the useful part survives');
+      expect(line, isNot(contains('secret-access')));
+      expect(line, isNot(contains('secret-refresh')));
+    });
+
+    test('KYC details are masked wherever they are nested', () {
+      final List<String> lines = capture(() {
+        ApiLog.request('PATCH', Uri.parse('https://x/api/v1/rider/kyc/details'),
+            <String, dynamic>{
+              'aadhaar_number': '123456789012',
+              'pan': 'ABCDE1234F',
+              'bank_account_number': '000123456789',
+              'bank_ifsc': 'SBIN0001234',
+              'vehicle_number': 'TN01AB1234',
+            });
+      });
+
+      final String line = lines.single;
+      expect(line, isNot(contains('123456789012')));
+      expect(line, isNot(contains('ABCDE1234F')));
+      expect(line, isNot(contains('000123456789')));
+      expect(line, isNot(contains('SBIN0001234')));
+      // A number plate is not a secret and is genuinely useful when a save is
+      // being rejected.
+      expect(line, contains('TN01AB1234'));
+    });
+
+    test('a non-JSON error page is summarised, not dumped', () {
+      final List<String> lines = capture(() {
+        ApiLog.response(
+          'GET',
+          Uri.parse('https://x/api/v1/rider/profile'),
+          500,
+          '<html>${'x' * 5000}</html>',
+          const Duration(milliseconds: 30),
+        );
+      });
+
+      expect(lines.single, contains('not JSON'));
+      expect(lines.single.length, lessThan(200));
+      expect(lines.single, startsWith('✗ 500'));
+    });
+
+    test('an upload logs its size but never its bytes', () {
+      final List<String> lines = capture(() {
+        ApiLog.upload(
+          Uri.parse('https://x/api/v1/rider/kyc/documents'),
+          <String, String>{'type': 'driving_licence'},
+          'licence.jpg',
+          204800,
+        );
+      });
+
+      expect(lines.single, contains('driving_licence'));
+      expect(lines.single, contains('licence.jpg'));
+      expect(lines.single, contains('200KB'));
     });
   });
 

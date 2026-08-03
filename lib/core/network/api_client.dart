@@ -7,6 +7,7 @@ import 'package:http_parser/http_parser.dart' show MediaType;
 
 import '../config/app_config.dart';
 import 'api_exception.dart';
+import 'api_log.dart';
 
 /// Supplies the current access token and refreshes the pair on demand.
 ///
@@ -108,6 +109,7 @@ class ApiClient {
   }) async {
     final Uri uri = Uri.parse('$_baseUrl$path');
 
+    final Stopwatch clock = Stopwatch()..start();
     late final http.Response response;
     try {
       final http.MultipartRequest request =
@@ -126,15 +128,39 @@ class ApiClient {
       final String? token = tokenProvider?.accessToken;
       if (token != null) request.headers['Authorization'] = 'Bearer $token';
 
+      // Size and filename, never the bytes — a licence photo in the console
+      // helps nobody and would take the log with it.
+      assert(() {
+        ApiLog.upload(uri, fields, filename, bytes.length);
+        return true;
+      }());
+
       final http.StreamedResponse streamed = await _http
           .send(request)
           .timeout(AppConfig.uploadTimeout);
       response = await http.Response.fromStream(streamed);
-    } on TimeoutException {
+      assert(() {
+        ApiLog.response(
+            'POST', uri, response.statusCode, response.body, clock.elapsed);
+        return true;
+      }());
+    } on TimeoutException catch (error) {
+      assert(() {
+        ApiLog.failure('POST', uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
-    } on SocketException {
+    } on SocketException catch (error) {
+      assert(() {
+        ApiLog.failure('POST', uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
-    } on http.ClientException {
+    } on http.ClientException catch (error) {
+      assert(() {
+        ApiLog.failure('POST', uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
     }
 
@@ -192,22 +218,49 @@ class ApiClient {
       headers['Authorization'] = 'Bearer $token';
     }
 
+    final Stopwatch clock = Stopwatch()..start();
     late final http.Response response;
     try {
       final http.Request request = http.Request(method, uri)
         ..headers.addAll(headers);
-      if (body != null) {
-        request.body = jsonEncode(_pruneNulls(body));
+      final Map<String, dynamic>? pruned =
+          body == null ? null : _pruneNulls(body);
+      if (pruned != null) {
+        request.body = jsonEncode(pruned);
       }
+      // Logs what actually goes on the wire, after pruning — a body the client
+      // dropped a key from is exactly the kind of thing worth seeing.
+      assert(() {
+        ApiLog.request(method, uri, pruned);
+        return true;
+      }());
+
       final http.StreamedResponse streamed = await _http
           .send(request)
           .timeout(AppConfig.requestTimeout);
       response = await http.Response.fromStream(streamed);
-    } on TimeoutException {
+      assert(() {
+        ApiLog.response(method, uri, response.statusCode, response.body,
+            clock.elapsed);
+        return true;
+      }());
+    } on TimeoutException catch (error) {
+      assert(() {
+        ApiLog.failure(method, uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
-    } on SocketException {
+    } on SocketException catch (error) {
+      assert(() {
+        ApiLog.failure(method, uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
-    } on http.ClientException {
+    } on http.ClientException catch (error) {
+      assert(() {
+        ApiLog.failure(method, uri, error);
+        return true;
+      }());
       throw const ApiException(kind: ApiErrorKind.network);
     }
 

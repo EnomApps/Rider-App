@@ -185,6 +185,20 @@ class AppLocalizationsTa extends AppLocalizations {
   String get notARiderAccount => 'இந்த மின்னஞ்சல் அல்லது கைபேசி எண் ஏற்கனவே நெக்ஸ்மைல் வாடிக்கையாளராகப் பதிவாகியுள்ளது. வெளியேறி, டெலிவரி பார்ட்னராகச் சேர வேறொன்றைப் பயன்படுத்தவும்.';
 
   @override
+  String notARiderAccountFor(String role) {
+    return 'இந்த மின்னஞ்சல் அல்லது கைபேசி எண் ஏற்கனவே நெக்ஸ்மைல் $role எனப் பதிவாகியுள்ளது. வெளியேறி, டெலிவரி பார்ட்னராகச் சேர வேறொன்றைப் பயன்படுத்தவும்.';
+  }
+
+  @override
+  String get roleCustomer => 'வாடிக்கையாளர்';
+
+  @override
+  String get roleMerchant => 'வணிகர்';
+
+  @override
+  String get roleAdmin => 'நிர்வாகி';
+
+  @override
   String get useAnotherAccount => 'வேறு கணக்கைப் பயன்படுத்து';
 
   @override

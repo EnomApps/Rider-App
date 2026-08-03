@@ -182,7 +182,21 @@ class AppLocalizationsMr extends AppLocalizations {
   String get notARiderAccountTitle => 'This is not a delivery partner account';
 
   @override
-  String get notARiderAccount => 'This email or mobile number is already registered as a Nexmile customer. Sign out and use a different one to join as a delivery partner.';
+  String get notARiderAccount => 'This email or mobile number is already registered on another Nexmile account. Sign out and use a different one to join as a delivery partner.';
+
+  @override
+  String notARiderAccountFor(String role) {
+    return 'This email or mobile number is already registered as a Nexmile $role. Sign out and use a different one to join as a delivery partner.';
+  }
+
+  @override
+  String get roleCustomer => 'customer';
+
+  @override
+  String get roleMerchant => 'merchant';
+
+  @override
+  String get roleAdmin => 'administrator';
 
   @override
   String get useAnotherAccount => 'Use another account';

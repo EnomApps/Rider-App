@@ -5,6 +5,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/widgets/brand_mark.dart';
 import '../../../core/widgets/gradient_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
+import '../../auth/data/auth_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/rider_failure.dart';
 import '../state/rider_controller.dart';
@@ -80,13 +81,47 @@ class _RiderGateScreenState extends State<RiderGateScreen> {
       // the frame before the navigation lands — so without this the gate fires
       // one last fetch with a token that was just revoked and gets a 401 for
       // its trouble.
-      if (!context.read<AuthController>().isSignedIn) return;
+      final AuthController auth = context.read<AuthController>();
+      if (!auth.isSignedIn) return;
+      // Nor is there any point asking the rider endpoints about an account
+      // that is not a rider; they are role-gated and will only ever 403.
+      if (_wrongRole(auth.user) != null) return;
       rider.load();
     });
   }
 
+  /// The signed-in account's role, when it is one this app cannot serve.
+  ///
+  /// `/v1/auth/otp/verify` returns the user, so the app knows the role the
+  /// moment sign-in completes — well before any rider endpoint is called.
+  /// Reading it here turns a wasted round-trip and a guessed error message
+  /// into an immediate, accurate one that can name the actual role.
+  ///
+  /// [UserRole.unknown] is deliberately not caught: it means the API grew a
+  /// role this build predates, and refusing to proceed on a value we simply do
+  /// not recognise would lock out riders over a backend deploy. That case
+  /// falls through to the request, and the 403 handling catches it.
+  static UserRole? _wrongRole(AuthUser? user) {
+    if (user == null) return null;
+    switch (user.role) {
+      case UserRole.customer:
+      case UserRole.merchant:
+      case UserRole.admin:
+        return user.role;
+      case UserRole.rider:
+      case UserRole.unknown:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Watched, not read: signing out clears the user, and this has to stop
+    // claiming the account is a merchant the instant that happens.
+    final AuthUser? user = context.watch<AuthController>().user;
+    final UserRole? wrongRole = _wrongRole(user);
+    if (wrongRole != null) return _GateWrongAccount(role: wrongRole);
+
     return Consumer<RiderController>(
       builder: (BuildContext context, RiderController rider, _) {
         _loadIfNeeded(rider);
@@ -176,6 +211,72 @@ class _GateLoading extends StatelessWidget {
   }
 }
 
+/// Dead end for an account that is not a rider.
+///
+/// A role is fixed when the account is created and the API refuses to let
+/// anyone promote themselves, so there is nothing to retry — only a different
+/// email or mobile number will do. The screen therefore offers exactly one
+/// action, and it is the one that works.
+class _GateWrongAccount extends StatelessWidget {
+  const _GateWrongAccount({required this.role});
+
+  final UserRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    // Naming the role beats a generic line: a merchant who downloaded the
+    // wrong app needs to know that is what happened, not that "something is
+    // registered".
+    final String? roleName = switch (role) {
+      UserRole.customer => l10n.roleCustomer,
+      UserRole.merchant => l10n.roleMerchant,
+      UserRole.admin => l10n.roleAdmin,
+      UserRole.rider || UserRole.unknown => null,
+    };
+
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.person_off_outlined,
+                size: 46,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                l10n.notARiderAccountTitle,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                roleName == null
+                    ? l10n.notARiderAccount
+                    : l10n.notARiderAccountFor(roleName),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 28),
+              GradientButton(
+                label: l10n.useAnotherAccount,
+                icon: Icons.logout_rounded,
+                onPressed: () => signOutToLogin(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _GateUnavailable extends StatelessWidget {
   const _GateUnavailable({required this.onRetry, this.failure});
 
@@ -234,7 +335,7 @@ class _GateUnavailable extends StatelessWidget {
                 GradientButton(
                   label: l10n.useAnotherAccount,
                   icon: Icons.logout_rounded,
-                  onPressed: () => _signOut(context),
+                  onPressed: () => signOutToLogin(context),
                 )
               else ...<Widget>[
                 GradientButton(label: l10n.retry, onPressed: onRetry),
@@ -243,7 +344,7 @@ class _GateUnavailable extends StatelessWidget {
                 // but whose profile will not load is stuck on this screen with
                 // no way back to sign-in.
                 TextButton(
-                  onPressed: () => _signOut(context),
+                  onPressed: () => signOutToLogin(context),
                   child: Text(l10n.signOut),
                 ),
               ],
@@ -254,24 +355,25 @@ class _GateUnavailable extends StatelessWidget {
     );
   }
 
-  /// Revokes the session server-side, drops the cached rider, and returns to
-  /// sign-in.
-  ///
-  /// Goes through `AuthController` rather than just navigating: leaving a live
-  /// token on the device would restore this same dead-end session on the next
-  /// launch, and the rider would be stuck in a loop they cannot see the cause
-  /// of.
-  Future<void> _signOut(BuildContext context) async {
-    final NavigatorState navigator = Navigator.of(context);
-    final AuthController auth = context.read<AuthController>();
-    final RiderController rider = context.read<RiderController>();
+}
 
-    await auth.signOut();
-    rider.reset();
+/// Revokes the session server-side, drops the cached rider, and returns to
+/// sign-in.
+///
+/// Goes through `AuthController` rather than just navigating: leaving a live
+/// token on the device would restore the same dead-end session on the next
+/// launch, and the rider would be stuck in a loop they cannot see the cause
+/// of.
+Future<void> signOutToLogin(BuildContext context) async {
+  final NavigatorState navigator = Navigator.of(context);
+  final AuthController auth = context.read<AuthController>();
+  final RiderController rider = context.read<RiderController>();
 
-    navigator.pushNamedAndRemoveUntil(
-      AppRoutes.login,
-      (Route<void> route) => false,
-    );
-  }
+  await auth.signOut();
+  rider.reset();
+
+  navigator.pushNamedAndRemoveUntil(
+    AppRoutes.login,
+    (Route<void> route) => false,
+  );
 }

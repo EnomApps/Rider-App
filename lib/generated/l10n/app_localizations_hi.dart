@@ -185,6 +185,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notARiderAccount => 'यह ईमेल या मोबाइल नंबर पहले से नेक्समाइल ग्राहक के रूप में पंजीकृत है। साइन आउट करके डिलीवरी पार्टनर बनने के लिए दूसरा उपयोग करें।';
 
   @override
+  String notARiderAccountFor(String role) {
+    return 'यह ईमेल या मोबाइल नंबर पहले से नेक्समाइल $role के रूप में पंजीकृत है। साइन आउट करके डिलीवरी पार्टनर बनने के लिए दूसरा उपयोग करें।';
+  }
+
+  @override
+  String get roleCustomer => 'ग्राहक';
+
+  @override
+  String get roleMerchant => 'विक्रेता';
+
+  @override
+  String get roleAdmin => 'प्रशासक';
+
+  @override
   String get useAnotherAccount => 'दूसरा खाता उपयोग करें';
 
   @override
