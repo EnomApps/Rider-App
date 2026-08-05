@@ -158,6 +158,8 @@ class StatusChip extends StatelessWidget {
         base = AppColors.orangeDeep;
       case StatusTone.negative:
         base = theme.colorScheme.error;
+      case StatusTone.neutral:
+        base = theme.colorScheme.onSurfaceVariant;
     }
 
     return Container(
@@ -180,4 +182,4 @@ class StatusChip extends StatelessWidget {
   }
 }
 
-enum StatusTone { positive, warning, negative }
+enum StatusTone { positive, warning, negative, neutral }

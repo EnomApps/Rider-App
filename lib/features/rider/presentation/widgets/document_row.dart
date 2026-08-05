@@ -19,10 +19,21 @@ class DocumentRow extends StatelessWidget {
     required this.enabled,
     required this.onPick,
     required this.onRemove,
+    this.serverLabel,
+    this.isRequired = true,
   });
 
   /// The API's type slug — what the checklist is keyed on.
   final String type;
+
+  /// The label the API supplied for this type, used when the catalogue has
+  /// never heard of it. Readable English beats rendering a raw slug.
+  final String? serverLabel;
+
+  /// False for the types the API allows but does not require. They are still
+  /// offered — a profile photo helps a rider get recognised at the door — but
+  /// they never block the step or count against the progress line.
+  final bool isRequired;
 
   /// The file on record, or null when this slot is still empty.
   final KycDocument? document;
@@ -48,7 +59,8 @@ class DocumentRow extends StatelessWidget {
     // server's own label, which is at least readable English, and only then
     // the raw slug.
     final String label = DocumentCatalogue.labelOf(type, l10n) ??
-        (document?.label.isNotEmpty ?? false ? document!.label : type);
+        _firstNonEmpty(<String?>[serverLabel, document?.label]) ??
+        type;
 
     final BorderRadius radius = BorderRadius.circular(AppTheme.radiusLarge);
     final bool hasFile = document != null;
@@ -100,8 +112,8 @@ class DocumentRow extends StatelessWidget {
                     const SizedBox(width: 8),
                     _Trailing(
                       isUploading: isUploading,
-                      hasFile: hasFile,
                       document: document,
+                      isRequired: isRequired,
                     ),
                   ],
                 ),
@@ -149,6 +161,13 @@ class DocumentRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static String? _firstNonEmpty(List<String?> candidates) {
+    for (final String? candidate in candidates) {
+      if (candidate != null && candidate.trim().isNotEmpty) return candidate;
+    }
+    return null;
   }
 
   /// Bottom sheet with the three ways in.
@@ -259,13 +278,13 @@ class _StatusLine extends StatelessWidget {
 class _Trailing extends StatelessWidget {
   const _Trailing({
     required this.isUploading,
-    required this.hasFile,
     required this.document,
+    required this.isRequired,
   });
 
   final bool isUploading;
-  final bool hasFile;
   final KycDocument? document;
+  final bool isRequired;
 
   @override
   Widget build(BuildContext context) {
@@ -281,9 +300,11 @@ class _Trailing extends StatelessWidget {
 
     final KycDocument? file = document;
     if (file == null) {
+      // "Required" on a document the API does not require would push a rider
+      // to hunt for a cancelled cheque they do not need yet.
       return StatusChip(
-        label: l10n.documentRequired,
-        tone: StatusTone.warning,
+        label: isRequired ? l10n.documentRequired : l10n.documentOptional,
+        tone: isRequired ? StatusTone.warning : StatusTone.neutral,
       );
     }
     if (file.isRejected) {

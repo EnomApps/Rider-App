@@ -833,6 +833,12 @@ abstract class AppLocalizations {
   /// **'Required'**
   String get documentRequired;
 
+  /// Badge on a document the API allows but does not require.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get documentOptional;
+
   /// Error when the chosen file exceeds the API's limit.
   ///
   /// In en, this message translates to:

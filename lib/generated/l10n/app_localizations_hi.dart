@@ -371,6 +371,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get documentRequired => 'ज़रूरी';
 
   @override
+  String get documentOptional => 'वैकल्पिक';
+
+  @override
   String get fileTooLarge => 'वह फ़ाइल 5 MB से बड़ी है। स्कैन के बजाय फ़ोटो आज़माएँ।';
 
   @override

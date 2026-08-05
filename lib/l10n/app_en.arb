@@ -498,6 +498,11 @@
   "documentRequired": "Required",
   "@documentRequired": { "description": "Badge on a document that has not been uploaded yet." },
 
+  "documentOptional": "Optional",
+  "@documentOptional": {
+    "description": "Badge on a document the API allows but does not require."
+  },
+
   "fileTooLarge": "That file is over 5 MB. Try a photo instead of a scan.",
   "@fileTooLarge": { "description": "Error when the chosen file exceeds the API's limit." },
 

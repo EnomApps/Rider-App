@@ -29,7 +29,7 @@ class DocumentsStep extends StatelessWidget {
     final RiderController rider = step.rider;
     final KycOverview kyc = rider.kyc;
 
-    final List<String> types = kyc.allowedDocuments;
+    final List<KycDocumentType> types = kyc.allowedDocuments;
     final bool everythingUploaded =
         types.isNotEmpty && kyc.missingDocuments.isEmpty;
 
@@ -51,18 +51,23 @@ class DocumentsStep extends StatelessWidget {
       children: <Widget>[
         _ProgressLine(
           done: kyc.uploadedCount,
-          total: types.length,
+          total: kyc.requiredCount,
         ),
         const SizedBox(height: 16),
-        for (final String type in types)
+        for (final KycDocumentType type in types)
           DocumentRow(
-            type: type,
-            document: kyc.documentOf(type),
-            isUploading: rider.isUploading(type),
+            type: type.type,
+            serverLabel: type.label,
+            // The API allows more types than it requires — a bank proof and a
+            // profile photo are optional extras. Both are offered, but only
+            // the required ones are allowed to block the step.
+            isRequired: kyc.isRequired(type.type),
+            document: kyc.documentOf(type.type),
+            isUploading: rider.isUploading(type.type),
             enabled: rider.canEditDocuments,
             onPick: (PickedDocument file) =>
-                _upload(buildContext, rider, type, file),
-            onRemove: () => _remove(buildContext, rider, type),
+                _upload(buildContext, rider, type.type, file),
+            onRemove: () => _remove(buildContext, rider, type.type),
           ),
         if (types.isEmpty)
           Padding(

@@ -68,9 +68,13 @@ class RiderKycSummary {
     return RiderKycSummary(
       status: _status(json['status']),
       documentsExpired: json['documents_expired'] as bool? ?? false,
-      rejectionReason: json['rejection_reason'] as String?,
-      pan: json['pan'] as String?,
-      drivingLicenceNo: json['driving_licence_no'] as String?,
+      // Through `nullableString`, not a plain cast: the API sends the literal
+      // string "null" for these when they are unset. See its doc comment —
+      // taking that at face value makes the wizard skip a step the rider has
+      // never filled in.
+      rejectionReason: nullableString(json['rejection_reason']),
+      pan: nullableString(json['pan']),
+      drivingLicenceNo: nullableString(json['driving_licence_no']),
       drivingLicenceExpiry:
           DateTime.tryParse('${json['driving_licence_expiry']}'),
       insuranceExpiry: DateTime.tryParse('${json['insurance_expiry']}'),
@@ -146,18 +150,18 @@ class RiderProfile {
 
     return RiderProfile(
       id: _int(json['id']),
-      fullName: json['full_name'] as String? ?? '',
+      fullName: nullableString(json['full_name']) ?? '',
       dateOfBirth: DateTime.tryParse('${json['date_of_birth']}'),
       zoneId: json['zone_id'] is int ? json['zone_id'] as int : null,
       vehicleType: VehicleType.fromWire(vehicleMap['type']),
-      vehicleNumber: vehicleMap['number'] as String?,
+      vehicleNumber: nullableString(vehicleMap['number']),
       kyc: kyc is Map<String, dynamic>
           ? RiderKycSummary.fromJson(kyc)
           : RiderKycSummary.empty,
       dutyStatus: DutyStatus.fromWire(json['duty_status']),
       canAcceptOrders: json['can_accept_orders'] as bool? ?? false,
       completedDeliveries: _int(json['completed_deliveries']),
-      rating: json['rating']?.toString(),
+      rating: nullableString(json['rating']),
       createdAt: DateTime.tryParse('${json['created_at']}'),
     );
   }

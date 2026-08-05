@@ -126,6 +126,7 @@
   "documentUploaded": "अपलोड हुआ",
   "documentApproved": "स्वीकृत",
   "documentRequired": "ज़रूरी",
+  "documentOptional": "वैकल्पिक",
   "fileTooLarge": "वह फ़ाइल 5 MB से बड़ी है। स्कैन के बजाय फ़ोटो आज़माएँ।",
   "unsupportedFileType": "JPG, PNG या PDF चुनें।",
   "pickerUnavailable": "हम उसे नहीं खोल सके। ऐप की कैमरा और फ़ोटो अनुमतियाँ जाँचें।",

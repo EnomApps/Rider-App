@@ -371,6 +371,9 @@ class AppLocalizationsKok extends AppLocalizations {
   String get documentRequired => 'Required';
 
   @override
+  String get documentOptional => 'Optional';
+
+  @override
   String get fileTooLarge => 'That file is over 5 MB. Try a photo instead of a scan.';
 
   @override

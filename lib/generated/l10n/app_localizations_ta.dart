@@ -371,6 +371,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get documentRequired => 'தேவை';
 
   @override
+  String get documentOptional => 'விருப்பத்தேர்வு';
+
+  @override
   String get fileTooLarge => 'அந்தக் கோப்பு 5 MB-ஐ விட பெரியது. ஸ்கேனுக்குப் பதிலாக புகைப்படத்தை முயற்சிக்கவும்.';
 
   @override

@@ -57,15 +57,37 @@ const AuthUser _testUser = AuthUser(
   status: UserStatus.pending,
 );
 
-/// The six documents a rider is asked for, as the API names them.
+/// The six documents the live API requires, with its own slugs.
+///
+/// Taken verbatim from a real `GET /v1/rider/kyc` response rather than guessed
+/// — an earlier version of this list used `rc` and `insurance`, which the
+/// backend actually calls `vehicle_rc` and `vehicle_insurance`.
 const List<String> _riderDocuments = <String>[
   'aadhaar_front',
   'aadhaar_back',
+  'pan_card',
   'driving_licence',
-  'rc',
-  'insurance',
+  'vehicle_rc',
+  'vehicle_insurance',
+];
+
+/// The two the API allows on top of the required six.
+const List<String> _optionalDocuments = <String>[
+  'bank_proof',
   'profile_photo',
 ];
+
+/// `allowed_documents` as the API actually sends it: objects, not slugs.
+const Map<String, String> _documentLabels = <String, String>{
+  'aadhaar_front': 'Aadhaar card (front)',
+  'aadhaar_back': 'Aadhaar card (back)',
+  'pan_card': 'PAN card',
+  'driving_licence': 'Driving licence',
+  'vehicle_rc': 'Vehicle registration certificate',
+  'vehicle_insurance': 'Vehicle insurance',
+  'bank_proof': 'Cancelled cheque or bank statement',
+  'profile_photo': 'Profile photo',
+};
 
 AuthSession _testSession() => const AuthSession(
       user: _testUser,
@@ -254,14 +276,22 @@ class FakeRiderRepository implements RiderRepository {
   Future<KycOverview> kyc() async => KycOverview(
         status: kycStatus,
         rejectionReason: rejectionReason,
-        allowedDocuments: _riderDocuments,
+        requiredDocuments: _riderDocuments,
+        // Eight allowed against six required, exactly as the live API does.
+        allowedDocuments: <KycDocumentType>[
+          for (final String type in <String>[
+            ..._riderDocuments,
+            ..._optionalDocuments,
+          ])
+            KycDocumentType(type: type, label: _documentLabels[type] ?? type),
+        ],
         missingDocuments: <String>[
           for (final String type in _riderDocuments)
             if (!_uploaded.contains(type)) type,
         ],
-        // Mirrors the server rule: everything uploaded and every reference
-        // number on file.
-        canSubmit: _uploaded.length == _riderDocuments.length &&
+        // Mirrors the server rule: every *required* document uploaded and
+        // every reference number on file.
+        canSubmit: _riderDocuments.every(_uploaded.contains) &&
             savedDetails.length >= 11,
         documents: <KycDocument>[
           for (final String type in _uploaded)
@@ -2051,6 +2081,74 @@ void main() {
       expect(overview.status.isEditable, isTrue);
     });
 
+    test('the live allowed_documents shape decodes', () {
+      // Verbatim from a real GET /v1/rider/kyc. The first version of this
+      // parser expected a list of slugs and silently produced an empty
+      // checklist against a list of objects -- the rider would have seen a
+      // documents step with nothing on it.
+      final KycOverview overview = KycOverview.fromJson(<String, dynamic>{
+        'status': 'pending',
+        'rejection_reason': null,
+        'verified_at': null,
+        'required_documents': <String>[
+          'aadhaar_front',
+          'aadhaar_back',
+          'pan_card',
+          'driving_licence',
+          'vehicle_rc',
+          'vehicle_insurance',
+        ],
+        'allowed_documents': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'type': 'aadhaar_front',
+            'label': 'Aadhaar card (front)',
+          },
+          <String, dynamic>{'type': 'bank_proof', 'label': 'Cancelled cheque'},
+        ],
+        'missing_documents': <String>['aadhaar_front'],
+        'can_submit': false,
+        'documents': <Object?>[],
+      });
+
+      expect(overview.allowedDocuments.length, 2);
+      expect(overview.allowedDocuments.first.type, 'aadhaar_front');
+      expect(overview.allowedDocuments.first.label, 'Aadhaar card (front)');
+      expect(overview.requiredDocuments.length, 6);
+      // Progress counts what is required, not what is allowed: "0 of 6", not
+      // "0 of 8".
+      expect(overview.requiredCount, 6);
+      expect(overview.isRequired('aadhaar_front'), isTrue);
+      expect(overview.isRequired('bank_proof'), isFalse);
+    });
+
+    test('the API\'s string "null" decodes as absent', () {
+      // GET /v1/rider/profile returns "pan":"null" -- the four-character
+      // string. Taken at face value the wizard would skip the identity step
+      // for a rider who had never filled it in.
+      final RiderProfile profile = RiderProfile.fromJson(<String, dynamic>{
+        'id': 1,
+        'full_name': 'Nexmile user',
+        'vehicle': <String, dynamic>{'type': 'motorcycle', 'number': null},
+        'kyc': <String, dynamic>{
+          'status': 'pending',
+          'pan': 'null',
+          'driving_licence_no': 'null',
+          'rejection_reason': 'null',
+          'documents_expired': true,
+        },
+        'duty_status': 'offline',
+        'can_accept_orders': false,
+        'completed_deliveries': 0,
+        'rating': null,
+      });
+
+      expect(profile.kyc.pan, isNull);
+      expect(profile.kyc.drivingLicenceNo, isNull);
+      expect(profile.kyc.rejectionReason, isNull);
+      // A real value still comes through untouched.
+      expect(profile.fullName, 'Nexmile user');
+    });
+
     test('documents keyed by slug decode as well as a plain list', () {
       final KycOverview overview = KycOverview.fromJson(<String, dynamic>{
         'status': 'pending',
@@ -2067,7 +2165,12 @@ void main() {
         'documents': <Object?>[],
       });
 
-      expect(overview.allowedDocuments, <String>['aadhaar_front', 'rc']);
+      expect(
+        overview.allowedDocuments.map((KycDocumentType t) => t.type).toList(),
+        <String>['aadhaar_front', 'rc'],
+      );
+      // A map carries its labels in the values.
+      expect(overview.allowedDocuments.first.label, 'Aadhaar card (front)');
       expect(overview.missingDocuments, <String>['rc']);
     });
 
