@@ -675,5 +675,254 @@
   "@docPan": { "description": "KYC document name." },
 
   "docBankProof": "Cancelled cheque or bank statement",
-  "@docBankProof": { "description": "KYC document name." }
+  "@docBankProof": { "description": "KYC document name." },
+
+"ordersTab": "Orders",
+  "@ordersTab": { "description": "Bottom navigation label for the order board." },
+
+  "deliveryTab": "Delivery",
+  "@deliveryTab": { "description": "Bottom navigation label for the order the rider is carrying." },
+
+  "historyTab": "History",
+  "@historyTab": { "description": "Bottom navigation label for past deliveries." },
+
+  "orderBoardTitle": "Orders near you",
+  "@orderBoardTitle": { "description": "Headline of the available-orders board." },
+
+  "orderBoardSubtitle": "Nearest restaurant first. The list refreshes on its own.",
+  "@orderBoardSubtitle": { "description": "Supporting copy under the order board headline." },
+
+  "orderNumberLabel": "Order {number}",
+  "@orderNumberLabel": {
+    "description": "An order's reference, shown as a heading on cards and screens.",
+    "placeholders": { "number": { "type": "String", "example": "NX-10428" } }
+  },
+
+  "pickupLabel": "Pick up",
+  "@pickupLabel": { "description": "Label for the restaurant an order is collected from." },
+
+  "dropoffLabel": "Deliver to",
+  "@dropoffLabel": { "description": "Label for the customer's address." },
+
+  "distanceMetres": "{metres} m",
+  "@distanceMetres": {
+    "description": "A short distance. Keep the unit abbreviation.",
+    "placeholders": { "metres": { "type": "String", "example": "450" } }
+  },
+
+  "distanceKilometres": "{km} km",
+  "@distanceKilometres": {
+    "description": "A longer distance. Keep the unit abbreviation.",
+    "placeholders": { "km": { "type": "String", "example": "2.4" } }
+  },
+
+  "itemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "How many lines are on the ticket.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "earningsLabel": "You earn",
+  "@earningsLabel": { "description": "Label for the rider's delivery fee on an order card." },
+
+  "collectCashLabel": "Collect cash",
+  "@collectCashLabel": { "description": "Label for the amount to collect at the door." },
+
+  "prepaidLabel": "Paid online",
+  "@prepaidLabel": { "description": "Shown instead of a cash amount when the customer has already paid." },
+
+  "collectAtDoor": "Collect {amount} from the customer",
+  "@collectAtDoor": {
+    "description": "Prominent reminder on the delivery screen for a cash order.",
+    "placeholders": { "amount": { "type": "String", "example": "480.00" } }
+  },
+
+  "nothingToCollect": "Already paid. Do not ask for money.",
+  "@nothingToCollect": { "description": "Shown on the delivery screen when the order was prepaid." },
+
+  "acceptOrder": "Accept",
+  "@acceptOrder": { "description": "Button that takes an order off the board." },
+
+  "viewOrder": "View",
+  "@viewOrder": { "description": "Button that opens an order's full details." },
+
+  "orderAccepted": "Order accepted. Head to the restaurant.",
+  "@orderAccepted": { "description": "Confirmation after accepting an order." },
+
+  "orderAlreadyTaken": "Another rider took this one. Here is the latest list.",
+  "@orderAlreadyTaken": { "description": "Shown when an accept lost the race. Routine on a shared board, not a fault." },
+
+  "orderNoLongerYours": "This order is no longer yours.",
+  "@orderNoLongerYours": { "description": "Shown when an order 404s because it was reassigned or cancelled." },
+
+  "boardEmptyTitle": "No orders right now",
+  "@boardEmptyTitle": { "description": "Empty state on the board while the rider is online and eligible." },
+
+  "boardEmptyBody": "Stay online. The list updates on its own as restaurants get busy.",
+  "@boardEmptyBody": { "description": "Supporting copy for the ordinary empty board." },
+
+  "boardOfflineTitle": "You are offline",
+  "@boardOfflineTitle": { "description": "Empty state on the board when duty status is offline or on a break." },
+
+  "boardOfflineBody": "Go online to start receiving orders.",
+  "@boardOfflineBody": { "description": "Supporting copy for the offline empty board." },
+
+  "boardBusyTitle": "Finish your delivery first",
+  "@boardBusyTitle": { "description": "Empty state on the board while the rider is carrying an order." },
+
+  "boardBusyBody": "You can take another order once this one is delivered.",
+  "@boardBusyBody": { "description": "Supporting copy shown when the rider already has an order." },
+
+  "boardNoLocationTitle": "We cannot find you",
+  "@boardNoLocationTitle": { "description": "Empty state on the board when no position has been sent." },
+
+  "boardNoLocationBody": "Orders are sorted by how close the restaurant is, so we need your location to show you anything.",
+  "@boardNoLocationBody": { "description": "Supporting copy shown when dispatch has no position for the rider." },
+
+  "boardNotVerifiedTitle": "Not approved to ride yet",
+  "@boardNotVerifiedTitle": { "description": "Empty state on the board when KYC is not approved or documents have lapsed." },
+
+  "activeDeliveryTitle": "Your delivery",
+  "@activeDeliveryTitle": { "description": "Headline of the screen for the order in hand." },
+
+  "headToRestaurant": "Head to the restaurant",
+  "@headToRestaurant": { "description": "What the rider does next, straight after accepting." },
+
+  "deliverToCustomer": "Deliver to the customer",
+  "@deliverToCustomer": { "description": "What the rider does next, after collecting the food." },
+
+  "noActiveDeliveryTitle": "Nothing in hand",
+  "@noActiveDeliveryTitle": { "description": "Empty state shown when the rider is carrying no order." },
+
+  "noActiveDeliveryBody": "Accept an order from the board and it will show up here.",
+  "@noActiveDeliveryBody": { "description": "Supporting copy for the empty delivery screen." },
+
+  "confirmPickupButton": "I have collected it",
+  "@confirmPickupButton": { "description": "Button that opens the pickup code entry." },
+
+  "pickupCodeTitle": "Pickup code",
+  "@pickupCodeTitle": { "description": "Title of the sheet where the merchant's code is typed." },
+
+  "pickupCodeSubtitle": "Ask the restaurant for the code and type it here.",
+  "@pickupCodeSubtitle": { "description": "Supporting copy in the pickup code sheet." },
+
+  "pickupCodeHint": "Code",
+  "@pickupCodeHint": { "description": "Placeholder inside the pickup code field." },
+
+  "wrongPickupCode": "That code did not match. Check it with the restaurant.",
+  "@wrongPickupCode": { "description": "Error shown when the pickup code is refused." },
+
+  "pickupConfirmed": "Picked up. Deliver to the customer.",
+  "@pickupConfirmed": { "description": "Confirmation after a successful pickup." },
+
+  "confirmDeliveryButton": "Delivered",
+  "@confirmDeliveryButton": { "description": "Button that closes an order out." },
+
+  "confirmDeliveryTitle": "Confirm delivery",
+  "@confirmDeliveryTitle": { "description": "Title of the confirmation dialog before closing an order." },
+
+  "confirmDeliveryBody": "Only confirm once the customer has the order in hand.",
+  "@confirmDeliveryBody": { "description": "Warning in the delivery confirmation dialog." },
+
+  "confirmDeliveryCashBody": "Collect {amount} first, then confirm.",
+  "@confirmDeliveryCashBody": {
+    "description": "Warning in the delivery confirmation dialog for a cash order.",
+    "placeholders": { "amount": { "type": "String", "example": "480.00" } }
+  },
+
+  "deliveryConfirmed": "Delivered. Thanks, you are back online.",
+  "@deliveryConfirmed": { "description": "Confirmation after closing an order out." },
+
+  "releaseOrderButton": "Hand it back",
+  "@releaseOrderButton": { "description": "Button that returns an order to the board." },
+
+  "releaseOrderTitle": "Hand this order back?",
+  "@releaseOrderTitle": { "description": "Title of the sheet for returning an order." },
+
+  "releaseOrderBody": "It goes back on the board for another rider. You can only do this before you collect the food.",
+  "@releaseOrderBody": { "description": "Explanation in the hand-back sheet." },
+
+  "releaseReasonHint": "Reason (optional)",
+  "@releaseReasonHint": { "description": "Placeholder in the hand-back reason field." },
+
+  "orderReleased": "Handed back. It is available to other riders again.",
+  "@orderReleased": { "description": "Confirmation after handing an order back." },
+
+  "finishCurrentOrderFirst": "Finish or hand back your current order first.",
+  "@finishCurrentOrderFirst": { "description": "Shown when going offline is refused because an order is in hand." },
+
+  "callRestaurant": "Call restaurant",
+  "@callRestaurant": { "description": "Button that dials the pickup contact." },
+
+  "callCustomer": "Call customer",
+  "@callCustomer": { "description": "Button that dials the delivery contact." },
+
+  "openInMaps": "Directions",
+  "@openInMaps": { "description": "Button that opens the address in a maps app." },
+
+  "customerNoteLabel": "Note from the customer",
+  "@customerNoteLabel": { "description": "Label above the customer's instructions." },
+
+  "orderItemsLabel": "What is in the bag",
+  "@orderItemsLabel": { "description": "Heading above the list of items on an order." },
+
+  "orderDetailsTitle": "Order details",
+  "@orderDetailsTitle": { "description": "Title of the single-order screen." },
+
+  "historyTitle": "Past deliveries",
+  "@historyTitle": { "description": "Headline of the delivery history screen." },
+
+  "historyEmptyTitle": "No deliveries yet",
+  "@historyEmptyTitle": { "description": "Empty state on the history screen." },
+
+  "historyEmptyBody": "Orders you have completed will be listed here.",
+  "@historyEmptyBody": { "description": "Supporting copy for the empty history screen." },
+
+  "orderDelivered": "Delivered",
+  "@orderDelivered": { "description": "Order status: completed." },
+
+  "orderCancelled": "Cancelled",
+  "@orderCancelled": { "description": "Order status: called off." },
+
+  "orderPreparing": "Being prepared",
+  "@orderPreparing": { "description": "Order status: the kitchen is still cooking." },
+
+  "orderReadyForPickup": "Ready for pickup",
+  "@orderReadyForPickup": { "description": "Order status: waiting at the counter." },
+
+  "orderAssigned": "Assigned to you",
+  "@orderAssigned": { "description": "Order status: taken by this rider, not yet collected." },
+
+  "orderPickedUp": "Picked up",
+  "@orderPickedUp": { "description": "Order status: collected from the restaurant." },
+
+  "orderOutForDelivery": "On the way",
+  "@orderOutForDelivery": { "description": "Order status: heading to the customer." },
+
+  "trackingOn": "Location sharing on",
+  "@trackingOn": { "description": "Confirms the position heartbeat is running while on duty." },
+
+  "locationUnavailableMessage": "We cannot read your location. Turn on location and allow it for Nexmile Rider.",
+  "@locationUnavailableMessage": { "description": "Shown when the device refuses a position fix." },
+
+  "locationPermissionTitle": "Location needed",
+  "@locationPermissionTitle": { "description": "Title of the banner asking for location access." },
+
+  "locationPermissionBody": "Dispatch sorts orders by how close you are, and the customer follows you on a map. Allow location to go online.",
+  "@locationPermissionBody": { "description": "Explains why the app needs a position." },
+
+  "locationSettingsButton": "Open settings",
+  "@locationSettingsButton": { "description": "Button that opens the operating system location settings." },
+
+  "enableLocationButton": "Allow location",
+  "@enableLocationButton": { "description": "Button that requests location permission." },
+
+  "amountRupees": "₹{amount}",
+  "@amountRupees": {
+    "description": "A money amount. Keep the rupee sign.",
+    "placeholders": { "amount": { "type": "String", "example": "480.00" } }
+  },
+
+"shiftTab": "Shift",
+  "@shiftTab": { "description": "Bottom navigation label for the duty and summary tab." }
 }

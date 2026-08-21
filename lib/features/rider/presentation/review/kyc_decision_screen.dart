@@ -9,6 +9,7 @@ import '../../../../generated/l10n/app_localizations.dart';
 import '../../../auth/state/auth_controller.dart';
 import '../../data/kyc_models.dart';
 import '../../data/rider_failure.dart';
+import '../../state/order_controller.dart';
 import '../../state/rider_controller.dart';
 import '../widgets/rider_form_field.dart';
 
@@ -20,8 +21,8 @@ enum KycOutcome {
   /// Turned down. The reason is shown and the wizard reopens.
   rejected,
 
-  /// Approved on paper, but the API still refuses to dispatch — a lapsed
-  /// licence or insurance, most often.
+  /// Approved on paper, but the API still refuses to let them work — a lapsed
+  /// licence or insurance, most often. `offline_reason` says which.
   blocked,
 }
 
@@ -78,9 +79,14 @@ class KycDecisionScreen extends StatelessWidget {
     final String body = switch (outcome) {
       KycOutcome.underReview => l10n.underReviewBody,
       KycOutcome.rejected => l10n.rejectedBody,
-      KycOutcome.blocked => rider.profile?.kyc.documentsExpired ?? false
-          ? l10n.documentsExpiredMessage
-          : l10n.awaitingVerificationMessage,
+      // The server's own sentence when it gave one. It is the same string the
+      // duty-status 403 carries, so a rider who reaches this screen and one
+      // who taps the toggle are told the same thing. The translated strings
+      // stay as the fallback for a server that sent nothing.
+      KycOutcome.blocked => rider.offlineReason ??
+          (rider.profile?.kyc.documentsExpired ?? false
+              ? l10n.documentsExpiredMessage
+              : l10n.awaitingVerificationMessage),
     };
 
     // The admin's note, wherever it landed. The profile and the KYC file both
@@ -200,11 +206,16 @@ class KycDecisionScreen extends StatelessWidget {
     final NavigatorState navigator = Navigator.of(context);
     final AuthController auth = context.read<AuthController>();
     final RiderController rider = context.read<RiderController>();
+    final OrderController orders = context.read<OrderController>();
 
     await auth.signOut();
     // Dropped before navigating, so the next rider to sign in on this device
     // never sees the previous one's KYC file on the way to their own.
     rider.reset();
+    // Stops the board poll and the position heartbeat as well as dropping
+    // the order. A timer that outlived its session would keep a signed-out
+    // rider on the dispatch map.
+    orders.reset();
 
     navigator.pushNamedAndRemoveUntil(
       AppRoutes.login,
@@ -288,7 +299,8 @@ class _SubmittedSummary extends StatelessWidget {
                 Text(
                   l10n.documentsProgress(
                     rider.kyc.uploadedCount,
-                    rider.kyc.allowedDocuments.length,
+                    // Required, not allowed — see KycOverview.uploadedCount.
+                    rider.kyc.requiredCount,
                   ),
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,

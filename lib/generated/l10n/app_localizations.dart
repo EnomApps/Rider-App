@@ -1186,6 +1186,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelled cheque or bank statement'**
   String get docBankProof;
+
+  /// Bottom navigation label for the order board.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get ordersTab;
+
+  /// Bottom navigation label for the order the rider is carrying.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery'**
+  String get deliveryTab;
+
+  /// Bottom navigation label for past deliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTab;
+
+  /// Headline of the available-orders board.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders near you'**
+  String get orderBoardTitle;
+
+  /// Supporting copy under the order board headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearest restaurant first. The list refreshes on its own.'**
+  String get orderBoardSubtitle;
+
+  /// An order's reference, shown as a heading on cards and screens.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {number}'**
+  String orderNumberLabel(String number);
+
+  /// Label for the restaurant an order is collected from.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up'**
+  String get pickupLabel;
+
+  /// Label for the customer's address.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver to'**
+  String get dropoffLabel;
+
+  /// A short distance. Keep the unit abbreviation.
+  ///
+  /// In en, this message translates to:
+  /// **'{metres} m'**
+  String distanceMetres(String metres);
+
+  /// A longer distance. Keep the unit abbreviation.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String distanceKilometres(String km);
+
+  /// How many lines are on the ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String itemCount(int count);
+
+  /// Label for the rider's delivery fee on an order card.
+  ///
+  /// In en, this message translates to:
+  /// **'You earn'**
+  String get earningsLabel;
+
+  /// Label for the amount to collect at the door.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect cash'**
+  String get collectCashLabel;
+
+  /// Shown instead of a cash amount when the customer has already paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid online'**
+  String get prepaidLabel;
+
+  /// Prominent reminder on the delivery screen for a cash order.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect {amount} from the customer'**
+  String collectAtDoor(String amount);
+
+  /// Shown on the delivery screen when the order was prepaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Already paid. Do not ask for money.'**
+  String get nothingToCollect;
+
+  /// Button that takes an order off the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get acceptOrder;
+
+  /// Button that opens an order's full details.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewOrder;
+
+  /// Confirmation after accepting an order.
+  ///
+  /// In en, this message translates to:
+  /// **'Order accepted. Head to the restaurant.'**
+  String get orderAccepted;
+
+  /// Shown when an accept lost the race. Routine on a shared board, not a fault.
+  ///
+  /// In en, this message translates to:
+  /// **'Another rider took this one. Here is the latest list.'**
+  String get orderAlreadyTaken;
+
+  /// Shown when an order 404s because it was reassigned or cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'This order is no longer yours.'**
+  String get orderNoLongerYours;
+
+  /// Empty state on the board while the rider is online and eligible.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders right now'**
+  String get boardEmptyTitle;
+
+  /// Supporting copy for the ordinary empty board.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay online. The list updates on its own as restaurants get busy.'**
+  String get boardEmptyBody;
+
+  /// Empty state on the board when duty status is offline or on a break.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline'**
+  String get boardOfflineTitle;
+
+  /// Supporting copy for the offline empty board.
+  ///
+  /// In en, this message translates to:
+  /// **'Go online to start receiving orders.'**
+  String get boardOfflineBody;
+
+  /// Empty state on the board while the rider is carrying an order.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your delivery first'**
+  String get boardBusyTitle;
+
+  /// Supporting copy shown when the rider already has an order.
+  ///
+  /// In en, this message translates to:
+  /// **'You can take another order once this one is delivered.'**
+  String get boardBusyBody;
+
+  /// Empty state on the board when no position has been sent.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot find you'**
+  String get boardNoLocationTitle;
+
+  /// Supporting copy shown when dispatch has no position for the rider.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders are sorted by how close the restaurant is, so we need your location to show you anything.'**
+  String get boardNoLocationBody;
+
+  /// Empty state on the board when KYC is not approved or documents have lapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved to ride yet'**
+  String get boardNotVerifiedTitle;
+
+  /// Headline of the screen for the order in hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Your delivery'**
+  String get activeDeliveryTitle;
+
+  /// What the rider does next, straight after accepting.
+  ///
+  /// In en, this message translates to:
+  /// **'Head to the restaurant'**
+  String get headToRestaurant;
+
+  /// What the rider does next, after collecting the food.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver to the customer'**
+  String get deliverToCustomer;
+
+  /// Empty state shown when the rider is carrying no order.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in hand'**
+  String get noActiveDeliveryTitle;
+
+  /// Supporting copy for the empty delivery screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept an order from the board and it will show up here.'**
+  String get noActiveDeliveryBody;
+
+  /// Button that opens the pickup code entry.
+  ///
+  /// In en, this message translates to:
+  /// **'I have collected it'**
+  String get confirmPickupButton;
+
+  /// Title of the sheet where the merchant's code is typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup code'**
+  String get pickupCodeTitle;
+
+  /// Supporting copy in the pickup code sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the restaurant for the code and type it here.'**
+  String get pickupCodeSubtitle;
+
+  /// Placeholder inside the pickup code field.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get pickupCodeHint;
+
+  /// Error shown when the pickup code is refused.
+  ///
+  /// In en, this message translates to:
+  /// **'That code did not match. Check it with the restaurant.'**
+  String get wrongPickupCode;
+
+  /// Confirmation after a successful pickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked up. Deliver to the customer.'**
+  String get pickupConfirmed;
+
+  /// Button that closes an order out.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get confirmDeliveryButton;
+
+  /// Title of the confirmation dialog before closing an order.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm delivery'**
+  String get confirmDeliveryTitle;
+
+  /// Warning in the delivery confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Only confirm once the customer has the order in hand.'**
+  String get confirmDeliveryBody;
+
+  /// Warning in the delivery confirmation dialog for a cash order.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect {amount} first, then confirm.'**
+  String confirmDeliveryCashBody(String amount);
+
+  /// Confirmation after closing an order out.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered. Thanks, you are back online.'**
+  String get deliveryConfirmed;
+
+  /// Button that returns an order to the board.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand it back'**
+  String get releaseOrderButton;
+
+  /// Title of the sheet for returning an order.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand this order back?'**
+  String get releaseOrderTitle;
+
+  /// Explanation in the hand-back sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'It goes back on the board for another rider. You can only do this before you collect the food.'**
+  String get releaseOrderBody;
+
+  /// Placeholder in the hand-back reason field.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get releaseReasonHint;
+
+  /// Confirmation after handing an order back.
+  ///
+  /// In en, this message translates to:
+  /// **'Handed back. It is available to other riders again.'**
+  String get orderReleased;
+
+  /// Shown when going offline is refused because an order is in hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish or hand back your current order first.'**
+  String get finishCurrentOrderFirst;
+
+  /// Button that dials the pickup contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Call restaurant'**
+  String get callRestaurant;
+
+  /// Button that dials the delivery contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Call customer'**
+  String get callCustomer;
+
+  /// Button that opens the address in a maps app.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get openInMaps;
+
+  /// Label above the customer's instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Note from the customer'**
+  String get customerNoteLabel;
+
+  /// Heading above the list of items on an order.
+  ///
+  /// In en, this message translates to:
+  /// **'What is in the bag'**
+  String get orderItemsLabel;
+
+  /// Title of the single-order screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Order details'**
+  String get orderDetailsTitle;
+
+  /// Headline of the delivery history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Past deliveries'**
+  String get historyTitle;
+
+  /// Empty state on the history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No deliveries yet'**
+  String get historyEmptyTitle;
+
+  /// Supporting copy for the empty history screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders you have completed will be listed here.'**
+  String get historyEmptyBody;
+
+  /// Order status: completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get orderDelivered;
+
+  /// Order status: called off.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get orderCancelled;
+
+  /// Order status: the kitchen is still cooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Being prepared'**
+  String get orderPreparing;
+
+  /// Order status: waiting at the counter.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for pickup'**
+  String get orderReadyForPickup;
+
+  /// Order status: taken by this rider, not yet collected.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to you'**
+  String get orderAssigned;
+
+  /// Order status: collected from the restaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked up'**
+  String get orderPickedUp;
+
+  /// Order status: heading to the customer.
+  ///
+  /// In en, this message translates to:
+  /// **'On the way'**
+  String get orderOutForDelivery;
+
+  /// Confirms the position heartbeat is running while on duty.
+  ///
+  /// In en, this message translates to:
+  /// **'Location sharing on'**
+  String get trackingOn;
+
+  /// Shown when the device refuses a position fix.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot read your location. Turn on location and allow it for Nexmile Rider.'**
+  String get locationUnavailableMessage;
+
+  /// Title of the banner asking for location access.
+  ///
+  /// In en, this message translates to:
+  /// **'Location needed'**
+  String get locationPermissionTitle;
+
+  /// Explains why the app needs a position.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispatch sorts orders by how close you are, and the customer follows you on a map. Allow location to go online.'**
+  String get locationPermissionBody;
+
+  /// Button that opens the operating system location settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get locationSettingsButton;
+
+  /// Button that requests location permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location'**
+  String get enableLocationButton;
+
+  /// A money amount. Keep the rupee sign.
+  ///
+  /// In en, this message translates to:
+  /// **'₹{amount}'**
+  String amountRupees(String amount);
+
+  /// Bottom navigation label for the duty and summary tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift'**
+  String get shiftTab;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

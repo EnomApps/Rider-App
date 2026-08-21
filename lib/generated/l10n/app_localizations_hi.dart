@@ -546,4 +546,252 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get docBankProof => 'रद्द किया गया चेक या बैंक स्टेटमेंट';
+
+  @override
+  String get ordersTab => 'ऑर्डर';
+
+  @override
+  String get deliveryTab => 'डिलीवरी';
+
+  @override
+  String get historyTab => 'इतिहास';
+
+  @override
+  String get orderBoardTitle => 'आपके पास के ऑर्डर';
+
+  @override
+  String get orderBoardSubtitle => 'सबसे नज़दीकी रेस्टोरेंट पहले. सूची अपने आप ताज़ा होती रहती है.';
+
+  @override
+  String orderNumberLabel(String number) {
+    return 'ऑर्डर $number';
+  }
+
+  @override
+  String get pickupLabel => 'यहाँ से लें';
+
+  @override
+  String get dropoffLabel => 'यहाँ पहुँचाएँ';
+
+  @override
+  String distanceMetres(String metres) {
+    return '$metres मी';
+  }
+
+  @override
+  String distanceKilometres(String km) {
+    return '$km किमी';
+  }
+
+  @override
+  String itemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count चीज़ें',
+      one: '1 चीज़',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get earningsLabel => 'आपकी कमाई';
+
+  @override
+  String get collectCashLabel => 'नकद लें';
+
+  @override
+  String get prepaidLabel => 'ऑनलाइन भुगतान हो चुका';
+
+  @override
+  String collectAtDoor(String amount) {
+    return 'ग्राहक से $amount लें';
+  }
+
+  @override
+  String get nothingToCollect => 'भुगतान हो चुका है. पैसे न माँगें.';
+
+  @override
+  String get acceptOrder => 'स्वीकार करें';
+
+  @override
+  String get viewOrder => 'देखें';
+
+  @override
+  String get orderAccepted => 'ऑर्डर स्वीकार हुआ. रेस्टोरेंट पहुँचें.';
+
+  @override
+  String get orderAlreadyTaken => 'यह ऑर्डर किसी और राइडर ने ले लिया. यह नई सूची है.';
+
+  @override
+  String get orderNoLongerYours => 'यह ऑर्डर अब आपका नहीं है.';
+
+  @override
+  String get boardEmptyTitle => 'अभी कोई ऑर्डर नहीं';
+
+  @override
+  String get boardEmptyBody => 'ऑनलाइन बने रहें. रेस्टोरेंट व्यस्त होते ही सूची अपने आप भर जाएगी.';
+
+  @override
+  String get boardOfflineTitle => 'आप ऑफ़लाइन हैं';
+
+  @override
+  String get boardOfflineBody => 'ऑर्डर पाने के लिए ऑनलाइन हों.';
+
+  @override
+  String get boardBusyTitle => 'पहले अपनी डिलीवरी पूरी करें';
+
+  @override
+  String get boardBusyBody => 'यह ऑर्डर पहुँचाने के बाद ही आप दूसरा ले सकेंगे.';
+
+  @override
+  String get boardNoLocationTitle => 'हम आपको ढूँढ नहीं पा रहे';
+
+  @override
+  String get boardNoLocationBody => 'ऑर्डर रेस्टोरेंट की दूरी के हिसाब से दिखते हैं, इसलिए कुछ भी दिखाने के लिए आपकी लोकेशन ज़रूरी है.';
+
+  @override
+  String get boardNotVerifiedTitle => 'अभी राइड करने की मंज़ूरी नहीं है';
+
+  @override
+  String get activeDeliveryTitle => 'आपकी डिलीवरी';
+
+  @override
+  String get headToRestaurant => 'रेस्टोरेंट पहुँचें';
+
+  @override
+  String get deliverToCustomer => 'ग्राहक तक पहुँचाएँ';
+
+  @override
+  String get noActiveDeliveryTitle => 'अभी कोई ऑर्डर नहीं है';
+
+  @override
+  String get noActiveDeliveryBody => 'सूची से कोई ऑर्डर स्वीकार करें, वह यहाँ दिखने लगेगा.';
+
+  @override
+  String get confirmPickupButton => 'मैंने ले लिया है';
+
+  @override
+  String get pickupCodeTitle => 'पिकअप कोड';
+
+  @override
+  String get pickupCodeSubtitle => 'रेस्टोरेंट से कोड पूछें और यहाँ लिखें.';
+
+  @override
+  String get pickupCodeHint => 'कोड';
+
+  @override
+  String get wrongPickupCode => 'यह कोड मेल नहीं खाया. रेस्टोरेंट से दोबारा पूछें.';
+
+  @override
+  String get pickupConfirmed => 'ऑर्डर ले लिया. अब ग्राहक तक पहुँचाएँ.';
+
+  @override
+  String get confirmDeliveryButton => 'पहुँचा दिया';
+
+  @override
+  String get confirmDeliveryTitle => 'डिलीवरी की पुष्टि करें';
+
+  @override
+  String get confirmDeliveryBody => 'तभी पुष्टि करें जब ऑर्डर ग्राहक के हाथ में पहुँच चुका हो.';
+
+  @override
+  String confirmDeliveryCashBody(String amount) {
+    return 'पहले $amount लें, फिर पुष्टि करें.';
+  }
+
+  @override
+  String get deliveryConfirmed => 'पहुँचा दिया. धन्यवाद, आप फिर से ऑनलाइन हैं.';
+
+  @override
+  String get releaseOrderButton => 'वापस कर दें';
+
+  @override
+  String get releaseOrderTitle => 'यह ऑर्डर वापस करना है?';
+
+  @override
+  String get releaseOrderBody => 'यह दूसरे राइडर के लिए सूची में वापस चला जाएगा. खाना लेने से पहले ही ऐसा कर सकते हैं.';
+
+  @override
+  String get releaseReasonHint => 'कारण (ज़रूरी नहीं)';
+
+  @override
+  String get orderReleased => 'वापस कर दिया. यह दूसरे राइडर के लिए फिर उपलब्ध है.';
+
+  @override
+  String get finishCurrentOrderFirst => 'पहले अपना मौजूदा ऑर्डर पूरा करें या वापस कर दें.';
+
+  @override
+  String get callRestaurant => 'रेस्टोरेंट को कॉल करें';
+
+  @override
+  String get callCustomer => 'ग्राहक को कॉल करें';
+
+  @override
+  String get openInMaps => 'रास्ता देखें';
+
+  @override
+  String get customerNoteLabel => 'ग्राहक का संदेश';
+
+  @override
+  String get orderItemsLabel => 'बैग में क्या है';
+
+  @override
+  String get orderDetailsTitle => 'ऑर्डर का विवरण';
+
+  @override
+  String get historyTitle => 'पिछली डिलीवरी';
+
+  @override
+  String get historyEmptyTitle => 'अभी कोई डिलीवरी नहीं';
+
+  @override
+  String get historyEmptyBody => 'आपने जो ऑर्डर पूरे किए हैं वे यहाँ दिखेंगे.';
+
+  @override
+  String get orderDelivered => 'पहुँचा दिया';
+
+  @override
+  String get orderCancelled => 'रद्द';
+
+  @override
+  String get orderPreparing => 'तैयार हो रहा है';
+
+  @override
+  String get orderReadyForPickup => 'लेने के लिए तैयार';
+
+  @override
+  String get orderAssigned => 'आपको सौंपा गया';
+
+  @override
+  String get orderPickedUp => 'ले लिया गया';
+
+  @override
+  String get orderOutForDelivery => 'रास्ते में';
+
+  @override
+  String get trackingOn => 'लोकेशन साझा हो रही है';
+
+  @override
+  String get locationUnavailableMessage => 'हम आपकी लोकेशन नहीं पढ़ पा रहे. लोकेशन चालू करें और Nexmile Rider को अनुमति दें.';
+
+  @override
+  String get locationPermissionTitle => 'लोकेशन ज़रूरी है';
+
+  @override
+  String get locationPermissionBody => 'ऑर्डर आपकी दूरी के हिसाब से बाँटे जाते हैं, और ग्राहक नक्शे पर आपको देखता है. ऑनलाइन होने के लिए लोकेशन की अनुमति दें.';
+
+  @override
+  String get locationSettingsButton => 'सेटिंग्स खोलें';
+
+  @override
+  String get enableLocationButton => 'लोकेशन की अनुमति दें';
+
+  @override
+  String amountRupees(String amount) {
+    return '₹$amount';
+  }
+
+  @override
+  String get shiftTab => 'शिफ़्ट';
 }

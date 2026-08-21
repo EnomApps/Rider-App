@@ -546,4 +546,252 @@ class AppLocalizationsSd extends AppLocalizations {
 
   @override
   String get docBankProof => 'Cancelled cheque or bank statement';
+
+  @override
+  String get ordersTab => 'Orders';
+
+  @override
+  String get deliveryTab => 'Delivery';
+
+  @override
+  String get historyTab => 'History';
+
+  @override
+  String get orderBoardTitle => 'Orders near you';
+
+  @override
+  String get orderBoardSubtitle => 'Nearest restaurant first. The list refreshes on its own.';
+
+  @override
+  String orderNumberLabel(String number) {
+    return 'Order $number';
+  }
+
+  @override
+  String get pickupLabel => 'Pick up';
+
+  @override
+  String get dropoffLabel => 'Deliver to';
+
+  @override
+  String distanceMetres(String metres) {
+    return '$metres m';
+  }
+
+  @override
+  String distanceKilometres(String km) {
+    return '$km km';
+  }
+
+  @override
+  String itemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get earningsLabel => 'You earn';
+
+  @override
+  String get collectCashLabel => 'Collect cash';
+
+  @override
+  String get prepaidLabel => 'Paid online';
+
+  @override
+  String collectAtDoor(String amount) {
+    return 'Collect $amount from the customer';
+  }
+
+  @override
+  String get nothingToCollect => 'Already paid. Do not ask for money.';
+
+  @override
+  String get acceptOrder => 'Accept';
+
+  @override
+  String get viewOrder => 'View';
+
+  @override
+  String get orderAccepted => 'Order accepted. Head to the restaurant.';
+
+  @override
+  String get orderAlreadyTaken => 'Another rider took this one. Here is the latest list.';
+
+  @override
+  String get orderNoLongerYours => 'This order is no longer yours.';
+
+  @override
+  String get boardEmptyTitle => 'No orders right now';
+
+  @override
+  String get boardEmptyBody => 'Stay online. The list updates on its own as restaurants get busy.';
+
+  @override
+  String get boardOfflineTitle => 'You are offline';
+
+  @override
+  String get boardOfflineBody => 'Go online to start receiving orders.';
+
+  @override
+  String get boardBusyTitle => 'Finish your delivery first';
+
+  @override
+  String get boardBusyBody => 'You can take another order once this one is delivered.';
+
+  @override
+  String get boardNoLocationTitle => 'We cannot find you';
+
+  @override
+  String get boardNoLocationBody => 'Orders are sorted by how close the restaurant is, so we need your location to show you anything.';
+
+  @override
+  String get boardNotVerifiedTitle => 'Not approved to ride yet';
+
+  @override
+  String get activeDeliveryTitle => 'Your delivery';
+
+  @override
+  String get headToRestaurant => 'Head to the restaurant';
+
+  @override
+  String get deliverToCustomer => 'Deliver to the customer';
+
+  @override
+  String get noActiveDeliveryTitle => 'Nothing in hand';
+
+  @override
+  String get noActiveDeliveryBody => 'Accept an order from the board and it will show up here.';
+
+  @override
+  String get confirmPickupButton => 'I have collected it';
+
+  @override
+  String get pickupCodeTitle => 'Pickup code';
+
+  @override
+  String get pickupCodeSubtitle => 'Ask the restaurant for the code and type it here.';
+
+  @override
+  String get pickupCodeHint => 'Code';
+
+  @override
+  String get wrongPickupCode => 'That code did not match. Check it with the restaurant.';
+
+  @override
+  String get pickupConfirmed => 'Picked up. Deliver to the customer.';
+
+  @override
+  String get confirmDeliveryButton => 'Delivered';
+
+  @override
+  String get confirmDeliveryTitle => 'Confirm delivery';
+
+  @override
+  String get confirmDeliveryBody => 'Only confirm once the customer has the order in hand.';
+
+  @override
+  String confirmDeliveryCashBody(String amount) {
+    return 'Collect $amount first, then confirm.';
+  }
+
+  @override
+  String get deliveryConfirmed => 'Delivered. Thanks, you are back online.';
+
+  @override
+  String get releaseOrderButton => 'Hand it back';
+
+  @override
+  String get releaseOrderTitle => 'Hand this order back?';
+
+  @override
+  String get releaseOrderBody => 'It goes back on the board for another rider. You can only do this before you collect the food.';
+
+  @override
+  String get releaseReasonHint => 'Reason (optional)';
+
+  @override
+  String get orderReleased => 'Handed back. It is available to other riders again.';
+
+  @override
+  String get finishCurrentOrderFirst => 'Finish or hand back your current order first.';
+
+  @override
+  String get callRestaurant => 'Call restaurant';
+
+  @override
+  String get callCustomer => 'Call customer';
+
+  @override
+  String get openInMaps => 'Directions';
+
+  @override
+  String get customerNoteLabel => 'Note from the customer';
+
+  @override
+  String get orderItemsLabel => 'What is in the bag';
+
+  @override
+  String get orderDetailsTitle => 'Order details';
+
+  @override
+  String get historyTitle => 'Past deliveries';
+
+  @override
+  String get historyEmptyTitle => 'No deliveries yet';
+
+  @override
+  String get historyEmptyBody => 'Orders you have completed will be listed here.';
+
+  @override
+  String get orderDelivered => 'Delivered';
+
+  @override
+  String get orderCancelled => 'Cancelled';
+
+  @override
+  String get orderPreparing => 'Being prepared';
+
+  @override
+  String get orderReadyForPickup => 'Ready for pickup';
+
+  @override
+  String get orderAssigned => 'Assigned to you';
+
+  @override
+  String get orderPickedUp => 'Picked up';
+
+  @override
+  String get orderOutForDelivery => 'On the way';
+
+  @override
+  String get trackingOn => 'Location sharing on';
+
+  @override
+  String get locationUnavailableMessage => 'We cannot read your location. Turn on location and allow it for Nexmile Rider.';
+
+  @override
+  String get locationPermissionTitle => 'Location needed';
+
+  @override
+  String get locationPermissionBody => 'Dispatch sorts orders by how close you are, and the customer follows you on a map. Allow location to go online.';
+
+  @override
+  String get locationSettingsButton => 'Open settings';
+
+  @override
+  String get enableLocationButton => 'Allow location';
+
+  @override
+  String amountRupees(String amount) {
+    return '₹$amount';
+  }
+
+  @override
+  String get shiftTab => 'Shift';
 }

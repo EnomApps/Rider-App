@@ -8,6 +8,7 @@ import '../../../generated/l10n/app_localizations.dart';
 import '../../auth/data/auth_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/rider_failure.dart';
+import '../state/order_controller.dart';
 import '../state/rider_controller.dart';
 import 'home/rider_home_screen.dart';
 import 'onboarding/onboarding_screen.dart';
@@ -368,9 +369,14 @@ Future<void> signOutToLogin(BuildContext context) async {
   final NavigatorState navigator = Navigator.of(context);
   final AuthController auth = context.read<AuthController>();
   final RiderController rider = context.read<RiderController>();
+  final OrderController orders = context.read<OrderController>();
 
   await auth.signOut();
   rider.reset();
+  // Stops the board poll and the position heartbeat as well as dropping the
+  // order. A timer that outlived its session would keep a signed-out rider on
+  // the dispatch map.
+  orders.reset();
 
   navigator.pushNamedAndRemoveUntil(
     AppRoutes.login,

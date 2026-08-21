@@ -49,7 +49,9 @@ entitled to see.
 | Waiting + rejection screens | Done — shows the admin's reason, reopens the wizard |
 | Rider home | Done — duty toggle, deliveries, rating |
 | Profile | Done — read-only, user fields plus KYC status and vehicle |
-| Live order dispatch | **Not built.** No endpoints for it in the spec yet |
+| Live order dispatch | Done — board, accept, pickup, hand back, deliver |
+| Location reporting | Done — position ping doubling as the dispatch heartbeat |
+| Delivery history | Done — past orders, with a full detail screen |
 
 ---
 
@@ -107,13 +109,28 @@ login ──▶ OTP verify ─────────────────�
         │                  │               │                    │             │
         ▼                  ▼               ▼                    ▼             ▼
    rider home        waiting room     reason + retry     onboarding      retry / sign out
-   (duty toggle)     (check again)    (reopens wizard)     wizard
+   (four tabs)       (check again)    (reopens wizard)     wizard
 ```
 
 The gate swaps its **body**, it does not push routes. A rider's stage changes
 underneath them — submitting moves them into the waiting room, an approval
 landing during a pull-to-refresh moves them onto the home screen — and a route
 stack would have to be unwound on every one of those transitions.
+
+The home screen repeats that decision one level down:
+
+```
+rider home
+  ├─ Shift     duty toggle, live-order reminder, deliveries, rating
+  ├─ Orders    the board — polls every 12s while it is the tab in front
+  ├─ Delivery  the order in hand, and the one thing to do about it next
+  └─ History   past deliveries
+```
+
+Four tabs in an `IndexedStack`, for the same reason the gate has none: a shift
+moves between them constantly — accept on the board, work the delivery, back to
+the board — and every one of those would be a route to unwind. Accepting an
+order brings the delivery tab forward on its own.
 
 ---
 
@@ -181,6 +198,92 @@ that verbatim rather than optimistically flipping the switch.
 
 ---
 
+## Live dispatch
+
+Eight endpoints, one screen each side of the accept:
+
+| Endpoint | Where it is called |
+|---|---|
+| `GET /v1/rider/orders/available` | the board, polled every 12s while that tab is in front |
+| `POST /v1/rider/orders/{id}/accept` | the Accept button on a board card |
+| `GET /v1/rider/orders?active=1` | resuming the shift when the home screen appears |
+| `GET /v1/rider/orders/{id}` | the details screen, which completes a partial board entry |
+| `POST /v1/rider/orders/{id}/pickup` | the pickup-code sheet |
+| `POST /v1/rider/orders/{id}/release` | the hand-back sheet |
+| `POST /v1/rider/orders/{id}/deliver` | the Delivered button, behind a confirmation |
+| `POST /v1/rider/location` | the heartbeat, every 25s idle and 10s carrying |
+| `GET /v1/rider/orders` | the history tab |
+
+### The drop address does not exist until the order is yours
+
+`RiderOrderResource` omits `dropoff` on the board and fills it in on accept.
+That is a server decision and the app takes it at face value: `OrderDropoff` is
+nullable on the model, and the board card renders the restaurant alone. A list
+every on-duty rider in the city can poll must not double as a directory of
+where customers live, and a client that cached the field or guessed at it would
+undo that in one release.
+
+### An empty board is five different situations
+
+`meta.can_accept` says which, and each gets its own screen: offline, not
+verified, already carrying an order, no position reported, or genuinely nothing
+to take. Collapsing them into one blank list is the mistake worth naming — an
+offline rider would sit waiting for orders that were never going to arrive.
+
+When the server sends a reason this build does not recognise, the board falls
+back to what the device already knows: a refused location, or a duty status
+that is not `available`. That is a fallback, not a second opinion — the
+server's answer wins whenever there is one.
+
+### Losing the accept race is not an error
+
+First to accept wins, and on a shared board most riders lose most of the time.
+The API answers 422; the app reports it as information, refreshes the list, and
+leaves the rider on the board. Rendering it as a failure would make the normal
+case look broken.
+
+### There is no way past the pickup code
+
+`POST /rider/orders/{id}/pickup` takes the four digits the merchant reads out,
+and there is no "I collected it anyway" escape hatch, because that code is the
+evidence a disputed delivery is settled with. A wrong code lands on the field
+with the sheet still open and the keyboard still up — being told "that did not
+match" while standing at the counter is the moment to ask for it again, not to
+be bounced out to a screen the rider then has to navigate back from.
+
+### Cash gets its own banner, both ways
+
+`collect_cash` is the full total for a cash order and zero for a prepaid one,
+and both cases are stated out loud above the addresses. A prepaid order with no
+banner leaves the rider to infer it, and inferring wrong means asking a customer
+for money they have already paid. The delivery confirmation names the sum for
+the same reason: "did you collect it?" is much easier to wave through than "did
+you collect ₹480?".
+
+### The heartbeat is the tracking
+
+`POST /rider/location` doubles as the presence signal — stop pinging and the
+rider drops out of dispatch when the TTL lapses. So the interval is coarse while
+idle and tight while carrying, permission is asked for at the moment the rider
+presses **Go online** rather than half a minute later, and `tracking: false`
+stops the timer rather than triggering a retry, because it is the server saying
+the rider has clocked off.
+
+The timer is owned by the home screen and dies with it. The gate above can
+replace that screen mid-session — a lapsed licence, a sign-out — and a ping that
+survived would keep reporting a position for a rider the app has already stopped
+showing a shift to.
+
+### What the client never recomputes
+
+`completed_deliveries` after a delivery, and the order's status after any
+action. Both come back from the server and are read from there. Incrementing
+the count locally would drift from the figure the rider is actually paid
+against, and an order the app believes is picked up when the API does not would
+put the rider in front of a Delivered button that 422s.
+
+---
+
 ## Uploads
 
 `ApiClient.upload` sends `multipart/form-data` and takes **bytes**, not a
@@ -228,7 +331,7 @@ flutter test
 flutter analyze
 ```
 
-83 tests. Beyond the customer app's suite, the rider additions cover:
+115 tests. Beyond the customer app's suite, the rider additions cover:
 
 * **the gate** — each of the five stages lands on the right screen, including
   verified-but-not-dispatchable;
@@ -241,34 +344,69 @@ flutter analyze
   throwing, documents keyed by slug decode as well as a plain list, and
   `KycDetails` omits what was never filled in so a partial save cannot blank an
   earlier step;
+* **dispatch** — the board names which of its five empty states it is in, the
+  drop address is absent until the order is accepted, losing the accept race
+  reads as news rather than as a failure, a wrong pickup code keeps the rider
+  in the sheet, the hand-back disappears once the food is collected, a cash
+  order names the amount in the delivery confirmation, and delivering refetches
+  the count rather than incrementing it locally;
+* **the heartbeat** — `tracking: false` stops the timer, a refused fix stops it
+  and records which refusal it was, and carrying an order tightens the ping;
 * **layout** — every wizard step and both decision screens pumped in all 23
   locales, since Flutter surfaces clipped and overlapping text as exceptions.
 
 `FakeRiderRepository` models the API's behaviour rather than returning fixed
 payloads: saving details recomputes `can_submit`, submitting flips the status,
-and only the three KYC fields the real API echoes back are readable.
+only the three KYC fields the real API echoes back are readable, accepting
+moves an order off the board and onto the rider, a pickup checks the code, and
+delivering increments `completed_deliveries` server-side.
+
+Two things about the dispatch tests are worth knowing before writing more.
+`pumpAndSettle` cannot be used anywhere an online rider is on screen — the duty
+beacon pulses for the length of the shift and the shell keeps that tab alive
+behind the others, so there is never a still frame; `_pumpLive` advances a fixed
+span instead. And a periodic timer still alive when a test ends fails it, which
+is the right failure to have: it is the same leak that would keep a signed-out
+rider on the dispatch map.
 
 ---
 
 ## Permissions
 
-Camera and photo-library access are needed for KYC capture.
+Camera and photo-library access are needed for KYC capture, location for
+dispatch.
 
-* **Android** — requested at runtime by `image_picker`; no manifest entry is
-  required on API 23+.
-* **iOS** — `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription`
-  are in `Info.plist`. iOS terminates the app if a picker opens without them,
-  so both are present even though a rider only ever sees one at a time.
+* **Android** — camera and library are requested at runtime by `image_picker`
+  and need no manifest entry on API 23+. Location does:
+  `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` are both declared,
+  because Android 12+ lets a rider grant only the approximate one and an app
+  asking for fine alone is denied outright rather than downgraded.
+  `<queries>` entries for `tel:` and `geo:` are there too — without them
+  Android 11+ answers `canLaunchUrl` false for every dialler and maps app on
+  the device, and the call and directions buttons silently do nothing.
+* **iOS** — `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
+  `NSLocationWhenInUseUsageDescription` are in `Info.plist`, along with
+  `LSApplicationQueriesSchemes` for the same two schemes. iOS terminates the
+  app if a picker opens without its string, so all three are present even
+  though a rider only ever sees one at a time.
+
+**Background location is deliberately not requested.** The heartbeat runs while
+the app is open, which is what a shift looks like; asking for the background
+permission would mean a Play Store review for a capability the app does not
+use.
 
 ---
 
 ## What's next
 
-* **Live dispatch.** The spec has no order endpoints for riders yet — no
-  assignment, acceptance, pickup or delivery confirmation. The home screen is
-  where that plugs in.
-* **Location reporting.** Going online implies the backend can find the rider;
-  there is no endpoint for it in this version of the spec.
+* **Push notification of a new order.** The board is polled, which is what the
+  API offers. A rider with the app backgrounded learns nothing until they open
+  it, and that is the largest remaining gap in the working day.
+* **A map.** Addresses hand off to whatever maps app the device has. An
+  in-app route would keep the rider in one place, at the cost of a maps SDK
+  and a key.
+* **Earnings.** The delivery fee is shown per order and nowhere totalled. There
+  is no payouts endpoint in the spec yet.
 * **Editing after approval.** `PATCH /v1/rider/profile` stays open for name,
   date of birth and vehicle. KYC reference numbers lock on verification by
   design, so changing a licence has to go through support.

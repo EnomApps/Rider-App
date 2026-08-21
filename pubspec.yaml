@@ -42,6 +42,17 @@ dependencies:
   # for the "choose a file" path only.
   file_picker: ^8.1.2
 
+  # Dispatch ranks the board by distance and the customer watches the rider on
+  # a map, so a position is needed while the app is in use. Foreground only —
+  # the heartbeat runs while the rider has the app open, which is what a shift
+  # looks like, and asking for background location would mean a Play Store
+  # review for a capability this app does not use.
+  geolocator: ^14.0.2
+  # Ringing the restaurant or the customer, and handing an address off to
+  # whichever maps app the device has. Both need <queries> on Android and
+  # LSApplicationQueriesSchemes on iOS — see README > Permissions.
+  url_launcher: ^6.3.2
+
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

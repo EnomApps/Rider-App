@@ -99,8 +99,10 @@ class RiderProfile {
     required this.vehicleType,
     required this.kyc,
     required this.dutyStatus,
+    required this.canGoOnline,
     required this.canAcceptOrders,
     required this.completedDeliveries,
+    this.offlineReason,
     this.dateOfBirth,
     this.zoneId,
     this.vehicleNumber,
@@ -117,8 +119,33 @@ class RiderProfile {
   final RiderKycSummary kyc;
   final DutyStatus dutyStatus;
 
-  /// The API's own verdict on whether this rider may be dispatched, and the
-  /// single gate on the main UI. Never recomputed client-side from the KYC
+  /// May this rider go on duty at all? The paperwork question.
+  ///
+  /// True once an admin has verified them and nothing has lapsed since, and it
+  /// stays true while they are offline — which is the whole point, because
+  /// that is exactly when the rider is looking at the Go online button.
+  ///
+  /// This is the gate on the main UI and on the duty toggle. Not
+  /// [canAcceptOrders]: that one folds in `duty_status == available`, so it is
+  /// false for every offline rider no matter how good their papers are, and
+  /// gating the button on it means the button can never unlock itself.
+  final bool canGoOnline;
+
+  /// Why they cannot, in the server's own words, or null when nothing is
+  /// blocking.
+  ///
+  /// The one string in this app rendered verbatim rather than translated. It
+  /// is the same text `POST /v1/rider/duty-status` returns in its 403, so
+  /// showing it as-is is what stops the banner and the error contradicting
+  /// each other — a rider told two different reasons has no idea which to act
+  /// on. See README > Localisation for the cost of that decision.
+  final String? offlineReason;
+
+  /// The API's own verdict on whether this rider may be dispatched **right
+  /// now**, which includes being online already.
+  ///
+  /// Right for the order board and the Accept button, wrong for anything a
+  /// rider touches while offline. Never recomputed client-side from the KYC
   /// status: the server also weighs document expiry and account suspension,
   /// and a client that guesses would eventually guess wrong in the permissive
   /// direction.
@@ -160,6 +187,17 @@ class RiderProfile {
           : RiderKycSummary.empty,
       dutyStatus: DutyStatus.fromWire(json['duty_status']),
       canAcceptOrders: json['can_accept_orders'] as bool? ?? false,
+      // Falls back to `can_accept_orders` rather than to a guess. A server
+      // that predates this field is the old contract, where that was the only
+      // verdict on offer, so this behaves exactly as the app did before it —
+      // conservatively, and never wrong in the permissive direction. Deriving
+      // it from `kyc.verified` instead would put a rider with a lapsed licence
+      // on the road the moment the backend rolled back.
+      canGoOnline: json['can_go_online'] as bool? ??
+          (json['can_accept_orders'] as bool? ?? false),
+      // Through `nullableString`: this API sends the literal string "null" for
+      // unset text fields, and a banner reading "null" is worse than no banner.
+      offlineReason: nullableString(json['offline_reason']),
       completedDeliveries: _int(json['completed_deliveries']),
       rating: nullableString(json['rating']),
       createdAt: DateTime.tryParse('${json['created_at']}'),

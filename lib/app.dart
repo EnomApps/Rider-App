@@ -10,6 +10,7 @@ import 'core/services/preferences_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_typography.dart';
 import 'features/auth/state/auth_controller.dart';
+import 'features/rider/state/order_controller.dart';
 import 'features/rider/state/rider_controller.dart';
 import 'generated/l10n/app_localizations.dart';
 
@@ -19,6 +20,7 @@ class NexmileRiderApp extends StatelessWidget {
     required this.preferences,
     required this.authController,
     required this.riderController,
+    required this.orderController,
   });
 
   final PreferencesService preferences;
@@ -31,6 +33,11 @@ class NexmileRiderApp extends StatelessWidget {
   /// refresh the same token pair.
   final RiderController riderController;
 
+  /// The working half of a shift: the board, the order in hand, and the
+  /// position heartbeat. Built alongside the two above, sharing their API
+  /// client so its timers queue behind the same refresh lock.
+  final OrderController orderController;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -40,6 +47,7 @@ class NexmileRiderApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<AuthController>.value(value: authController),
         ChangeNotifierProvider<RiderController>.value(value: riderController),
+        ChangeNotifierProvider<OrderController>.value(value: orderController),
       ],
       child: Consumer<LocaleController>(
         builder: (BuildContext context, LocaleController controller, _) {

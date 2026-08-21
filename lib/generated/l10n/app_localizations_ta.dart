@@ -546,4 +546,252 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get docBankProof => 'ரத்து செய்யப்பட்ட காசோலை அல்லது வங்கி அறிக்கை';
+
+  @override
+  String get ordersTab => 'ஆர்டர்கள்';
+
+  @override
+  String get deliveryTab => 'டெலிவரி';
+
+  @override
+  String get historyTab => 'வரலாறு';
+
+  @override
+  String get orderBoardTitle => 'அருகிலுள்ள ஆர்டர்கள்';
+
+  @override
+  String get orderBoardSubtitle => 'அருகிலுள்ள உணவகம் முதலில். பட்டியல் தானாகவே புதுப்பிக்கும்.';
+
+  @override
+  String orderNumberLabel(String number) {
+    return 'ஆர்டர் $number';
+  }
+
+  @override
+  String get pickupLabel => 'எடுக்க வேண்டிய இடம்';
+
+  @override
+  String get dropoffLabel => 'சேர்க்க வேண்டிய இடம்';
+
+  @override
+  String distanceMetres(String metres) {
+    return '$metres மீ';
+  }
+
+  @override
+  String distanceKilometres(String km) {
+    return '$km கிமீ';
+  }
+
+  @override
+  String itemCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count பொருட்கள்',
+      one: '1 பொருள்',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get earningsLabel => 'உங்கள் வருமானம்';
+
+  @override
+  String get collectCashLabel => 'பணம் வாங்குங்கள்';
+
+  @override
+  String get prepaidLabel => 'ஆன்லைனில் செலுத்தப்பட்டது';
+
+  @override
+  String collectAtDoor(String amount) {
+    return 'வாடிக்கையாளரிடம் $amount வாங்குங்கள்';
+  }
+
+  @override
+  String get nothingToCollect => 'ஏற்கெனவே பணம் செலுத்தப்பட்டுவிட்டது. பணம் கேட்க வேண்டாம்.';
+
+  @override
+  String get acceptOrder => 'ஏற்கவும்';
+
+  @override
+  String get viewOrder => 'பார்க்க';
+
+  @override
+  String get orderAccepted => 'ஆர்டர் ஏற்கப்பட்டது. உணவகத்திற்குச் செல்லுங்கள்.';
+
+  @override
+  String get orderAlreadyTaken => 'இந்த ஆர்டரை வேறு ஒரு ரைடர் எடுத்துவிட்டார். இதோ புதிய பட்டியல்.';
+
+  @override
+  String get orderNoLongerYours => 'இந்த ஆர்டர் இனி உங்களுடையது அல்ல.';
+
+  @override
+  String get boardEmptyTitle => 'இப்போது ஆர்டர்கள் இல்லை';
+
+  @override
+  String get boardEmptyBody => 'ஆன்லைனில் இருங்கள். உணவகங்கள் பரபரப்பாகும்போது பட்டியல் தானாகவே நிரம்பும்.';
+
+  @override
+  String get boardOfflineTitle => 'நீங்கள் ஆஃப்லைனில் இருக்கிறீர்கள்';
+
+  @override
+  String get boardOfflineBody => 'ஆர்டர்கள் வர ஆன்லைனுக்கு வாருங்கள்.';
+
+  @override
+  String get boardBusyTitle => 'முதலில் உங்கள் டெலிவரியை முடியுங்கள்';
+
+  @override
+  String get boardBusyBody => 'இதைச் சேர்த்த பிறகு அடுத்த ஆர்டரை எடுக்கலாம்.';
+
+  @override
+  String get boardNoLocationTitle => 'உங்களைக் கண்டறிய முடியவில்லை';
+
+  @override
+  String get boardNoLocationBody => 'உணவகம் எவ்வளவு அருகில் இருக்கிறது என்பதை வைத்தே ஆர்டர்கள் வரிசைப்படுத்தப்படுகின்றன. அதனால் உங்கள் இருப்பிடம் தேவை.';
+
+  @override
+  String get boardNotVerifiedTitle => 'இன்னும் ரைடு செய்ய அனுமதி இல்லை';
+
+  @override
+  String get activeDeliveryTitle => 'உங்கள் டெலிவரி';
+
+  @override
+  String get headToRestaurant => 'உணவகத்திற்குச் செல்லுங்கள்';
+
+  @override
+  String get deliverToCustomer => 'வாடிக்கையாளரிடம் சேர்க்கவும்';
+
+  @override
+  String get noActiveDeliveryTitle => 'கையில் ஆர்டர் இல்லை';
+
+  @override
+  String get noActiveDeliveryBody => 'பட்டியலிலிருந்து ஒரு ஆர்டரை ஏற்றால் அது இங்கே தோன்றும்.';
+
+  @override
+  String get confirmPickupButton => 'நான் எடுத்துவிட்டேன்';
+
+  @override
+  String get pickupCodeTitle => 'பிக்அப் குறியீடு';
+
+  @override
+  String get pickupCodeSubtitle => 'உணவகத்திடம் குறியீட்டைக் கேட்டு இங்கே தட்டச்சு செய்யுங்கள்.';
+
+  @override
+  String get pickupCodeHint => 'குறியீடு';
+
+  @override
+  String get wrongPickupCode => 'இந்தக் குறியீடு பொருந்தவில்லை. உணவகத்திடம் மீண்டும் கேளுங்கள்.';
+
+  @override
+  String get pickupConfirmed => 'எடுத்துவிட்டீர்கள். இப்போது வாடிக்கையாளரிடம் சேருங்கள்.';
+
+  @override
+  String get confirmDeliveryButton => 'சேர்த்துவிட்டேன்';
+
+  @override
+  String get confirmDeliveryTitle => 'டெலிவரியை உறுதிப்படுத்தவும்';
+
+  @override
+  String get confirmDeliveryBody => 'ஆர்டர் வாடிக்கையாளர் கையில் சேர்ந்த பிறகுதான் உறுதிப்படுத்துங்கள்.';
+
+  @override
+  String confirmDeliveryCashBody(String amount) {
+    return 'முதலில் $amount வாங்கிவிட்டு, பிறகு உறுதிப்படுத்துங்கள்.';
+  }
+
+  @override
+  String get deliveryConfirmed => 'சேர்த்துவிட்டீர்கள். நன்றி, நீங்கள் மீண்டும் ஆன்லைனில் இருக்கிறீர்கள்.';
+
+  @override
+  String get releaseOrderButton => 'திருப்பிக் கொடுங்கள்';
+
+  @override
+  String get releaseOrderTitle => 'இந்த ஆர்டரைத் திருப்பிக் கொடுக்கவா?';
+
+  @override
+  String get releaseOrderBody => 'இது வேறு ரைடருக்காக பட்டியலுக்குத் திரும்பும். உணவை எடுப்பதற்கு முன் மட்டுமே இதைச் செய்ய முடியும்.';
+
+  @override
+  String get releaseReasonHint => 'காரணம் (விருப்பம்)';
+
+  @override
+  String get orderReleased => 'திருப்பிக் கொடுத்துவிட்டீர்கள். மற்ற ரைடர்களுக்கு இது மீண்டும் கிடைக்கும்.';
+
+  @override
+  String get finishCurrentOrderFirst => 'முதலில் தற்போதைய ஆர்டரை முடியுங்கள் அல்லது திருப்பிக் கொடுங்கள்.';
+
+  @override
+  String get callRestaurant => 'உணவகத்தை அழைக்க';
+
+  @override
+  String get callCustomer => 'வாடிக்கையாளரை அழைக்க';
+
+  @override
+  String get openInMaps => 'வழி காட்டு';
+
+  @override
+  String get customerNoteLabel => 'வாடிக்கையாளரின் குறிப்பு';
+
+  @override
+  String get orderItemsLabel => 'பையில் என்ன இருக்கிறது';
+
+  @override
+  String get orderDetailsTitle => 'ஆர்டர் விவரங்கள்';
+
+  @override
+  String get historyTitle => 'முந்தைய டெலிவரிகள்';
+
+  @override
+  String get historyEmptyTitle => 'இதுவரை டெலிவரி இல்லை';
+
+  @override
+  String get historyEmptyBody => 'நீங்கள் முடித்த ஆர்டர்கள் இங்கே பட்டியலிடப்படும்.';
+
+  @override
+  String get orderDelivered => 'சேர்க்கப்பட்டது';
+
+  @override
+  String get orderCancelled => 'ரத்து செய்யப்பட்டது';
+
+  @override
+  String get orderPreparing => 'தயாராகிக் கொண்டிருக்கிறது';
+
+  @override
+  String get orderReadyForPickup => 'எடுக்கத் தயார்';
+
+  @override
+  String get orderAssigned => 'உங்களுக்கு ஒதுக்கப்பட்டது';
+
+  @override
+  String get orderPickedUp => 'எடுக்கப்பட்டது';
+
+  @override
+  String get orderOutForDelivery => 'வழியில்';
+
+  @override
+  String get trackingOn => 'இருப்பிடம் பகிரப்படுகிறது';
+
+  @override
+  String get locationUnavailableMessage => 'உங்கள் இருப்பிடத்தைப் படிக்க முடியவில்லை. இருப்பிடத்தை இயக்கி Nexmile Rider-க்கு அனுமதி கொடுங்கள்.';
+
+  @override
+  String get locationPermissionTitle => 'இருப்பிடம் தேவை';
+
+  @override
+  String get locationPermissionBody => 'நீங்கள் எவ்வளவு அருகில் இருக்கிறீர்கள் என்பதை வைத்தே ஆர்டர்கள் ஒதுக்கப்படுகின்றன, வாடிக்கையாளரும் வரைபடத்தில் உங்களைப் பார்க்கிறார். ஆன்லைனுக்கு வர இருப்பிட அனுமதி கொடுங்கள்.';
+
+  @override
+  String get locationSettingsButton => 'அமைப்புகளைத் திற';
+
+  @override
+  String get enableLocationButton => 'இருப்பிட அனுமதி கொடு';
+
+  @override
+  String amountRupees(String amount) {
+    return '₹$amount';
+  }
+
+  @override
+  String get shiftTab => 'ஷிஃப்ட்';
 }

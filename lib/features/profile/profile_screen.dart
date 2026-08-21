@@ -13,6 +13,7 @@ import '../auth/data/auth_user.dart';
 import '../auth/state/auth_controller.dart';
 import '../rider/data/kyc_models.dart';
 import '../rider/data/rider_profile.dart';
+import '../rider/state/order_controller.dart';
 import '../rider/state/rider_controller.dart';
 
 /// Rider profile, backed by `GET /v1/profile` and the already-loaded
@@ -230,11 +231,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final AppLocalizations l10n = AppLocalizations.of(context);
 
     final RiderController rider = context.read<RiderController>();
+    final OrderController orders = context.read<OrderController>();
 
     await context.read<AuthController>().signOut();
     // Dropped before navigating, so the next rider to sign in on this device
     // never sees the previous one's KYC file on the way to their own.
     rider.reset();
+    // Stops the board poll and the position heartbeat as well as dropping
+    // the order. A timer that outlived its session would keep a signed-out
+    // rider on the dispatch map.
+    orders.reset();
     if (!mounted) return;
 
     navigator.pushNamedAndRemoveUntil(

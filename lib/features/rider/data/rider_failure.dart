@@ -34,6 +34,29 @@ enum RiderFailure {
   /// The upload was refused: wrong type, too large, or the server rejected it.
   uploadRejected,
 
+  /// 422 on `accept` — another rider got there first.
+  ///
+  /// Routine on a shared board rather than a fault, so the board reports it as
+  /// information and refreshes itself instead of showing an error.
+  orderTaken,
+
+  /// 422 on `pickup` — the four digits did not match. The rider retypes; they
+  /// are not bounced out of the screen.
+  wrongPickupCode,
+
+  /// 404 — the order is not this rider's, or no longer exists. Whatever the
+  /// screen was showing is stale and the only sane move is back to the board.
+  orderGone,
+
+  /// 422 on `duty-status` while carrying an order — the API refuses to take a
+  /// rider offline mid-delivery.
+  finishCurrentOrder,
+
+  /// The device would not give a position: permission refused, or location
+  /// services switched off. Dispatch ranks by distance, so without one the
+  /// board comes back empty and the rider needs telling why.
+  locationUnavailable,
+
   /// The session could not be restored or refreshed.
   sessionExpired,
 
@@ -62,6 +85,16 @@ extension RiderFailureMessage on RiderFailure {
         return l10n.completeEverythingBeforeSubmitting;
       case RiderFailure.uploadRejected:
         return l10n.uploadFailed;
+      case RiderFailure.orderTaken:
+        return l10n.orderAlreadyTaken;
+      case RiderFailure.wrongPickupCode:
+        return l10n.wrongPickupCode;
+      case RiderFailure.orderGone:
+        return l10n.orderNoLongerYours;
+      case RiderFailure.finishCurrentOrder:
+        return l10n.finishCurrentOrderFirst;
+      case RiderFailure.locationUnavailable:
+        return l10n.locationUnavailableMessage;
       case RiderFailure.sessionExpired:
         return l10n.sessionExpired;
       case RiderFailure.network:
@@ -84,6 +117,54 @@ extension RiderFailureMessage on RiderFailure {
 /// share a status code. The message is used to *choose a translated string*,
 /// never rendered, and an unrecognised wording degrades to the more common of
 /// the two rather than throwing.
+/// The dispatch endpoints' own reading of a failure.
+///
+/// They share `riderFailureFrom` for everything transport-level, and differ
+/// only in what a 422 and a 404 mean. Both are routine here rather than
+/// exceptional: on a board every on-duty rider polls, losing a race is the
+/// expected outcome most of the time, and an order that has moved on is a stale
+/// screen rather than a fault. [validationFailure] is what this particular call
+/// means by 422 — `orderTaken` for accept, `wrongPickupCode` for pickup.
+RiderFailure orderFailureFrom(
+  ApiException error, {
+  required RiderFailure validationFailure,
+}) {
+  // Checked before the kind switch: a 404 arrives as `server`, which would
+  // otherwise read as "something broke" when it means the order is not this
+  // rider's any more.
+  if (error.statusCode == 404) return RiderFailure.orderGone;
+
+  // `accept` answers 422 to two quite different things: someone else got there
+  // first, and this rider is already carrying something. Telling a rider
+  // "another rider took this one" when they simply have an order in hand sends
+  // them back to the board to try again, which is the one thing that cannot
+  // work. The English is read to *choose* a translated string, never rendered,
+  // and an unfamiliar wording falls through to the caller's default — the same
+  // approach the 403 split above takes.
+  if (error.isValidation &&
+      validationFailure == RiderFailure.orderTaken &&
+      _mentionsCurrentDelivery(error)) {
+    return RiderFailure.finishCurrentOrder;
+  }
+
+  return riderFailureFrom(error, validationFailure: validationFailure);
+}
+
+/// True when a 422 is about the order already in hand rather than a lost race.
+///
+/// Reads the `rider` key the API puts the message under as well as the
+/// top-level `message`, since Laravel populates both and either could be the
+/// one this build sees.
+bool _mentionsCurrentDelivery(ApiException error) {
+  final String haystack = <String>[
+    error.message ?? '',
+    ...error.errors.values.expand((List<String> messages) => messages),
+  ].join(' ').toLowerCase();
+
+  return haystack.contains('current delivery') ||
+      haystack.contains('current order');
+}
+
 RiderFailure riderFailureFrom(
   ApiException error, {
   RiderFailure validationFailure = RiderFailure.invalidDetails,

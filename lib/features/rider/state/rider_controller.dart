@@ -30,12 +30,14 @@ enum RiderStage {
   /// Turned down. The wizard reopens with the reason at the top.
   rejected,
 
-  /// `can_accept_orders` is true. The main UI is unlocked.
+  /// `can_go_online` is true. The main UI is unlocked, whether or not the
+  /// rider has actually clocked on yet.
   ready,
 
-  /// Verified on paper but the API still will not dispatch this rider —
-  /// a lapsed licence or insurance, or a suspended account. The home screen
-  /// opens in a blocked state rather than pretending the toggle will work.
+  /// Verified on paper but the API still will not let this rider work —
+  /// a lapsed licence or insurance, or a suspended account. `offline_reason`
+  /// says which, and the screen shows it rather than pretending the toggle
+  /// will work.
   blocked,
 }
 
@@ -79,6 +81,14 @@ class RiderController extends ChangeNotifier {
   /// problem.
   RiderFailure? _loadFailure;
 
+  /// The server's own wording from the last refused `duty-status` call.
+  ///
+  /// The API returns the same sentence here that it puts in
+  /// `profile.offline_reason`, so keeping it lets the toggle's error and the
+  /// banner above it say one thing rather than two. Cleared the moment a duty
+  /// call succeeds — a stale reason is worse than none.
+  String? _dutyRefusal;
+
   RiderProfile? get profile => _profile;
 
   KycOverview get kyc => _kyc;
@@ -92,6 +102,20 @@ class RiderController extends ChangeNotifier {
   Map<String, List<String>> get fieldErrors => _fieldErrors;
 
   RiderFailure? get loadFailure => _loadFailure;
+
+  /// Why the API last refused to put this rider on duty, verbatim.
+  ///
+  /// Prefer [RiderProfile.offlineReason] when there is one — it is the current
+  /// state rather than the last event. This is what fills the gap between a
+  /// refusal and the next profile fetch.
+  String? get dutyRefusal => _dutyRefusal;
+
+  /// The reason the rider cannot work, from whichever source has one.
+  ///
+  /// The profile's answer wins: it is a standing condition, while a refusal is
+  /// a thing that happened once. Null when nothing is blocking, which is the
+  /// ordinary case.
+  String? get offlineReason => _profile?.offlineReason ?? _dutyRefusal;
 
   bool isUploading(String type) => _uploading.contains(type);
 
@@ -128,7 +152,26 @@ class RiderController extends ChangeNotifier {
     // The API's own verdict wins over everything below it. It weighs document
     // expiry and account status as well as the KYC decision, so a client that
     // second-guessed it would eventually be wrong in the permissive direction.
-    if (profile.canAcceptOrders) return RiderStage.ready;
+    //
+    // `can_go_online`, not `can_accept_orders`. The second folds in
+    // `duty_status == available`, so it is false for every rider who is not
+    // already working — and gating the home screen on it locked approved
+    // riders out of the very screen holding the button that would have made it
+    // true. `can_go_online` answers the question actually being asked here:
+    // may this rider work at all?
+    if (profile.canGoOnline) return RiderStage.ready;
+
+    // A rider who is already on duty keeps the home screen even once the
+    // server says they may no longer go on duty — a licence expiring at four
+    // in the afternoon, most often. Sending them to the blocked screen would
+    // strand them: it has no duty toggle, so they would be left marked
+    // `available` server-side with no way to clock off from the app.
+    //
+    // Not a permissive guess. Dispatch eligibility is untouched — the board
+    // and the Accept button still read `can_accept_orders`, which is false —
+    // so all this buys them is the screen with the Go offline button on it,
+    // and the banner above it explaining why.
+    if (profile.dutyStatus != DutyStatus.offline) return RiderStage.ready;
 
     switch (profile.kyc.status) {
       case KycStatus.verified:
@@ -244,6 +287,7 @@ class RiderController extends ChangeNotifier {
         vehicleType: VehicleType.unknown,
         kyc: RiderKycSummary.empty,
         dutyStatus: DutyStatus.offline,
+        canGoOnline: false,
         canAcceptOrders: false,
         completedDeliveries: 0,
       );
@@ -380,10 +424,26 @@ class RiderController extends ChangeNotifier {
   /// A 403 here is meaningful rather than exceptional: the API refuses to
   /// dispatch a rider whose licence or insurance has lapsed, and that is
   /// exactly what the home screen needs to say out loud.
-  Future<RiderFailure?> setDutyStatus(DutyStatus status) {
-    return _save(() async {
-      _profile = await _repository.setDutyStatus(status);
-    });
+  ///
+  /// A 422 is meaningful too, and means only one thing on this endpoint: the
+  /// rider is carrying an order and cannot clock off until it is delivered or
+  /// handed back. The generic "check the highlighted fields" would be
+  /// nonsense on a screen with no fields.
+  Future<RiderFailure?> setDutyStatus(DutyStatus status) async {
+    final RiderFailure? failure = await _save(
+      onValidation: RiderFailure.finishCurrentOrder,
+      () async {
+        _profile = await _repository.setDutyStatus(status);
+        // Whatever was blocking them plainly is not any more.
+        _dutyRefusal = null;
+      },
+      // A 403 here carries the server's own sentence, and it is the same one
+      // `offline_reason` will hold on the next fetch. Kept so the toggle can
+      // show it immediately rather than waiting a round trip to agree with the
+      // banner beside it.
+      captureServerMessage: true,
+    );
+    return failure;
   }
 
   // --- Plumbing ------------------------------------------------------------
@@ -393,6 +453,7 @@ class RiderController extends ChangeNotifier {
   Future<RiderFailure?> _save(
     Future<void> Function() action, {
     RiderFailure onValidation = RiderFailure.invalidDetails,
+    bool captureServerMessage = false,
   }) async {
     if (_isSaving) return RiderFailure.unknown;
     _isSaving = true;
@@ -404,6 +465,13 @@ class RiderController extends ChangeNotifier {
       return null;
     } on ApiException catch (error) {
       if (error.isValidation) _fieldErrors = error.errors;
+      // Only where the caller asked for it. Everywhere else the server's
+      // English is used to *choose* a translated string and never rendered —
+      // see rider_failure.dart. Duty status is the documented exception.
+      if (captureServerMessage &&
+          error.kind == ApiErrorKind.forbidden) {
+        _dutyRefusal = error.message;
+      }
       return riderFailureFrom(error, validationFailure: onValidation);
     } catch (_) {
       return RiderFailure.unknown;
@@ -425,6 +493,7 @@ class RiderController extends ChangeNotifier {
     _uploading.clear();
     _fieldErrors = const <String, List<String>>{};
     _loadFailure = null;
+    _dutyRefusal = null;
     notifyListeners();
   }
 }

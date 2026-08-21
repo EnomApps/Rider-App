@@ -8,7 +8,9 @@ import 'features/auth/data/auth_repository.dart';
 import 'features/auth/data/auth_session.dart';
 import 'features/auth/data/token_store.dart';
 import 'features/auth/state/auth_controller.dart';
+import 'features/rider/data/location_service.dart';
 import 'features/rider/data/rider_repository.dart';
+import 'features/rider/state/order_controller.dart';
 import 'features/rider/state/rider_controller.dart';
 
 Future<void> main() async {
@@ -50,8 +52,18 @@ Future<void> main() async {
   // A rider opening the app cold fires `/rider/profile` and `/rider/kyc` at
   // once; two clients would mean two refreshes, which the API treats as a
   // stolen token and answers by signing the rider out of every device.
+  final ApiRiderRepository riderRepository = ApiRiderRepository(apiClient);
+
   final RiderController riderController = RiderController(
-    repository: ApiRiderRepository(apiClient),
+    repository: riderRepository,
+  );
+
+  // Shares the repository, and therefore the client, for the same reason: the
+  // board poll and the position heartbeat run alongside every other rider call
+  // and must queue behind the same refresh lock rather than racing it.
+  final OrderController orderController = OrderController(
+    repository: riderRepository,
+    location: const GeolocatorLocationService(),
   );
 
   runApp(
@@ -59,6 +71,7 @@ Future<void> main() async {
       preferences: preferences,
       authController: authController,
       riderController: riderController,
+      orderController: orderController,
     ),
   );
 }

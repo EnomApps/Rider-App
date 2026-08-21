@@ -99,7 +99,10 @@ class ReviewStep extends StatelessWidget {
           label: l10n.stepDocumentsTitle,
           value: l10n.documentsProgress(
             kyc.uploadedCount,
-            kyc.allowedDocuments.length,
+            // The *required* six, not the allowed eight. Bank proof and
+            // profile photo are optional and do not gate submission, so
+            // counting them showed "6 of 8" to a rider who had finished.
+            kyc.requiredCount,
           ),
           onTap: () => step.goTo(OnboardingStep.documents),
         ),

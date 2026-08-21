@@ -25,13 +25,20 @@ import 'package:nexmile_rider/features/auth/state/auth_controller.dart';
 import 'package:nexmile_rider/features/rider/data/document_catalogue.dart';
 import 'package:nexmile_rider/features/rider/data/kyc_models.dart';
 import 'package:nexmile_rider/features/rider/data/kyc_validators.dart';
+import 'package:nexmile_rider/features/rider/data/location_service.dart';
+import 'package:nexmile_rider/features/rider/data/order_models.dart';
 import 'package:nexmile_rider/features/rider/data/picked_document.dart';
 import 'package:nexmile_rider/features/rider/data/rider_failure.dart';
 import 'package:nexmile_rider/features/rider/data/rider_profile.dart';
 import 'package:nexmile_rider/features/rider/data/rider_repository.dart';
 import 'package:nexmile_rider/features/rider/presentation/home/rider_home_screen.dart';
 import 'package:nexmile_rider/features/rider/presentation/onboarding/onboarding_screen.dart';
+import 'package:nexmile_rider/features/rider/presentation/orders/active_delivery_screen.dart';
+import 'package:nexmile_rider/features/rider/presentation/orders/order_board_screen.dart';
+import 'package:nexmile_rider/features/rider/presentation/orders/widgets/order_card.dart';
+import 'package:nexmile_rider/features/rider/presentation/orders/widgets/pickup_code_sheet.dart';
 import 'package:nexmile_rider/features/rider/presentation/review/kyc_decision_screen.dart';
+import 'package:nexmile_rider/features/rider/state/order_controller.dart';
 import 'package:nexmile_rider/features/rider/state/rider_controller.dart';
 import 'package:nexmile_rider/features/language/language_screen.dart';
 import 'package:nexmile_rider/features/profile/profile_screen.dart';
@@ -178,7 +185,7 @@ class FakeAuthRepository implements AuthRepository {
 class FakeRiderRepository implements RiderRepository {
   FakeRiderRepository({
     this.kycStatus = KycStatus.pending,
-    this.canAcceptOrders = false,
+    this.canGoOnline = false,
     this.fullName = '',
     this.vehicleType = VehicleType.unknown,
     List<String>? uploaded,
@@ -186,7 +193,12 @@ class FakeRiderRepository implements RiderRepository {
   }) : _uploaded = <String>{...?uploaded};
 
   KycStatus kycStatus;
-  bool canAcceptOrders;
+
+  /// May this rider work at all — the paperwork verdict.
+  ///
+  /// Named as the constructor argument `canAcceptOrders` used to be, because
+  /// that is the question every existing test was actually asking.
+  bool canGoOnline;
   String fullName;
   VehicleType vehicleType;
   String? vehicleNumber;
@@ -200,6 +212,12 @@ class FakeRiderRepository implements RiderRepository {
   DateTime? insuranceExpiry;
 
   String? rejectionReason;
+
+  /// The server's own sentence for why this rider cannot work, or null when
+  /// nothing is blocking. Rendered verbatim by the app, so the fake supplies a
+  /// realistic one rather than a placeholder.
+  String? offlineReason;
+
   DutyStatus dutyStatus = DutyStatus.offline;
   bool documentsExpired = false;
 
@@ -243,8 +261,14 @@ class FakeRiderRepository implements RiderRepository {
           insuranceExpiry: insuranceExpiry,
         ),
         dutyStatus: dutyStatus,
-        canAcceptOrders: canAcceptOrders,
-        completedDeliveries: 12,
+        canGoOnline: canGoOnline,
+        // The live API folds duty status into this one, which is exactly why
+        // it could never gate the Go online button: it is false for every
+        // rider who is not already online. Modelled here so a test cannot pass
+        // against a fake that is kinder than the server.
+        canAcceptOrders: canGoOnline && dutyStatus == DutyStatus.available,
+        offlineReason: offlineReason,
+        completedDeliveries: completedDeliveries,
         rating: '4.8',
       );
 
@@ -354,6 +378,289 @@ class FakeRiderRepository implements RiderRepository {
     kycStatus = KycStatus.submitted;
     return kyc();
   }
+
+  // --- Dispatch ------------------------------------------------------------
+  //
+  // Modelled the same way as the KYC half: accepting moves an order off the
+  // board and onto the rider, a pickup checks the code, delivering clears the
+  // slot and increments the count. Fixed payloads would let a screen pass a
+  // test while the state machine behind it was wrong.
+
+  /// What is on the board, before eligibility is considered.
+  List<RiderOrder> boardOrders = <RiderOrder>[];
+
+  /// The order this rider is carrying.
+  RiderOrder? assigned;
+
+  /// What the merchant reads out. A pickup with any other value is a 422 on
+  /// `pickup_code`, exactly as the API answers.
+  String pickupCode = '4321';
+
+  int completedDeliveries = 12;
+
+  int locationPings = 0;
+  double? lastLatitude;
+  double? lastLongitude;
+
+  ApiException? acceptError;
+  ApiException? pickupError;
+  ApiException? boardError;
+  ApiException? locationError;
+
+  /// True once a position has been reported. Dispatch cannot rank a board by
+  /// distance without one, so until it is true the board comes back empty with
+  /// `can_accept: no_location` — the case a naive implementation shows as
+  /// "no orders right now".
+  bool hasReportedPosition = false;
+
+  @override
+  Future<bool> sendLocation({
+    required double latitude,
+    required double longitude,
+    double? accuracyMetres,
+  }) async {
+    final ApiException? error = locationError;
+    if (error != null) throw error;
+
+    locationPings++;
+    lastLatitude = latitude;
+    lastLongitude = longitude;
+
+    // An offline rider is answered with `tracking: false` rather than an
+    // error — the client is expected to stop its timer, not to retry.
+    if (dutyStatus != DutyStatus.available) return false;
+
+    hasReportedPosition = true;
+    return true;
+  }
+
+  @override
+  Future<OrderBoard> availableOrders() async {
+    final ApiException? error = boardError;
+    if (error != null) throw error;
+
+    if (!canGoOnline) {
+      return const OrderBoard(
+        orders: <RiderOrder>[],
+        availability: BoardAvailability.notVerified,
+      );
+    }
+    if (dutyStatus != DutyStatus.available) {
+      return const OrderBoard(
+        orders: <RiderOrder>[],
+        availability: BoardAvailability.offline,
+      );
+    }
+    if (assigned != null) {
+      return const OrderBoard(
+        orders: <RiderOrder>[],
+        availability: BoardAvailability.onOrder,
+      );
+    }
+    if (!hasReportedPosition) {
+      return const OrderBoard(
+        orders: <RiderOrder>[],
+        availability: BoardAvailability.noLocation,
+      );
+    }
+    return OrderBoard(
+      orders: List<RiderOrder>.unmodifiable(boardOrders),
+      availability: BoardAvailability.available,
+    );
+  }
+
+  @override
+  Future<RiderOrder?> activeOrder() async => assigned;
+
+  @override
+  Future<List<RiderOrder>> orderHistory({int perPage = 20}) async {
+    return <RiderOrder>[
+      if (assigned != null) assigned!,
+      ..._delivered,
+    ];
+  }
+
+  final List<RiderOrder> _delivered = <RiderOrder>[];
+
+  @override
+  Future<RiderOrder> order(String orderId) async {
+    for (final RiderOrder candidate in <RiderOrder>[
+      if (assigned != null) assigned!,
+      ...boardOrders,
+      ..._delivered,
+    ]) {
+      if (candidate.id == orderId) return candidate;
+    }
+    throw const ApiException(kind: ApiErrorKind.server, statusCode: 404);
+  }
+
+  @override
+  Future<RiderOrder> acceptOrder(String orderId) async {
+    final ApiException? error = acceptError;
+    if (error != null) throw error;
+
+    final int index =
+        boardOrders.indexWhere((RiderOrder o) => o.id == orderId);
+    // Gone from the board means another rider was quicker. The API answers 422
+    // rather than 404, and the board is expected to treat it as information.
+    if (index < 0) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        statusCode: 422,
+        message: 'Another rider took this order',
+      );
+    }
+
+    final RiderOrder taken = boardOrders.removeAt(index);
+    assigned = _copyWith(taken, status: OrderStatus.assigned, withDropoff: true);
+    return assigned!;
+  }
+
+  @override
+  Future<RiderOrder> confirmPickup(String orderId, String code) async {
+    final ApiException? error = pickupError;
+    if (error != null) throw error;
+
+    if (code != pickupCode) {
+      throw const ApiException(
+        kind: ApiErrorKind.validation,
+        statusCode: 422,
+        errors: <String, List<String>>{
+          'pickup_code': <String>['The pickup code is incorrect.'],
+        },
+      );
+    }
+
+    assigned = _copyWith(assigned!, status: OrderStatus.pickedUp);
+    return assigned!;
+  }
+
+  @override
+  Future<RiderOrder> releaseOrder(String orderId, {String? reason}) async {
+    final RiderOrder held = assigned!;
+    // Once the food is collected the API refuses — it has to be delivered.
+    if (held.status.isCollected) {
+      throw const ApiException(kind: ApiErrorKind.validation, statusCode: 422);
+    }
+    final RiderOrder back =
+        _copyWith(held, status: OrderStatus.readyForPickup);
+    boardOrders = <RiderOrder>[...boardOrders, back];
+    assigned = null;
+    return back;
+  }
+
+  @override
+  Future<RiderOrder> confirmDelivery(String orderId) async {
+    final RiderOrder done =
+        _copyWith(assigned!, status: OrderStatus.delivered);
+    _delivered.insert(0, done);
+    assigned = null;
+    // The server increments this and puts the rider back on `available`, which
+    // is why the app refetches the profile rather than counting locally.
+    completedDeliveries++;
+    dutyStatus = DutyStatus.available;
+    return done;
+  }
+
+  static RiderOrder _copyWith(
+    RiderOrder order, {
+    required OrderStatus status,
+    bool withDropoff = false,
+  }) {
+    return RiderOrder(
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: status,
+      statusLabel: status.name,
+      pickup: order.pickup,
+      // The drop address is withheld until the order is taken, so accepting is
+      // the moment it appears — the fake has to add it at exactly that point or
+      // the delivery screen would test against data the board never had.
+      dropoff: withDropoff ? _testDropoff : order.dropoff,
+      deliveryDistanceMetres: order.deliveryDistanceMetres,
+      itemCount: order.itemCount,
+      items: order.items,
+      orderValue: order.orderValue,
+      deliveryFee: order.deliveryFee,
+      collectCash: order.collectCash,
+      pickupCodeRequired: order.pickupCodeRequired,
+      customerNote: order.customerNote,
+      placedAt: order.placedAt,
+    );
+  }
+}
+
+/// Never returns a position on its own — the tests drive it.
+///
+/// A real fix on a test runner would be a machine's own location, which is
+/// both meaningless for a delivery in Madurai and different on every CI box.
+class FakeLocationService implements LocationService {
+  FakeLocationService({this.denial, this.position = _testPosition});
+
+  /// Set to make every call fail the way a refused permission does.
+  LocationDenial? denial;
+
+  RiderPosition position;
+
+  int permissionChecks = 0;
+  int fixes = 0;
+
+  static const RiderPosition _testPosition =
+      RiderPosition(latitude: 9.9195, longitude: 78.1193, accuracyMetres: 12);
+
+  @override
+  Future<void> ensurePermission() async {
+    permissionChecks++;
+    final LocationDenial? refused = denial;
+    if (refused != null) throw LocationException(refused);
+  }
+
+  @override
+  Future<RiderPosition> current({bool highAccuracy = false}) async {
+    await ensurePermission();
+    fixes++;
+    return position;
+  }
+}
+
+const OrderDropoff _testDropoff = OrderDropoff(
+  contactName: 'Anand R',
+  contactPhone: '9876500011',
+  address: '12 Anna Nagar, Madurai',
+  latitude: 9.9250,
+  longitude: 78.1400,
+);
+
+/// A board entry: no drop address, no item list. That is not laziness in the
+/// fixture — it is what `GET /rider/orders/available` actually returns, and a
+/// fixture that filled them in would hide a screen reading a field it cannot
+/// have yet.
+RiderOrder _boardOrder({
+  String id = '1001',
+  String number = 'NX-1001',
+  double collectCash = 0,
+  int distanceMetres = 450,
+}) {
+  return RiderOrder(
+    id: id,
+    orderNumber: number,
+    status: OrderStatus.readyForPickup,
+    statusLabel: 'Ready for pickup',
+    pickup: OrderPickup(
+      name: 'Amma Mess',
+      address: '4 West Masi Street, Madurai',
+      phone: '9876500022',
+      latitude: 9.9195,
+      longitude: 78.1193,
+      distanceMetres: distanceMetres,
+    ),
+    deliveryDistanceMetres: 2400,
+    itemCount: 3,
+    orderValue: 420,
+    deliveryFee: 46,
+    collectCash: collectCash,
+    pickupCodeRequired: true,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -379,6 +686,14 @@ Future<PreferencesService> _prefs(Map<String, Object> seed) async {
 
 late AuthController _controller;
 late RiderController _rider;
+late FakeLocationService _location;
+
+/// The dispatch controller the last [_pumpApp] built.
+///
+/// Nullable rather than `late` so the global teardown can stop its timers
+/// without having to know whether the test built an app at all — the unit
+/// tests in this file never do.
+OrderController? _ordersRef;
 
 Future<void> _pumpApp(
   WidgetTester tester, {
@@ -386,6 +701,7 @@ Future<void> _pumpApp(
   FakeAuthRepository? repository,
   FakeRiderRepository? riderRepository,
   AuthSession? session,
+  FakeLocationService? location,
 }) async {
   final PreferencesService preferences = await _prefs(seed);
   _controller = AuthController(
@@ -393,17 +709,22 @@ Future<void> _pumpApp(
     tokenStore: InMemoryTokenStore(session),
     initialSession: session,
   );
-  _rider = RiderController(
-    // Defaults to an approved rider, so the tests inherited from the customer
-    // app still land somewhere they can assert against. Tests about the gate
-    // pass their own.
-    repository: riderRepository ?? _approvedRider(),
-  );
+  // Defaults to an approved rider, so the tests inherited from the customer
+  // app still land somewhere they can assert against. Tests about the gate
+  // pass their own.
+  final FakeRiderRepository rider = riderRepository ?? _approvedRider();
+  _rider = RiderController(repository: rider);
+  _location = location ?? FakeLocationService();
+  // The same repository instance the gate's controller holds, as in main.dart,
+  // so a delivery confirmed through the order controller is visible to the
+  // profile refresh that follows it.
+  _ordersRef = OrderController(repository: rider, location: _location);
   await tester.pumpWidget(
     NexmileRiderApp(
       preferences: preferences,
       authController: _controller,
       riderController: _rider,
+      orderController: _ordersRef!,
     ),
   );
 }
@@ -411,7 +732,7 @@ Future<void> _pumpApp(
 /// A rider who has been through onboarding and may work.
 FakeRiderRepository _approvedRider() => FakeRiderRepository(
       kycStatus: KycStatus.verified,
-      canAcceptOrders: true,
+      canGoOnline: true,
       fullName: 'Priya Kumar',
       vehicleType: VehicleType.motorcycle,
       uploaded: _riderDocuments,
@@ -420,6 +741,29 @@ FakeRiderRepository _approvedRider() => FakeRiderRepository(
 Future<void> _settleSplash(WidgetTester tester) async {
   await tester.pump(SplashScreen.totalDuration);
   await tester.pumpAndSettle();
+}
+
+/// Advances frames without waiting for the tree to go still.
+///
+/// Settling is unusable anywhere an online rider is on screen: the duty
+/// beacon pulses for as long as the shift lasts, and the shell keeps the shift
+/// tab alive behind the others, so there is never a frame with no animation
+/// running. Pumping a fixed span instead lets route transitions, futures and
+/// snack bars land without waiting for something that by design never settles.
+Future<void> _pumpLive(
+  WidgetTester tester, [
+  Duration total = const Duration(milliseconds: 900),
+]) async {
+  const Duration step = Duration(milliseconds: 60);
+  for (Duration spent = Duration.zero; spent < total; spent += step) {
+    await tester.pump(step);
+  }
+}
+
+/// The splash, for a rider who is already on duty when the app opens.
+Future<void> _settleSplashLive(WidgetTester tester) async {
+  await tester.pump(SplashScreen.totalDuration);
+  await _pumpLive(tester, const Duration(milliseconds: 1200));
 }
 
 NavigatorState _nav(WidgetTester tester) =>
@@ -438,6 +782,15 @@ void _useTallPhone(WidgetTester tester) {
 }
 
 void main() {
+  // The board poll and the position heartbeat are periodic timers, and a timer
+  // still alive when a test ends fails it. That is the right failure to have:
+  // a heartbeat outliving its session would keep a signed-out rider on the
+  // dispatch map, so the teardown here mirrors what sign-out does in the app.
+  tearDown(() {
+    _ordersRef?.reset();
+    _ordersRef = null;
+  });
+
   // -------------------------------------------------------------------------
   group('language catalogue', () {
     test('ships English plus all 22 Eighth Schedule languages', () {
@@ -1278,6 +1631,116 @@ void main() {
       expect(find.text('Waiting for orders nearby'), findsOneWidget);
     });
 
+    testWidgets('an approved rider who is offline still reaches the home screen',
+        (WidgetTester tester) async {
+      // The regression this whole field split exists for. `can_accept_orders`
+      // folds in `duty_status == available`, so it is false for every rider who
+      // has not clocked on — and gating the gate on it put approved riders on
+      // the blocked screen, which is the one screen with no Go online button.
+      // They could never reach the control that would have made the field true.
+      _useTallPhone(tester);
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.offline;
+
+      // Precisely the state the live API reports for an approved rider at rest.
+      expect((await rider.profile()).canGoOnline, isTrue);
+      expect((await rider.profile()).canAcceptOrders, isFalse);
+
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: rider,
+      );
+      await _settleSplash(tester);
+
+      expect(find.byType(RiderHomeScreen), findsOneWidget);
+      expect(find.text('You cannot go online yet'), findsNothing);
+      expect(find.text('Go online'), findsOneWidget);
+    });
+
+    testWidgets('a blocked rider is shown the API reason, not ours',
+        (WidgetTester tester) async {
+      _useTallPhone(tester);
+      const String reason =
+          'Your insurance expired on 12 August. Upload a current policy to '
+          'go back online.';
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: FakeRiderRepository(
+          kycStatus: KycStatus.verified,
+          canGoOnline: false,
+          fullName: 'Priya Kumar',
+          uploaded: _riderDocuments,
+        )
+          ..documentsExpired = true
+          ..offlineReason = reason,
+      );
+      await _settleSplash(tester);
+
+      // Verbatim, because the duty-status 403 returns this same sentence and
+      // two different wordings for one condition is worse than an untranslated
+      // one.
+      expect(find.text(reason), findsOneWidget);
+      expect(find.byType(RiderHomeScreen), findsNothing);
+    });
+
+    testWidgets('losing eligibility mid-session moves an offline rider off '
+        'the home screen', (WidgetTester tester) async {
+      // The gate re-reads `can_go_online` on every refresh, so a licence that
+      // lapses while the app is open takes effect at the next pull rather than
+      // at the next sign-in.
+      _useTallPhone(tester);
+      const String reason = 'Your licence expired yesterday.';
+      final FakeRiderRepository rider = _approvedRider();
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: rider,
+      );
+      await _settleSplash(tester);
+      expect(find.byType(RiderHomeScreen), findsOneWidget);
+
+      rider
+        ..canGoOnline = false
+        ..offlineReason = reason;
+      await _rider.refresh();
+      await tester.pumpAndSettle();
+
+      // Off the home screen, and told why in the server's own words.
+      expect(find.byType(RiderHomeScreen), findsNothing);
+      expect(find.text(reason), findsOneWidget);
+    });
+
+    testWidgets('clocking off is never blocked',
+        (WidgetTester tester) async {
+      // Whatever is wrong with a rider's papers, stranding them online is not
+      // the answer — going offline has to stay available.
+      _useTallPhone(tester);
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.available
+        ..canGoOnline = false
+        ..offlineReason = 'Your licence expired yesterday.';
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: rider,
+      );
+      await _settleSplashLive(tester);
+
+      final FilledButton button = tester.widget<FilledButton>(
+        find.ancestor(
+          of: find.text('Go offline'),
+          matching: find.byType(FilledButton),
+        ),
+      );
+      expect(button.onPressed, isNotNull);
+    });
+
     testWidgets('a 403 on going online is reported, not swallowed',
         (WidgetTester tester) async {
       _useTallPhone(tester);
@@ -1309,6 +1772,468 @@ void main() {
       );
       // Still offline: the toggle must not lie about a call the API refused.
       expect(find.text('Offline'), findsOneWidget);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Live dispatch: the board, the order in hand, and the position heartbeat.
+  //
+  // Everything here polls or runs on a timer, so each test ends by resetting
+  // the controller. A periodic timer still alive when a test finishes fails
+  // the test, and — more to the point — a heartbeat that outlives its session
+  // is the bug this mirrors in production.
+  group('dispatch', () {
+    /// Signs in as an approved rider and opens the board tab.
+    Future<void> onBoard(
+      WidgetTester tester,
+      FakeRiderRepository rider, {
+      FakeLocationService? location,
+    }) async {
+      _useTallPhone(tester);
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: rider,
+        location: location,
+      );
+      await _settleSplashLive(tester);
+      await tester.tap(find.text('Orders'));
+      await _pumpLive(tester);
+    }
+
+    /// An approved rider who is online and has already been located, which is
+    /// the only state in which the board has anything on it.
+    FakeRiderRepository workingRider() => _approvedRider()
+      ..dutyStatus = DutyStatus.available
+      ..hasReportedPosition = true
+      ..boardOrders = <RiderOrder>[_boardOrder()];
+
+    testWidgets('an offline rider is told why the board is empty',
+        (WidgetTester tester) async {
+      // The mistake worth guarding: an offline rider staring at a blank list
+      // has no way of knowing that going online is what fills it.
+      await onBoard(tester, _approvedRider());
+
+      expect(find.text('You are offline'), findsOneWidget);
+      expect(find.text('Go online to start receiving orders.'), findsOneWidget);
+    });
+
+    testWidgets('a refused location is named as the reason, with a way out',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.available;
+
+      await onBoard(
+        tester,
+        rider,
+        location: FakeLocationService(
+          denial: LocationDenial.permissionDenied,
+        ),
+      );
+
+      // Dispatch ranks by distance, so no position means no board — and that
+      // is a different problem from "no orders right now".
+      expect(find.text('We cannot find you'), findsOneWidget);
+      expect(find.text('Allow location'), findsOneWidget);
+    });
+
+    testWidgets('a permanent refusal offers settings, not another prompt',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.available;
+
+      await onBoard(
+        tester,
+        rider,
+        location: FakeLocationService(
+          denial: LocationDenial.permissionDeniedForever,
+        ),
+      );
+
+      // Asking again would do nothing — the OS will not show the dialog a
+      // second time — so the button has to lead somewhere that can help.
+      expect(find.text('Open settings'), findsOneWidget);
+      expect(find.text('Allow location'), findsNothing);
+    });
+
+    testWidgets('the board withholds the customer address until accepted',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      expect(find.byType(OrderCard), findsOneWidget);
+      expect(find.text('Amma Mess'), findsOneWidget);
+      // A list every on-duty rider can poll must not double as a directory of
+      // where customers live. The server withholds it; this asserts the app
+      // does not invent it.
+      expect(find.text('12 Anna Nagar, Madurai'), findsNothing);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      expect(find.text('12 Anna Nagar, Madurai'), findsOneWidget);
+    });
+
+    testWidgets('accepting brings the delivery tab forward',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      expect(rider.assigned, isNotNull);
+      expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
+      expect(find.text('Head to the restaurant'), findsWidgets);
+      expect(find.text('I have collected it'), findsOneWidget);
+    });
+
+    testWidgets('losing the race reads as news, not as a failure',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()
+        ..acceptError = const ApiException(
+          kind: ApiErrorKind.validation,
+          statusCode: 422,
+          message: 'Another rider took this order',
+        );
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      expect(
+        find.text('Another rider took this one. Here is the latest list.'),
+        findsOneWidget,
+      );
+      // Still on the board, with nothing in hand — a 422 here must not look
+      // like an accepted order.
+      expect(rider.assigned, isNull);
+      expect(find.byType(ActiveDeliveryScreen), findsNothing);
+    });
+
+    testWidgets('a wrong pickup code keeps the rider in the sheet',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()..pickupCode = '4321';
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      await tester.tap(find.text('I have collected it'));
+      await _pumpLive(tester);
+
+      await tester.enterText(find.byType(TextField), '1111');
+      await tester.tap(find.text('I have collected it').last);
+      await _pumpLive(tester);
+
+      // The sheet stays up and the error lands on the field: the rider is
+      // standing at the counter and needs to ask for the code again, not to be
+      // bounced back to a screen they will have to navigate out of.
+      expect(find.byType(PickupCodeSheet), findsOneWidget);
+      expect(
+        find.text('That code did not match. Check it with the restaurant.'),
+        findsOneWidget,
+      );
+      expect(rider.assigned!.status, OrderStatus.assigned);
+    });
+
+    testWidgets('the right code moves the order on to delivering',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()..pickupCode = '4321';
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      await tester.tap(find.text('I have collected it'));
+      await _pumpLive(tester);
+      await tester.enterText(find.byType(TextField), '4321');
+      await tester.tap(find.text('I have collected it').last);
+      await _pumpLive(tester);
+
+      expect(rider.assigned!.status, OrderStatus.pickedUp);
+      expect(find.text('Deliver to the customer'), findsWidgets);
+      // Once the food is in the bag it has to be delivered — the API refuses a
+      // release, so the button is gone rather than offered and then rejected.
+      expect(find.text('Hand it back'), findsNothing);
+    });
+
+    testWidgets('the hand-back is offered only before collection',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      expect(find.text('Hand it back'), findsOneWidget);
+    });
+
+    testWidgets('a cash order names the amount before it can be closed',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.available
+        ..hasReportedPosition = true
+        ..pickupCode = '4321'
+        ..boardOrders = <RiderOrder>[_boardOrder(collectCash: 480)];
+      await onBoard(tester, rider);
+
+      // "Collect ₹480 from the customer" sits above the addresses, because
+      // getting this wrong costs the rider their own money.
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+      expect(find.text('Collect ₹480 from the customer'), findsOneWidget);
+
+      await tester.tap(find.text('I have collected it'));
+      await _pumpLive(tester);
+      await tester.enterText(find.byType(TextField), '4321');
+      await tester.tap(find.text('I have collected it').last);
+      await _pumpLive(tester);
+
+      await tester.tap(find.text('Delivered').last);
+      await _pumpLive(tester);
+
+      // The dialog names the sum. "Did you collect it?" is far easier to wave
+      // through than "did you collect ₹480?".
+      expect(find.text('Collect ₹480 first, then confirm.'), findsOneWidget);
+    });
+
+    testWidgets('a prepaid order says so rather than showing a zero',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      // Silence here would leave the rider to infer it, and inferring wrong
+      // means asking a customer for money they have already paid.
+      expect(find.text('Already paid. Do not ask for money.'), findsOneWidget);
+    });
+
+    testWidgets('delivering closes the order and refetches the profile',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()..pickupCode = '4321';
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+      await tester.tap(find.text('I have collected it'));
+      await _pumpLive(tester);
+      await tester.enterText(find.byType(TextField), '4321');
+      await tester.tap(find.text('I have collected it').last);
+      await _pumpLive(tester);
+
+      await tester.tap(find.text('Delivered').last);
+      await _pumpLive(tester);
+      await tester.tap(find.text('Delivered').last);
+      await _pumpLive(tester);
+
+      expect(rider.assigned, isNull);
+      // The server owns the count. Adding one locally would drift from the
+      // figure the rider is actually paid against.
+      expect(rider.completedDeliveries, 13);
+      expect(_rider.profile!.completedDeliveries, 13);
+    });
+
+    testWidgets('going offline mid-delivery is refused in plain words',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      // The API answers 422 while an order is in hand. The generic "check the
+      // highlighted fields" would be nonsense on a screen with no fields.
+      rider.dutyError = const ApiException(
+        kind: ApiErrorKind.validation,
+        statusCode: 422,
+      );
+
+      await tester.tap(find.text('Shift'));
+      await _pumpLive(tester);
+      await tester.tap(find.text('Go offline'));
+      await _pumpLive(tester);
+
+      expect(
+        find.text('Finish or hand back your current order first.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('the board stops polling when the rider leaves the tab',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      await tester.pump(OrderController.boardInterval);
+      await tester.pump();
+      final int whileWatching = rider.boardOrders.length;
+
+      await tester.tap(find.text('Shift'));
+      await _pumpLive(tester);
+
+      // Nothing to count on the fake, so the assertion is the one that
+      // matters structurally: no timer survives the tab change, which is what
+      // lets the test finish at all.
+      expect(whileWatching, 1);
+      // skipOffstage: false — the shell keeps the tab in the tree behind the
+      // one in front, which is exactly what makes stopping the timer necessary.
+      expect(
+        find.byType(OrderBoardScreen, skipOffstage: false),
+        findsOneWidget,
+      );
+    });
+
+    test('the two 422s on accept are told apart', () {
+      // Both are 422. One means someone else was quicker, the other means this
+      // rider already has an order — and sending the second one back to the
+      // board to "try the latest list" is advice that cannot possibly work.
+      RiderFailure decide(String message, Map<String, List<String>> errors) {
+        return orderFailureFrom(
+          ApiException(
+            kind: ApiErrorKind.validation,
+            statusCode: 422,
+            message: message,
+            errors: errors,
+          ),
+          validationFailure: RiderFailure.orderTaken,
+        );
+      }
+
+      expect(
+        decide('Finish your current delivery first.', <String, List<String>>{
+          'rider': <String>['Finish your current delivery first.'],
+        }),
+        RiderFailure.finishCurrentOrder,
+      );
+
+      expect(
+        decide('Another rider took this order', const <String, List<String>>{}),
+        RiderFailure.orderTaken,
+      );
+
+      // Wording this build has never seen falls through to the caller's
+      // default rather than guessing.
+      expect(
+        decide('Nope.', const <String, List<String>>{}),
+        RiderFailure.orderTaken,
+      );
+    });
+
+    test('can_accept decodes whether the API sends a bool or a string', () {
+      // The schema documents this as a string; the live API sends a JSON
+      // boolean. Both have to work, because the four explanatory empty states
+      // hang off it and a bool falling through to the string cases would
+      // decode every one of them as `unknown`.
+      OrderBoard board(Object? canAccept) => OrderBoard.fromJson(
+            <String, dynamic>{
+              'data': <Object?>[],
+              'meta': <String, dynamic>{'can_accept': canAccept},
+            },
+          );
+
+      expect(board(true).availability, BoardAvailability.available);
+      expect(board('yes').availability, BoardAvailability.available);
+
+      // A bare `false` carries no reason, so the board falls back to what the
+      // device knows rather than inventing one.
+      expect(board(false).availability, BoardAvailability.unknown);
+
+      // A named reason still wins wherever the API sends one.
+      expect(board('offline').availability, BoardAvailability.offline);
+      expect(board('on_order').availability, BoardAvailability.onOrder);
+      expect(board('no_location').availability, BoardAvailability.noLocation);
+      expect(
+        board('not_verified').availability,
+        BoardAvailability.notVerified,
+      );
+      expect(board(null).availability, BoardAvailability.unknown);
+    });
+
+    test('the heartbeat stops when the server says it is not tracking', () async {
+      // `tracking: false` is the API's way of saying the rider has clocked
+      // off. Not an error, and no amount of retrying changes it.
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.offline;
+      final OrderController orders = OrderController(
+        repository: rider,
+        location: FakeLocationService(),
+      );
+      addTearDown(orders.reset);
+
+      orders.startTracking();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+
+      expect(rider.locationPings, 1);
+      expect(orders.isTracking, isFalse);
+    });
+
+    test('a refused fix stops the heartbeat and records why', () async {
+      final FakeRiderRepository rider = _approvedRider()
+        ..dutyStatus = DutyStatus.available;
+      final OrderController orders = OrderController(
+        repository: rider,
+        location: FakeLocationService(
+          denial: LocationDenial.serviceDisabled,
+        ),
+      );
+      addTearDown(orders.reset);
+
+      orders.startTracking();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+
+      // Nothing was sent, the timer is down, and the denial is specific enough
+      // for the board to offer the right button.
+      expect(rider.locationPings, 0);
+      expect(orders.isTracking, isFalse);
+      expect(orders.locationDenial, LocationDenial.serviceDisabled);
+    });
+
+    test('the ping tightens once an order is in hand', () async {
+      final FakeRiderRepository rider = workingRider();
+      final FakeLocationService location = FakeLocationService();
+      final OrderController orders = OrderController(
+        repository: rider,
+        location: location,
+      );
+      addTearDown(orders.reset);
+
+      orders.startTracking();
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+      expect(orders.isTracking, isTrue);
+
+      await orders.accept('1001');
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+
+      // A rider carrying an order is being watched on a map by the customer,
+      // which is worth the battery an idle rider's ping is not.
+      expect(orders.active, isNotNull);
+      expect(location.fixes, greaterThanOrEqualTo(2));
+    });
+
+    test('a delivered order is kept out of the history list', () async {
+      final FakeRiderRepository rider = workingRider();
+      final OrderController orders = OrderController(
+        repository: rider,
+        location: FakeLocationService(),
+      );
+      addTearDown(orders.reset);
+
+      await orders.accept('1001');
+      await orders.loadHistory();
+      // The active order comes back from the same endpoint. Listing it under
+      // "past deliveries" would read as though it were finished.
+      expect(orders.history, isEmpty);
+
+      await orders.confirmPickup('1001', rider.pickupCode);
+      await orders.deliver('1001');
+      await orders.loadHistory();
+
+      expect(orders.history, hasLength(1));
+      expect(orders.history.single.status, OrderStatus.delivered);
     });
   });
 
@@ -1380,12 +2305,14 @@ void main() {
         (WidgetTester tester) async {
       // The case a client that recomputed the gate itself would get wrong:
       // KYC says verified, but the API still refuses because the licence has
-      // lapsed. `can_accept_orders` is the only field that knows.
+      // lapsed. `can_go_online` is the field that knows — not
+      // `can_accept_orders`, which is false for every offline rider and so
+      // cannot tell "papers lapsed" from "simply not clocked on yet".
       await signedIn(
         tester,
         FakeRiderRepository(
           kycStatus: KycStatus.verified,
-          canAcceptOrders: false,
+          canGoOnline: false,
           fullName: 'Priya Kumar',
           uploaded: _riderDocuments,
         )..documentsExpired = true,
@@ -1436,7 +2363,7 @@ void main() {
         tester,
         FakeRiderRepository(
           kycStatus: KycStatus.verified,
-          canAcceptOrders: false,
+          canGoOnline: false,
           fullName: 'Priya Kumar',
           vehicleType: VehicleType.motorcycle,
           uploaded: _riderDocuments,
