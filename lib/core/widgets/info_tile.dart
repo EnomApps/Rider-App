@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../motion/app_motion.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_surface.dart';
 
 /// A labelled value row: small caption above, prominent value below.
 ///
@@ -43,13 +44,23 @@ class InfoTile extends StatelessWidget {
     final bool isDark = theme.brightness == Brightness.dark;
 
     final Widget content = Padding(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: <Widget>[
-          Icon(
-            icon,
-            size: 22,
-            color: isDark ? AppColors.greenLight : AppColors.greenDeep,
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: (isDark ? AppColors.greenLight : AppColors.greenDeep)
+                  .withValues(alpha: isDark ? 0.16 : 0.11),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: isDark ? AppColors.greenLight : AppColors.greenDeep,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -110,30 +121,27 @@ class InfoTile extends StatelessWidget {
       ),
     );
 
-    final BorderRadius radius = BorderRadius.circular(AppTheme.radiusLarge);
+    final BorderRadius radius = BorderRadius.circular(AppSurface.radius);
+    final BoxDecoration shell = AppSurface.decoration(
+      context,
+      radius: AppSurface.radius,
+    );
 
-    return Material(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: radius,
-      child: onTap == null
-          ? DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                border: Border.all(color: theme.colorScheme.outline),
-              ),
-              child: content,
-            )
-          : InkWell(
-              onTap: onTap,
-              borderRadius: radius,
-              child: Ink(
-                decoration: BoxDecoration(
-                  borderRadius: radius,
-                  border: Border.all(color: theme.colorScheme.outline),
-                ),
-                child: content,
-              ),
-            ),
+    if (onTap == null) {
+      return DecoratedBox(decoration: shell, child: content);
+    }
+
+    return Pressable(
+      onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: Ink(decoration: shell, child: content),
+        ),
+      ),
     );
   }
 }
@@ -163,20 +171,35 @@ class StatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: base.withValues(alpha: isDark ? 0.18 : 0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: base.withValues(alpha: 0.4)),
+        border: Border.all(color: base.withValues(alpha: 0.38)),
       ),
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: base,
-          fontWeight: FontWeight.w700,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          // A dot ahead of the word, so the state is readable as colour before
+          // it is readable as text — which is how a chip is actually used.
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: base),
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: base,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

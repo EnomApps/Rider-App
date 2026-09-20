@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/motion/app_motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../generated/l10n/app_localizations.dart';
@@ -99,10 +100,28 @@ class OnboardingScaffold extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _ProgressRail(current: stepIndex, total: stepCount),
-                  const SizedBox(height: 20),
-                  Text(title, style: theme.textTheme.headlineSmall),
-                  const SizedBox(height: 8),
-                  Text(subtitle, style: theme.textTheme.bodyMedium),
+                  const SizedBox(height: 22),
+                  // Re-keyed on the step, so moving between steps replays the
+                  // entrance and the header reads as new rather than as the
+                  // same words silently swapping underneath.
+                  ...entranceGroup(
+                    <Widget>[
+                      Text(
+                        title,
+                        key: ValueKey<String>('title-$stepIndex'),
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10, bottom: 10),
+                        child: Text(
+                          subtitle,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -149,14 +168,22 @@ class _ProgressRail extends StatelessWidget {
         for (int i = 0; i < total; i++) ...<Widget>[
           if (i > 0) const SizedBox(width: 5),
           Expanded(
+            // The current segment is thicker and carries the brand sweep;
+            // everything behind it is a flat green. Eleven fields into a form,
+            // "how much is left" is the question the rail has to answer, and a
+            // row of identical dashes answers it slowly.
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOut,
-              height: 4,
+              duration: AppMotion.quick,
+              curve: AppMotion.change,
+              height: i == current ? 6 : 4,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                gradient: i <= current ? AppColors.brandGradient : null,
-                color: i <= current ? null : theme.colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(6),
+                gradient: i == current ? AppColors.brandGradient : null,
+                color: i == current
+                    ? null
+                    : i < current
+                        ? theme.colorScheme.primary.withValues(alpha: 0.55)
+                        : theme.colorScheme.outlineVariant,
               ),
             ),
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/theme/app_surface.dart';
 import '../../../../../core/widgets/info_tile.dart';
 import '../../../../../generated/l10n/app_localizations.dart';
 import '../../../data/order_models.dart';
@@ -9,9 +9,9 @@ import '../order_formatting.dart';
 
 /// One order, as it appears on the board and in the history list.
 ///
-/// The three things a rider decides on — how far, what they earn, and whether
-/// there is cash to handle — sit on one line above the button, because that
-/// decision is made in about a second with a helmet still on.
+/// Laid out as a decision, in the order the decision is made: which shop and
+/// how far, then what it pays and whether there is cash to handle, then the
+/// button. That is about a second's reading with a helmet still on.
 class OrderCard extends StatelessWidget {
   const OrderCard({
     super.key,
@@ -39,162 +39,274 @@ class OrderCard extends StatelessWidget {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
-    final String? distance =
-        formatDistance(l10n, order.pickup.distanceMetres);
-
-    final BorderRadius radius = BorderRadius.circular(AppTheme.radiusLarge);
-
-    return Material(
-      color: theme.colorScheme.surfaceContainerLow,
-      borderRadius: radius,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(color: theme.colorScheme.outline),
+    return SurfaceCard(
+      radius: AppSurface.radiusLarge,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  l10n.orderNumberLabel(order.orderNumber),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              StatusChip(
+                label: order.statusText(l10n),
+                tone: order.statusTone,
+              ),
+            ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
+          const SizedBox(height: 16),
+
+          // Drawn as one journey joined by a rail rather than two unrelated
+          // rows. A rider reads a delivery as a route, and on the board the
+          // second stop is deliberately missing — which the rail then shows as
+          // an open end instead of hiding.
+          _Route(
+            pickupLabel: l10n.pickupLabel,
+            pickupName: order.pickup.name,
+            pickupAddress: order.pickup.address,
+            pickupTrailing: formatDistance(l10n, order.pickup.distanceMetres),
+            dropoffLabel: order.dropoff == null ? null : l10n.dropoffLabel,
+            dropoffName: order.dropoff?.contactName,
+            dropoffAddress: order.dropoff?.address,
+            dropoffTrailing: order.dropoff == null
+                ? null
+                : formatDistance(l10n, order.deliveryDistanceMetres),
+          ),
+
+          const SizedBox(height: 16),
+          Divider(color: AppSurface.line(context), height: 1),
+          const SizedBox(height: 14),
+
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _Figure(
+                  label: l10n.earningsLabel,
+                  value: formatAmount(l10n, order.earnings),
+                  emphasis: true,
+                ),
+              ),
+              Expanded(
+                child: _Figure(
+                  label: order.isCashOnDelivery
+                      ? l10n.collectCashLabel
+                      : l10n.prepaidLabel,
+                  value: order.isCashOnDelivery
+                      ? formatAmount(l10n, order.collectCash)
+                      : null,
+                  // Cash is the one figure here that can cost the rider their
+                  // own money, so it is the one that gets a colour rather than
+                  // blending into the row.
+                  colour: order.isCashOnDelivery ? AppColors.orangeDeep : null,
+                ),
+              ),
+              if (order.itemCount != null)
+                Expanded(
+                  child: _Figure(
+                    label: '',
+                    value: l10n.itemCount(order.itemCount!),
+                  ),
+                ),
+            ],
+          ),
+
+          if (onAccept != null) ...<Widget>[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: isBusy ? null : onAccept,
+                style: FilledButton.styleFrom(
+                  backgroundColor:
+                      isDark ? AppColors.greenLight : AppColors.greenDeep,
+                  foregroundColor:
+                      isDark ? const Color(0xFF10250A) : AppColors.white,
+                  minimumSize: const Size.fromHeight(52),
+                ),
+                icon: const Icon(Icons.bolt_rounded, size: 20),
+                label: Text(
+                  l10n.acceptOrder,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Pickup and drop-off, joined by a vertical rail.
+///
+/// The rail is the point: it turns two addresses into a journey with a
+/// direction. On the board the drop-off is withheld by the API, so the rail
+/// ends in a hollow marker — the shape says "there is a second stop, you will
+/// see it when it is yours" rather than leaving a gap.
+class _Route extends StatelessWidget {
+  const _Route({
+    required this.pickupLabel,
+    required this.pickupAddress,
+    this.pickupName,
+    this.pickupTrailing,
+    this.dropoffLabel,
+    this.dropoffName,
+    this.dropoffAddress,
+    this.dropoffTrailing,
+  });
+
+  final String pickupLabel;
+  final String? pickupName;
+  final String pickupAddress;
+  final String? pickupTrailing;
+
+  final String? dropoffLabel;
+  final String? dropoffName;
+  final String? dropoffAddress;
+  final String? dropoffTrailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    final Color start = isDark ? AppColors.greenLight : AppColors.greenDeep;
+    final Color end = AppColors.orangeDeep;
+    final bool hasDropoff = dropoffAddress != null;
+
+    // IntrinsicHeight is what lets the rail stretch to exactly the height of
+    // the two stops beside it. Inside a scroll view the row's cross axis is
+    // unbounded, so the rail's `Expanded` has nothing to expand into and the
+    // layout throws. Measuring the text column first is the cost of drawing a
+    // line whose length is decided by content it does not own.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // The rail sits in its own column so both stops share one continuous
+          // line rather than each drawing half of it.
+          SizedBox(
+            width: 18,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        l10n.orderNumberLabel(order.orderNumber),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    StatusChip(
-                      label: order.statusText(l10n),
-                      tone: order.statusTone,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                _AddressRow(
-                  icon: Icons.storefront_outlined,
-                  label: l10n.pickupLabel,
-                  name: order.pickup.name,
-                  address: order.pickup.address,
-                  trailing: distance,
-                ),
-                if (order.dropoff != null) ...<Widget>[
-                  const SizedBox(height: 12),
-                  _AddressRow(
-                    icon: Icons.location_on_outlined,
-                    label: l10n.dropoffLabel,
-                    name: order.dropoff!.contactName,
-                    address: order.dropoff!.address,
-                    trailing: formatDistance(
-                      l10n,
-                      order.deliveryDistanceMetres,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Divider(color: theme.colorScheme.outline, height: 1),
-                const SizedBox(height: 14),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: _Figure(
-                        label: l10n.earningsLabel,
-                        value: formatAmount(l10n, order.earnings),
-                        emphasis: true,
-                      ),
-                    ),
-                    Expanded(
-                      child: _Figure(
-                        label: order.isCashOnDelivery
-                            ? l10n.collectCashLabel
-                            : l10n.prepaidLabel,
-                        value: order.isCashOnDelivery
-                            ? formatAmount(l10n, order.collectCash)
-                            : null,
-                        // Cash is the one figure on this card that can cost the
-                        // rider their own money, so it is the one that gets a
-                        // colour rather than blending into the row.
-                        colour: order.isCashOnDelivery
-                            ? AppColors.orangeDeep
-                            : null,
-                      ),
-                    ),
-                    if (order.itemCount != null)
-                      Expanded(
-                        child: _Figure(
-                          label: '',
-                          value: l10n.itemCount(order.itemCount!),
-                        ),
-                      ),
-                  ],
-                ),
-                if (onAccept != null) ...<Widget>[
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: isBusy ? null : onAccept,
-                      style: FilledButton.styleFrom(
-                        backgroundColor:
-                            isDark ? AppColors.greenLight : AppColors.greenDeep,
-                      ),
-                      child: Text(
-                        l10n.acceptOrder,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 3),
+                _Marker(colour: start, filled: true),
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(2),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[
+                          start.withValues(alpha: 0.55),
+                          (hasDropoff ? end : start).withValues(alpha: 0.22),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
+                _Marker(colour: hasDropoff ? end : start, filled: hasDropoff),
+                const SizedBox(height: 3),
               ],
             ),
           ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                _Stop(
+                  label: pickupLabel,
+                  name: pickupName,
+                  address: pickupAddress,
+                  trailing: pickupTrailing,
+                ),
+                const SizedBox(height: 14),
+                if (hasDropoff)
+                  _Stop(
+                    label: dropoffLabel!,
+                    name: dropoffName,
+                    address: dropoffAddress!,
+                    trailing: dropoffTrailing,
+                  )
+                else
+                  // Not an error state and not a placeholder to be filled in
+                  // later — the address genuinely does not exist for this
+                  // rider yet, and saying so is more use than a blank.
+                  Text(
+                    AppLocalizations.of(context).dropoffLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Marker extends StatelessWidget {
+  const _Marker({required this.colour, required this.filled});
+
+  final Color colour;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 11,
+      height: 11,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: filled ? colour : Colors.transparent,
+        border: Border.all(
+          color: colour.withValues(alpha: filled ? 1 : 0.5),
+          width: 2,
         ),
       ),
     );
   }
 }
 
-class _AddressRow extends StatelessWidget {
-  const _AddressRow({
-    required this.icon,
+class _Stop extends StatelessWidget {
+  const _Stop({
     required this.label,
     required this.address,
     this.name,
     this.trailing,
   });
 
-  final IconData icon;
   final String label;
   final String? name;
   final String address;
 
-  /// The distance, when there is one.
+  /// The distance, when the API sent one.
   final String? trailing;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Icon(
-          icon,
-          size: 20,
-          color: isDark ? AppColors.greenLight : AppColors.greenDeep,
-        ),
-        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,6 +316,7 @@ class _AddressRow extends StatelessWidget {
                 label,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 2),
@@ -218,7 +331,7 @@ class _AddressRow extends StatelessWidget {
                 ),
               Text(
                 address,
-                // Two lines, then ellipsis. A full address is three or four
+                // Two lines, then ellipsis. A full address runs three or four
                 // lines in most Indian cities and would push the fee and the
                 // accept button off a small screen — the details screen is
                 // where the whole thing belongs.
@@ -231,12 +344,19 @@ class _AddressRow extends StatelessWidget {
         ),
         if (trailing != null) ...<Widget>[
           const SizedBox(width: 10),
-          Text(
-            trailing!,
-            textDirection: TextDirection.ltr,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: theme.colorScheme.onSurfaceVariant,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              trailing!,
+              textDirection: TextDirection.ltr,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],
@@ -296,7 +416,9 @@ class _Figure extends StatelessWidget {
             textDirection: value == null ? null : TextDirection.ltr,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
-              color: value == null ? theme.colorScheme.onSurfaceVariant : resolved,
+              letterSpacing: -0.3,
+              color:
+                  value == null ? theme.colorScheme.onSurfaceVariant : resolved,
             ),
           ),
         ),

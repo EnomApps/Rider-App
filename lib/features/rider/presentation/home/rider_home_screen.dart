@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/localization/app_language.dart';
+import '../../../../core/motion/app_motion.dart';
 import '../../../../core/localization/locale_controller.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_surface.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/brand_mark.dart';
 import '../../../../core/widgets/info_tile.dart';
@@ -231,34 +233,48 @@ class _ShiftTab extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         physics: const AlwaysScrollableScrollPhysics(),
         children: <Widget>[
-          if (user != null) ...<Widget>[
-            Text(
-              l10n.greetingNamed(
-                profile?.fullName.isNotEmpty ?? false
-                    ? profile!.fullName.split(' ').first
-                    : user.firstName,
+          ...entranceGroup(<Widget>[
+            if (user != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(
+                  l10n.greetingNamed(
+                    profile?.fullName.isNotEmpty ?? false
+                        ? profile!.fullName.split(' ').first
+                        : user.firstName,
+                  ),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            Text(
+              l10n.riderHomeTitle,
+              style: theme.textTheme.displaySmall?.copyWith(
+                letterSpacing: -0.8,
               ),
             ),
-            const SizedBox(height: 6),
-          ],
-          Text(l10n.riderHomeTitle, style: theme.textTheme.headlineMedium),
-          const SizedBox(height: 10),
-          Text(l10n.riderHomeSubtitle, style: theme.textTheme.bodyLarge),
-          const SizedBox(height: 24),
+            const Padding(
+              padding: EdgeInsets.only(top: 12, bottom: 12),
+              child: BrandRule(),
+            ),
+            Text(l10n.riderHomeSubtitle, style: theme.textTheme.bodyLarge),
+          ]),
+          const SizedBox(height: 22),
           if (profile != null) ...<Widget>[
-            _DutyCard(profile: profile),
+            EntranceFade(index: 4, child: _DutyCard(profile: profile)),
             const SizedBox(height: 16),
             if (orders.active != null) ...<Widget>[
-              _ActiveOrderSummary(
-                order: orders.active!,
-                onTap: onOpenDelivery,
+              EntranceFade(
+                index: 5,
+                child: _ActiveOrderSummary(
+                  order: orders.active!,
+                  onTap: onOpenDelivery,
+                ),
               ),
               const SizedBox(height: 16),
             ],
-            _StatsRow(profile: profile),
+            EntranceFade(index: 6, child: _StatsRow(profile: profile)),
             const SizedBox(height: 16),
             InfoTile(
               icon: Icons.two_wheeler_outlined,
@@ -328,27 +344,25 @@ class _ActiveOrderSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-    final Color accent = AppColors.orangeDeep;
+    // Orange, not green: this is the one thing on the shift tab that is
+    // waiting on the rider rather than reporting a steady state.
+    const Color accent = AppColors.orangeDeep;
 
-    final BorderRadius radius = BorderRadius.circular(AppTheme.radiusLarge);
-
-    return Material(
-      color: accent.withValues(alpha: isDark ? 0.14 : 0.09),
-      borderRadius: radius,
-      child: InkWell(
-        borderRadius: radius,
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(color: accent.withValues(alpha: 0.4)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
+    return SurfaceCard(
+      accent: accent,
+      radius: AppSurface.radiusLarge,
+      onTap: onTap,
+      child: Row(
               children: <Widget>[
-                Icon(Icons.delivery_dining_rounded, color: accent, size: 26),
+                // The one moving thing on the shift tab while an order is in
+                // hand, so the eye lands here first.
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: Center(
+                    child: BreathingDot(colour: accent, size: 10, spread: 14),
+                  ),
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -378,15 +392,9 @@ class _ActiveOrderSummary extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                Icon(Icons.chevron_right_rounded, color: accent),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -421,22 +429,44 @@ class _DutyCard extends StatelessWidget {
             ? AppColors.orange
             : theme.colorScheme.onSurfaceVariant;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(
-          color: online ? accent.withValues(alpha: 0.5) : theme.colorScheme.outline,
-          width: online ? 1.6 : 1,
-        ),
+    // The card carries the accent only while the rider is actually working.
+    // Offline it is a plain resting surface — the difference between "on" and
+    // "off" should be visible across a room, not a shade of border.
+    final bool live = online || onBreak;
+
+    return AnimatedContainer(
+      duration: AppMotion.medium,
+      curve: AppMotion.change,
+      padding: const EdgeInsets.all(22),
+      decoration: AppSurface.decoration(
+        context,
+        accent: live ? accent : null,
+        radius: AppSurface.radiusLarge,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
             children: <Widget>[
-              _Beacon(active: online, colour: accent),
+              // Only breathes while receiving. A dot that pulses at an
+              // offline rider is telling them something that is not true —
+              // and it would keep every widget test from ever settling.
+              SizedBox(
+                width: 30,
+                height: 30,
+                child: Center(
+                  child: online
+                      ? BreathingDot(colour: accent, size: 11, spread: 17)
+                      : Container(
+                          width: 11,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: accent,
+                          ),
+                        ),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -450,15 +480,20 @@ class _DutyCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      online
-                          ? l10n.dutyOnline
-                          : onBreak
-                              ? l10n.dutyOnBreak
-                              : l10n.dutyOffline,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                    AnimatedDefaultTextStyle(
+                      duration: AppMotion.quick,
+                      curve: AppMotion.change,
+                      style: theme.textTheme.titleLarge!.copyWith(
                         fontWeight: FontWeight.w800,
                         color: accent,
+                        letterSpacing: -0.2,
+                      ),
+                      child: Text(
+                        online
+                            ? l10n.dutyOnline
+                            : onBreak
+                                ? l10n.dutyOnBreak
+                                : l10n.dutyOffline,
                       ),
                     ),
                   ],
@@ -764,6 +799,7 @@ class _StatsRow extends StatelessWidget {
             icon: Icons.local_shipping_outlined,
             label: l10n.completedDeliveriesLabel,
             value: '${profile.completedDeliveries}',
+            count: profile.completedDeliveries,
           ),
         ),
         const SizedBox(width: 12),
@@ -785,47 +821,67 @@ class _StatTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.count,
     this.muted = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
+
+  /// Set where the figure is a whole number worth animating to. Null renders
+  /// [value] as it is — a rating of "4.8" should not count up from zero.
+  final int? count;
+
   final bool muted;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: theme.colorScheme.outline),
-      ),
+    final TextStyle? figure = theme.textTheme.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.6,
+      color: muted
+          ? theme.colorScheme.onSurfaceVariant
+          : theme.colorScheme.onSurface,
+      fontSize: muted ? 15 : null,
+    );
+
+    return SurfaceCard(
+      padding: const EdgeInsets.all(17),
+      radius: AppSurface.radiusLarge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, size: 21, color: theme.colorScheme.primary),
-          const SizedBox(height: 12),
+          // The icon sits in its own tinted chip rather than floating on the
+          // card — it reads as a category marker instead of decoration.
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, size: 18, color: theme.colorScheme.primary),
+          ),
+          const SizedBox(height: 14),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              value,
-              maxLines: 1,
-              textDirection: muted ? null : TextDirection.ltr,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: muted
-                    ? theme.colorScheme.onSurfaceVariant
-                    : theme.colorScheme.onSurface,
-                fontSize: muted ? 15 : null,
-              ),
-            ),
+            child: count == null
+                ? Text(
+                    value,
+                    maxLines: 1,
+                    textDirection: muted ? null : TextDirection.ltr,
+                    style: figure,
+                  )
+                // A delivery just confirmed moves the number the rider is paid
+                // against. Worth watching it move.
+                : AnimatedCount(value: count!, style: figure),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
             label,
             maxLines: 2,

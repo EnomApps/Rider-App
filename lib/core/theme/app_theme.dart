@@ -9,8 +9,12 @@ class AppTheme {
   const AppTheme._();
 
   /// Corner radius used by cards, tiles and buttons.
-  static const double radius = 16;
-  static const double radiusLarge = 22;
+  ///
+  /// Softer than a utility app's: this is a food product, and the corner is
+  /// most of what separates the two at a glance. Kept in step with
+  /// `AppSurface`, which is where new work should reach for them.
+  static const double radius = 18;
+  static const double radiusLarge = 26;
 
   static ThemeData get light {
     const ColorScheme scheme = ColorScheme(
@@ -135,7 +139,15 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: BorderSide(color: scheme.primary, width: 1.6),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(color: scheme.error, width: 1.4),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius),
+          borderSide: BorderSide(color: scheme.error, width: 2),
         ),
       ),
 
@@ -159,11 +171,58 @@ class AppTheme {
 
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(56),
+          minimumSize: const Size.fromHeight(58),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: text.labelLarge,
+          textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          // A pressed primary button should look pressed, not merely tinted.
+          elevation: 0,
+        ).copyWith(
+          overlayColor: WidgetStateProperty.resolveWith<Color?>(
+            (Set<WidgetState> states) => states.contains(WidgetState.pressed)
+                ? scheme.onPrimary.withValues(alpha: 0.12)
+                : null,
+          ),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(58),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          side: BorderSide(color: scheme.outline, width: 1.4),
+          textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+
+      // The tab bar is on screen for the whole shift, so it gets the same
+      // treatment as the cards above it rather than Material's default slab.
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        indicatorColor: scheme.primary.withValues(alpha: 0.16),
+        elevation: 0,
+        height: 68,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (Set<WidgetState> states) => text.labelSmall?.copyWith(
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w700
+                : FontWeight.w600,
+            color: states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
+          ),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
+          (Set<WidgetState> states) => IconThemeData(
+            size: 23,
+            color: states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.onSurfaceVariant,
+          ),
         ),
       ),
 

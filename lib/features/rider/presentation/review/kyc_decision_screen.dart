@@ -115,23 +115,56 @@ class KycDecisionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Center(
-                child: Container(
-                  width: 92,
-                  height: 92,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: tint.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: tint.withValues(alpha: 0.35)),
+                child: SizedBox(
+                  width: 138,
+                  height: 138,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Container(
+                        width: 138,
+                        height: 138,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: tint.withValues(alpha: 0.06),
+                        ),
+                      ),
+                      Container(
+                        width: 108,
+                        height: 108,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: tint.withValues(alpha: 0.09),
+                        ),
+                      ),
+                      Container(
+                        width: 78,
+                        height: 78,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: <Color>[
+                              tint.withValues(alpha: 0.26),
+                              tint.withValues(alpha: 0.11),
+                            ],
+                          ),
+                        ),
+                        child: Icon(icon, size: 36, color: tint),
+                      ),
+                    ],
                   ),
-                  child: Icon(icon, size: 44, color: tint),
                 ),
               ),
               const SizedBox(height: 28),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.headlineSmall,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  letterSpacing: -0.6,
+                ),
               ),
               const SizedBox(height: 12),
               Text(

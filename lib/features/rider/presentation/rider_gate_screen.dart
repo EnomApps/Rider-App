@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/motion/app_motion.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/brand_mark.dart';
 import '../../../core/widgets/gradient_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
@@ -187,19 +189,34 @@ class _GateLoading extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppLocalizations l10n = AppLocalizations.of(context);
 
+    final bool isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const BrandMark(size: 64, radius: 20),
-            const SizedBox(height: 26),
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2.4),
+            // The mark sits inside the same pulse the duty card uses, so the
+            // first thing a rider sees after sign-in already speaks the app's
+            // language rather than Material's default spinner.
+            SizedBox(
+              width: 132,
+              height: 132,
+              child: Stack(
+                alignment: Alignment.center,
+                children: <Widget>[
+                  BreathingDot(
+                    colour: isDark
+                        ? AppColors.greenLight
+                        : AppColors.greenDeep,
+                    size: 64,
+                    spread: 62,
+                  ),
+                  const BrandMark(size: 64, radius: 20),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 26),
             Text(
               l10n.checkingYourAccount,
               textAlign: TextAlign.center,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/motion/app_motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_surface.dart';
 import '../../../../core/widgets/brand_mark.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../generated/l10n/app_localizations.dart';
@@ -81,12 +83,20 @@ class AuthScaffold extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
-              const BrandRule(width: 52, height: 4),
-              const SizedBox(height: 14),
-              Text(title, style: theme.textTheme.headlineMedium),
-              const SizedBox(height: 8),
-              Text(subtitle, style: theme.textTheme.bodyMedium),
+              const SizedBox(height: 24),
+              ...entranceGroup(<Widget>[
+                const BrandRule(width: 52),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16, bottom: 8),
+                  child: Text(
+                    title,
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      letterSpacing: -0.9,
+                    ),
+                  ),
+                ),
+                Text(subtitle, style: theme.textTheme.bodyMedium),
+              ]),
               const SizedBox(height: 28),
               ...children,
               if (footer != null) ...<Widget>[

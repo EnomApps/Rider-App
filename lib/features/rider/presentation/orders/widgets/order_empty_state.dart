@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/theme/app_surface.dart';
 
 /// A centred icon, a headline and a line of copy, with an optional action.
 ///
@@ -27,33 +27,51 @@ class OrderEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
+    final Color accent = isDark ? AppColors.greenLight : AppColors.greenDeep;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Container(
-            width: 76,
-            height: 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: (isDark ? AppColors.greenLight : AppColors.greenDeep)
-                  .withValues(alpha: isDark ? 0.14 : 0.10),
-            ),
-            child: Icon(
-              icon,
-              size: 34,
-              color: isDark ? AppColors.greenLight : AppColors.greenDeep,
+          // Concentric rings rather than one flat disc: an idle rider looks at
+          // this screen more than any other, and it should feel like a place
+          // to wait rather than a hole where content failed to arrive.
+          SizedBox(
+            width: 112,
+            height: 112,
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                _Ring(size: 112, alpha: isDark ? 0.07 : 0.05),
+                _Ring(size: 86, alpha: isDark ? 0.10 : 0.07),
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        accent.withValues(alpha: isDark ? 0.26 : 0.18),
+                        accent.withValues(alpha: isDark ? 0.10 : 0.07),
+                      ],
+                    ),
+                  ),
+                  child: Icon(icon, size: 27, color: accent),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
             ),
           ),
           if (body != null) ...<Widget>[
@@ -102,7 +120,7 @@ class OrderBanner extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: base.withValues(alpha: isDark ? 0.16 : 0.10),
-        borderRadius: BorderRadius.circular(AppTheme.radius),
+        borderRadius: BorderRadius.circular(AppSurface.radius),
         border: Border.all(color: base.withValues(alpha: 0.35)),
       ),
       child: Column(
@@ -128,6 +146,29 @@ class OrderBanner extends StatelessWidget {
             Align(alignment: AlignmentDirectional.centerEnd, child: action!),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// One of the soft concentric rings behind an empty-state icon.
+class _Ring extends StatelessWidget {
+  const _Ring({required this.size, required this.alpha});
+
+  final double size;
+  final double alpha;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color accent = isDark ? AppColors.greenLight : AppColors.greenDeep;
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: accent.withValues(alpha: alpha),
       ),
     );
   }

@@ -87,22 +87,3 @@ class GradientButton extends StatelessWidget {
   }
 }
 
-/// The thin green -> orange rule that sits under the logo lockup.
-class BrandRule extends StatelessWidget {
-  const BrandRule({super.key, this.width = 120, this.height = 3});
-
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: AppColors.brandGradient,
-        borderRadius: BorderRadius.circular(height),
-      ),
-    );
-  }
-}

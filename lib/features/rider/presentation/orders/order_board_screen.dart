@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/motion/app_motion.dart';
+import '../../../../core/theme/app_surface.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 import '../../data/kyc_models.dart';
 import '../../data/location_service.dart';
@@ -140,9 +142,38 @@ class _OrderBoardScreenState extends State<OrderBoardScreen>
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         physics: const AlwaysScrollableScrollPhysics(),
         children: <Widget>[
-          Text(l10n.orderBoardTitle, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: 8),
-          Text(l10n.orderBoardSubtitle, style: theme.textTheme.bodyMedium),
+          ...entranceGroup(<Widget>[
+            Text(
+              l10n.orderBoardTitle,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                letterSpacing: -0.6,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              child: BrandRule(width: 38),
+            ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    l10n.orderBoardSubtitle,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+                // A quiet sign that the list is refreshing itself, so a rider
+                // watching an empty board knows the app has not stalled.
+                if (orders.isLoadingBoard && available.isNotEmpty) ...<Widget>[
+                  const SizedBox(width: 10),
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 1.8),
+                  ),
+                ],
+              ],
+            ),
+          ]),
           const SizedBox(height: 18),
 
           // A refused location outranks whatever the board says, because it is
@@ -157,25 +188,39 @@ class _OrderBoardScreenState extends State<OrderBoardScreen>
           ],
 
           if (orders.isLoadingBoard && available.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: CircularProgressIndicator()),
-            )
+            // Skeletons rather than a spinner: they say what is coming as well
+            // as that something is, so the first real card lands in a shape
+            // the eye has already accepted.
+            ...<Widget>[
+              for (int i = 0; i < 2; i++) ...<Widget>[
+                const _OrderSkeleton(),
+                const SizedBox(height: 14),
+              ],
+            ]
           else if (available.isEmpty)
-            _EmptyBoard(
-              availability: orders.availability,
-              profile: profile,
-              hasLocationDenial: orders.locationDenial != null,
+            EntranceFade(
+              index: 3,
+              child: _EmptyBoard(
+                availability: orders.availability,
+                profile: profile,
+                hasLocationDenial: orders.locationDenial != null,
+              ),
             )
           else
-            for (final RiderOrder order in available) ...<Widget>[
-              OrderCard(
-                order: order,
-                isBusy: orders.isActing,
-                onAccept: () => _accept(order),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => OrderDetailsScreen(order: order),
+            for (int i = 0; i < available.length; i++) ...<Widget>[
+              EntranceFade(
+                // Keyed by order, so a card that was already on screen is not
+                // re-animated every time the twelve-second poll returns.
+                key: ValueKey<String>(available[i].id),
+                index: i,
+                child: OrderCard(
+                  order: available[i],
+                  isBusy: orders.isActing,
+                  onAccept: () => _accept(available[i]),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => OrderDetailsScreen(order: available[i]),
+                    ),
                   ),
                 ),
               ),
@@ -286,6 +331,64 @@ class _LocationBanner extends StatelessWidget {
         child: Text(
           askable ? l10n.enableLocationButton : l10n.locationSettingsButton,
         ),
+      ),
+    );
+  }
+}
+
+/// The shape of an order card, while the real one is on its way.
+///
+/// Traced from [OrderCard] rather than being a generic grey block: the point
+/// is that the rider's eye is already in the right place when the content
+/// arrives.
+class _OrderSkeleton extends StatelessWidget {
+  const _OrderSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfaceCard(
+      radius: AppSurface.radiusLarge,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: const <Widget>[
+              Shimmer(width: 110, height: 15),
+              Spacer(),
+              Shimmer(width: 78, height: 20, radius: 999),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Shimmer(width: 11, height: 74, radius: 6),
+              const SizedBox(width: 19),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const <Widget>[
+                    Shimmer(width: 96, height: 11),
+                    SizedBox(height: 7),
+                    Shimmer(height: 13),
+                    SizedBox(height: 18),
+                    Shimmer(width: 82, height: 11),
+                    SizedBox(height: 7),
+                    Shimmer(height: 13),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: const <Widget>[
+              Expanded(child: Shimmer(width: 62, height: 26)),
+              Expanded(child: Shimmer(width: 62, height: 26)),
+              Expanded(child: Shimmer(width: 48, height: 26)),
+            ],
+          ),
+        ],
       ),
     );
   }

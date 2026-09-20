@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/motion/app_motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_surface.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../core/widgets/info_tile.dart';
@@ -84,14 +86,12 @@ class ActiveDeliveryScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            collected ? l10n.deliverToCustomer : l10n.headToRestaurant,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          // Two stages, and which one the rider is in. The whole screen is
+          // "what now?", so answering it above the fold — before the cash, the
+          // addresses or the ticket — is the point.
+          _StageStrip(collected: collected),
+          const SizedBox(height: 18),
 
           // Cash first, above the addresses. It is the one number on this
           // screen the rider is personally liable for, and burying it under a
@@ -318,19 +318,24 @@ class _CashBanner extends StatelessWidget {
         ? AppColors.orangeDeep
         : (isDark ? AppColors.greenLight : AppColors.greenDeep);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: base.withValues(alpha: isDark ? 0.16 : 0.10),
-        borderRadius: BorderRadius.circular(AppTheme.radius),
-        border: Border.all(color: base.withValues(alpha: 0.4)),
-      ),
+    return SurfaceCard(
+      accent: base,
+      padding: const EdgeInsets.all(17),
       child: Row(
         children: <Widget>[
-          Icon(
-            cash ? Icons.payments_outlined : Icons.verified_outlined,
-            color: base,
-            size: 24,
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: base.withValues(alpha: isDark ? 0.24 : 0.16),
+            ),
+            child: Icon(
+              cash ? Icons.payments_rounded : Icons.verified_rounded,
+              color: base,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -341,6 +346,7 @@ class _CashBanner extends StatelessWidget {
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: base,
+                height: 1.35,
               ),
             ),
           ),
@@ -382,17 +388,14 @@ class _Leg extends StatelessWidget {
 
     return Opacity(
       opacity: dimmed ? 0.55 : 1,
-      child: Container(
+      child: AnimatedContainer(
+        duration: AppMotion.medium,
+        curve: AppMotion.change,
         padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-          border: Border.all(
-            color: dimmed
-                ? theme.colorScheme.outline
-                : accent.withValues(alpha: 0.45),
-            width: dimmed ? 1 : 1.6,
-          ),
+        decoration: AppSurface.decoration(
+          context,
+          accent: dimmed ? null : accent,
+          radius: AppSurface.radiusLarge,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,6 +629,112 @@ class _VegMark extends StatelessWidget {
           height: 6,
           decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
         ),
+      ),
+    );
+  }
+}
+
+/// Where the rider is in the two-step journey, and what is left.
+///
+/// Both stages are always shown, the finished one struck through in the
+/// accent rather than hidden: a rider glancing down mid-ride wants to confirm
+/// what they have already done as much as what is next.
+class _StageStrip extends StatelessWidget {
+  const _StageStrip({required this.collected});
+
+  final bool collected;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _Stage(
+            label: l10n.headToRestaurant,
+            icon: Icons.storefront_rounded,
+            state: collected ? _StageState.done : _StageState.live,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _Stage(
+            label: l10n.deliverToCustomer,
+            icon: Icons.location_on_rounded,
+            state: collected ? _StageState.live : _StageState.waiting,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+enum _StageState { done, live, waiting }
+
+class _Stage extends StatelessWidget {
+  const _Stage({
+    required this.label,
+    required this.icon,
+    required this.state,
+  });
+
+  final String label;
+  final IconData icon;
+  final _StageState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
+    final Color green = isDark ? AppColors.greenLight : AppColors.greenDeep;
+
+    final Color tint = switch (state) {
+      _StageState.done => green,
+      _StageState.live => AppColors.orangeDeep,
+      _StageState.waiting => theme.colorScheme.onSurfaceVariant,
+    };
+
+    final bool filled = state != _StageState.waiting;
+
+    return AnimatedContainer(
+      duration: AppMotion.medium,
+      curve: AppMotion.change,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: filled
+            ? tint.withValues(alpha: isDark ? 0.16 : 0.10)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppSurface.radiusSmall),
+        border: Border.all(
+          color: filled
+              ? tint.withValues(alpha: 0.4)
+              : AppSurface.line(context),
+        ),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            state == _StageState.done ? Icons.check_rounded : icon,
+            size: 17,
+            color: tint,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: tint,
+                fontWeight: state == _StageState.live
+                    ? FontWeight.w800
+                    : FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
