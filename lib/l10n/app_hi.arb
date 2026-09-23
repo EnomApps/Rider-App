@@ -98,6 +98,8 @@
   "vehicleScooter": "स्कूटर",
   "vehicleEv": "इलेक्ट्रिक वाहन",
   "vehicleBicycle": "साइकिल",
+  "vehicleWalk": "पैदल",
+  "vehicleNoPapersNote": "वाहन नंबर या आरसी की ज़रूरत नहीं। केवल आधार और पैन मांगा जाएगा।",
   "vehicleNumberLabel": "वाहन नंबर",
   "vehicleNumberHint": "TN01AB1234",
   "rcNumberLabel": "आरसी नंबर",

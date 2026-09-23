@@ -98,6 +98,8 @@
   "vehicleScooter": "ஸ்கூட்டர்",
   "vehicleEv": "மின்சார வாகனம்",
   "vehicleBicycle": "சைக்கிள்",
+  "vehicleWalk": "நடந்து",
+  "vehicleNoPapersNote": "வாகன எண் அல்லது RC தேவையில்லை. ஆதார் மற்றும் PAN மட்டுமே கேட்கப்படும்.",
   "vehicleNumberLabel": "வாகன எண்",
   "vehicleNumberHint": "TN01AB1234",
   "rcNumberLabel": "RC எண்",

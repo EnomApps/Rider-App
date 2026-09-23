@@ -18,8 +18,11 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.7.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+    id("com.android.application") version "8.13.0" apply false
+    id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // Declared here, applied in app/build.gradle.kts only when a
+    // google-services.json is actually present. See the note there.
+    id("com.google.gms.google-services") version "4.4.4" apply false
 }
 
 include(":app")

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "185261348774",
+    "project_id": "nexmile-e03c1",
+    "storage_bucket": "nexmile-e03c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185261348774:android:bc07428142a989f1c46167",
+        "android_client_info": {
+          "package_name": "com.nexmile.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFuerA6vbdmkt9Iz_VZqpm5qiK3cX3Ft8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185261348774:android:c1affb2d97bb2976c46167",
+        "android_client_info": {
+          "package_name": "com.nexmile.rider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFuerA6vbdmkt9Iz_VZqpm5qiK3cX3Ft8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

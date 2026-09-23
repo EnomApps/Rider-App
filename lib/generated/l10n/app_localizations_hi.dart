@@ -18,7 +18,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chooseLanguageTitle => 'अपनी भाषा चुनें';
 
   @override
-  String get chooseLanguageSubtitle => 'वह भाषा चुनें जिसमें आप सहज हों. आप इसे कभी भी सेटिंग्स में बदल सकते हैं.';
+  String get chooseLanguageSubtitle =>
+      'वह भाषा चुनें जिसमें आप सहज हों. आप इसे कभी भी सेटिंग्स में बदल सकते हैं.';
 
   @override
   String get searchLanguageHint => 'भाषा खोजें';
@@ -44,7 +45,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeTitle => 'Nexmile में आपका स्वागत है';
 
   @override
-  String get homeSubtitle => 'ताज़ा किराना, गरम खाना और रोज़मर्रा की ज़रूरतें आपके पास की दुकानों से.';
+  String get homeSubtitle =>
+      'ताज़ा किराना, गरम खाना और रोज़मर्रा की ज़रूरतें आपके पास की दुकानों से.';
 
   @override
   String get changeLanguage => 'भाषा बदलें';
@@ -64,7 +66,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get loginTitle => 'Nexmile में साइन इन करें';
 
   @override
-  String get loginSubtitle => 'अपना ईमेल या मोबाइल नंबर दर्ज करें, हम आपको सत्यापन कोड भेजेंगे.';
+  String get loginSubtitle =>
+      'अपना ईमेल या मोबाइल नंबर दर्ज करें, हम आपको सत्यापन कोड भेजेंगे.';
 
   @override
   String get emailOrPhoneLabel => 'ईमेल या मोबाइल नंबर';
@@ -73,13 +76,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get emailOrPhoneHint => 'name@example.com या 9876543210';
 
   @override
-  String get invalidEmailOrPhone => 'सही ईमेल पता या 10 अंकों का मोबाइल नंबर दर्ज करें';
+  String get invalidEmailOrPhone =>
+      'सही ईमेल पता या 10 अंकों का मोबाइल नंबर दर्ज करें';
 
   @override
   String get sendCode => 'कोड भेजें';
 
   @override
-  String get agreeToTermsOnContinue => 'आगे बढ़ने पर आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं.';
+  String get agreeToTermsOnContinue =>
+      'आगे बढ़ने पर आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं.';
 
   @override
   String get otpTitle => 'पुष्टि करें कि यह आप हैं';
@@ -104,22 +109,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get codeResent => 'नया कोड भेज दिया गया है';
 
   @override
-  String get incorrectCode => 'यह कोड ग़लत है या समाप्त हो चुका है. नया कोड मँगाएँ.';
+  String get incorrectCode =>
+      'यह कोड ग़लत है या समाप्त हो चुका है. नया कोड मँगाएँ.';
 
   @override
   String get enterFullCode => 'पूरे 6 अंक दर्ज करें';
 
   @override
-  String get accountSuspended => 'यह खाता निलंबित कर दिया गया है. कृपया सहायता से संपर्क करें.';
+  String get accountSuspended =>
+      'यह खाता निलंबित कर दिया गया है. कृपया सहायता से संपर्क करें.';
 
   @override
-  String get tooManyAttempts => 'बहुत अधिक प्रयास हो गए. कृपया कुछ देर बाद फिर कोशिश करें.';
+  String get tooManyAttempts =>
+      'बहुत अधिक प्रयास हो गए. कृपया कुछ देर बाद फिर कोशिश करें.';
 
   @override
-  String get sessionExpired => 'आपका सत्र समाप्त हो गया है. कृपया फिर से साइन इन करें.';
+  String get sessionExpired =>
+      'आपका सत्र समाप्त हो गया है. कृपया फिर से साइन इन करें.';
 
   @override
-  String get networkError => 'इंटरनेट कनेक्शन नहीं है. अपना कनेक्शन जाँचें और फिर कोशिश करें.';
+  String get networkError =>
+      'इंटरनेट कनेक्शन नहीं है. अपना कनेक्शन जाँचें और फिर कोशिश करें.';
 
   @override
   String get developmentCode => 'डेवलपमेंट कोड';
@@ -176,13 +186,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get checkingYourAccount => 'आपका खाता जाँचा जा रहा है';
 
   @override
-  String get couldNotLoadAccount => 'हम आपका खाता लोड नहीं कर सके। अपना कनेक्शन जाँचकर फिर कोशिश करें।';
+  String get couldNotLoadAccount =>
+      'हम आपका खाता लोड नहीं कर सके। अपना कनेक्शन जाँचकर फिर कोशिश करें।';
 
   @override
   String get notARiderAccountTitle => 'यह डिलीवरी पार्टनर खाता नहीं है';
 
   @override
-  String get notARiderAccount => 'यह ईमेल या मोबाइल नंबर पहले से नेक्समाइल ग्राहक के रूप में पंजीकृत है। साइन आउट करके डिलीवरी पार्टनर बनने के लिए दूसरा उपयोग करें।';
+  String get notARiderAccount =>
+      'यह ईमेल या मोबाइल नंबर पहले से नेक्समाइल ग्राहक के रूप में पंजीकृत है। साइन आउट करके डिलीवरी पार्टनर बनने के लिए दूसरा उपयोग करें।';
 
   @override
   String notARiderAccountFor(String role) {
@@ -205,7 +217,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get onboardingTitle => 'नेक्समाइल पार्टनर बनें';
 
   @override
-  String get onboardingSubtitle => 'कुछ जानकारी और आपके दस्तावेज़, फिर हमारी टीम आपको सत्यापित करती है। आम तौर पर दो कार्यदिवस लगते हैं।';
+  String get onboardingSubtitle =>
+      'कुछ जानकारी और आपके दस्तावेज़, फिर हमारी टीम आपको सत्यापित करती है। आम तौर पर दो कार्यदिवस लगते हैं।';
 
   @override
   String stepOfSteps(int current, int total) {
@@ -216,43 +229,50 @@ class AppLocalizationsHi extends AppLocalizations {
   String get stepIdentityTitle => 'आपके बारे में';
 
   @override
-  String get stepIdentitySubtitle => 'अपना नाम ठीक वैसे ही लिखें जैसे आपके आधार कार्ड पर है।';
+  String get stepIdentitySubtitle =>
+      'अपना नाम ठीक वैसे ही लिखें जैसे आपके आधार कार्ड पर है।';
 
   @override
   String get stepVehicleTitle => 'आपका वाहन';
 
   @override
-  String get stepVehicleSubtitle => 'बताएँ कि आप क्या चलाते हैं और उसका नंबर क्या है।';
+  String get stepVehicleSubtitle =>
+      'बताएँ कि आप क्या चलाते हैं और उसका नंबर क्या है।';
 
   @override
   String get stepIdentityNumbersTitle => 'पहचान संख्याएँ';
 
   @override
-  String get stepIdentityNumbersSubtitle => 'ये उन दस्तावेज़ों से मेल खानी चाहिए जो आप आगे अपलोड करेंगे।';
+  String get stepIdentityNumbersSubtitle =>
+      'ये उन दस्तावेज़ों से मेल खानी चाहिए जो आप आगे अपलोड करेंगे।';
 
   @override
   String get stepLicenceTitle => 'लाइसेंस और बीमा';
 
   @override
-  String get stepLicenceSubtitle => 'डिलीवरी शुरू करने के दिन दोनों वैध होने चाहिए।';
+  String get stepLicenceSubtitle =>
+      'डिलीवरी शुरू करने के दिन दोनों वैध होने चाहिए।';
 
   @override
   String get stepBankTitle => 'भुगतान कहाँ मिलेगा';
 
   @override
-  String get stepBankSubtitle => 'आपकी कमाई इसी खाते में आएगी। इसे ध्यान से जाँचें।';
+  String get stepBankSubtitle =>
+      'आपकी कमाई इसी खाते में आएगी। इसे ध्यान से जाँचें।';
 
   @override
   String get stepDocumentsTitle => 'आपके दस्तावेज़';
 
   @override
-  String get stepDocumentsSubtitle => 'हर दस्तावेज़ की अच्छी रोशनी में फ़ोटो लें। JPG, PNG या PDF, हर एक 5 MB तक।';
+  String get stepDocumentsSubtitle =>
+      'हर दस्तावेज़ की अच्छी रोशनी में फ़ोटो लें। JPG, PNG या PDF, हर एक 5 MB तक।';
 
   @override
   String get stepReviewTitle => 'जाँचें और भेजें';
 
   @override
-  String get stepReviewSubtitle => 'भेजने के बाद, जब तक हमारी टीम समीक्षा नहीं कर लेती, आपकी जानकारी लॉक रहेगी।';
+  String get stepReviewSubtitle =>
+      'भेजने के बाद, जब तक हमारी टीम समीक्षा नहीं कर लेती, आपकी जानकारी लॉक रहेगी।';
 
   @override
   String get saveAndContinue => 'सहेजें और आगे बढ़ें';
@@ -286,6 +306,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get vehicleBicycle => 'साइकिल';
+
+  @override
+  String get vehicleWalk => 'पैदल';
+
+  @override
+  String get vehicleNoPapersNote =>
+      'वाहन नंबर या आरसी की ज़रूरत नहीं। केवल आधार और पैन मांगा जाएगा।';
 
   @override
   String get vehicleNumberLabel => 'वाहन नंबर';
@@ -374,13 +401,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get documentOptional => 'वैकल्पिक';
 
   @override
-  String get fileTooLarge => 'वह फ़ाइल 5 MB से बड़ी है। स्कैन के बजाय फ़ोटो आज़माएँ।';
+  String get fileTooLarge =>
+      'वह फ़ाइल 5 MB से बड़ी है। स्कैन के बजाय फ़ोटो आज़माएँ।';
 
   @override
   String get unsupportedFileType => 'JPG, PNG या PDF चुनें।';
 
   @override
-  String get pickerUnavailable => 'हम उसे नहीं खोल सके। ऐप की कैमरा और फ़ोटो अनुमतियाँ जाँचें।';
+  String get pickerUnavailable =>
+      'हम उसे नहीं खोल सके। ऐप की कैमरा और फ़ोटो अनुमतियाँ जाँचें।';
 
   @override
   String get uploadFailed => 'वह अपलोड पूरा नहीं हुआ। कृपया फिर कोशिश करें।';
@@ -392,22 +421,26 @@ class AppLocalizationsHi extends AppLocalizations {
   String get submitConfirmTitle => 'सत्यापन के लिए भेजें?';
 
   @override
-  String get submitConfirmBody => 'हमारी टीम की समीक्षा तक आपकी जानकारी और दस्तावेज़ लॉक रहेंगे। निर्णय आने तक आप उन्हें बदल नहीं सकेंगे।';
+  String get submitConfirmBody =>
+      'हमारी टीम की समीक्षा तक आपकी जानकारी और दस्तावेज़ लॉक रहेंगे। निर्णय आने तक आप उन्हें बदल नहीं सकेंगे।';
 
   @override
   String get cancelLabel => 'रद्द करें';
 
   @override
-  String get completeEverythingBeforeSubmitting => 'भेजने से पहले हर चरण पूरा करें और सभी दस्तावेज़ अपलोड करें।';
+  String get completeEverythingBeforeSubmitting =>
+      'भेजने से पहले हर चरण पूरा करें और सभी दस्तावेज़ अपलोड करें।';
 
   @override
-  String get checkTheHighlightedFields => 'चिह्नित फ़ील्ड जाँचकर फिर कोशिश करें।';
+  String get checkTheHighlightedFields =>
+      'चिह्नित फ़ील्ड जाँचकर फिर कोशिश करें।';
 
   @override
   String get underReviewTitle => 'हम आपके दस्तावेज़ सत्यापित कर रहे हैं';
 
   @override
-  String get underReviewBody => 'हमारी टीम आम तौर पर दो कार्यदिवसों में समीक्षा कर लेती है। स्वीकृति मिलते ही हम आपको बता देंगे।';
+  String get underReviewBody =>
+      'हमारी टीम आम तौर पर दो कार्यदिवसों में समीक्षा कर लेती है। स्वीकृति मिलते ही हम आपको बता देंगे।';
 
   @override
   String get checkAgain => 'फिर जाँचें';
@@ -419,7 +452,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get rejectedTitle => 'हम आपको सत्यापित नहीं कर सके';
 
   @override
-  String get rejectedBody => 'नीचे हमारी टीम ने जो बताया है उसे ठीक करके दस्तावेज़ फिर भेजें।';
+  String get rejectedBody =>
+      'नीचे हमारी टीम ने जो बताया है उसे ठीक करके दस्तावेज़ फिर भेजें।';
 
   @override
   String get rejectionReasonLabel => 'कारण';
@@ -431,10 +465,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get blockedTitle => 'आप अभी ऑनलाइन नहीं हो सकते';
 
   @override
-  String get documentsExpiredMessage => 'आपका लाइसेंस या बीमा समाप्त हो चुका है। ऑनलाइन होने के लिए मौजूदा दस्तावेज़ अपलोड करें।';
+  String get documentsExpiredMessage =>
+      'आपका लाइसेंस या बीमा समाप्त हो चुका है। ऑनलाइन होने के लिए मौजूदा दस्तावेज़ अपलोड करें।';
 
   @override
-  String get awaitingVerificationMessage => 'आपके दस्तावेज़ अब भी सत्यापित किए जा रहे हैं।';
+  String get awaitingVerificationMessage =>
+      'आपके दस्तावेज़ अब भी सत्यापित किए जा रहे हैं।';
 
   @override
   String get updateDocuments => 'दस्तावेज़ अपडेट करें';
@@ -443,7 +479,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get riderHomeTitle => 'चलने के लिए तैयार';
 
   @override
-  String get riderHomeSubtitle => 'ऑनलाइन हों और हम आपको आस-पास की डिलीवरी भेजेंगे।';
+  String get riderHomeSubtitle =>
+      'ऑनलाइन हों और हम आपको आस-पास की डिलीवरी भेजेंगे।';
 
   @override
   String get dutyStatusLabel => 'ड्यूटी स्थिति';
@@ -470,7 +507,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get waitingForOrders => 'आस-पास ऑर्डर का इंतज़ार है';
 
   @override
-  String get youAreOffline => 'आप ऑफ़लाइन हैं। आपको कोई डिलीवरी नहीं भेजी जाएगी।';
+  String get youAreOffline =>
+      'आप ऑफ़लाइन हैं। आपको कोई डिलीवरी नहीं भेजी जाएगी।';
 
   @override
   String get completedDeliveriesLabel => 'पूरी हुई डिलीवरी';
@@ -512,7 +550,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get invalidIfsc => 'वैध IFSC कोड दर्ज करें, जैसे SBIN0001234';
 
   @override
-  String get invalidVehicleNumber => 'नंबर ठीक वैसे ही दर्ज करें जैसा नंबर प्लेट पर है';
+  String get invalidVehicleNumber =>
+      'नंबर ठीक वैसे ही दर्ज करें जैसा नंबर प्लेट पर है';
 
   @override
   String get invalidAccountNumber => 'वैध खाता संख्या दर्ज करें';
@@ -521,7 +560,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dateMustBeFuture => 'यह तारीख़ पहले ही बीत चुकी है';
 
   @override
-  String get mustBeEighteen => 'डिलीवरी करने के लिए आपकी उम्र कम से कम 18 वर्ष होनी चाहिए';
+  String get mustBeEighteen =>
+      'डिलीवरी करने के लिए आपकी उम्र कम से कम 18 वर्ष होनी चाहिए';
 
   @override
   String get docAadhaarFront => 'आधार कार्ड (सामने)';
@@ -560,7 +600,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get orderBoardTitle => 'आपके पास के ऑर्डर';
 
   @override
-  String get orderBoardSubtitle => 'सबसे नज़दीकी रेस्टोरेंट पहले. सूची अपने आप ताज़ा होती रहती है.';
+  String get orderBoardSubtitle =>
+      'सबसे नज़दीकी रेस्टोरेंट पहले. सूची अपने आप ताज़ा होती रहती है.';
 
   @override
   String orderNumberLabel(String number) {
@@ -621,7 +662,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get orderAccepted => 'ऑर्डर स्वीकार हुआ. रेस्टोरेंट पहुँचें.';
 
   @override
-  String get orderAlreadyTaken => 'यह ऑर्डर किसी और राइडर ने ले लिया. यह नई सूची है.';
+  String get orderAlreadyTaken =>
+      'यह ऑर्डर किसी और राइडर ने ले लिया. यह नई सूची है.';
 
   @override
   String get orderNoLongerYours => 'यह ऑर्डर अब आपका नहीं है.';
@@ -630,7 +672,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get boardEmptyTitle => 'अभी कोई ऑर्डर नहीं';
 
   @override
-  String get boardEmptyBody => 'ऑनलाइन बने रहें. रेस्टोरेंट व्यस्त होते ही सूची अपने आप भर जाएगी.';
+  String get boardEmptyBody =>
+      'ऑनलाइन बने रहें. रेस्टोरेंट व्यस्त होते ही सूची अपने आप भर जाएगी.';
 
   @override
   String get boardOfflineTitle => 'आप ऑफ़लाइन हैं';
@@ -648,7 +691,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get boardNoLocationTitle => 'हम आपको ढूँढ नहीं पा रहे';
 
   @override
-  String get boardNoLocationBody => 'ऑर्डर रेस्टोरेंट की दूरी के हिसाब से दिखते हैं, इसलिए कुछ भी दिखाने के लिए आपकी लोकेशन ज़रूरी है.';
+  String get boardNoLocationBody =>
+      'ऑर्डर रेस्टोरेंट की दूरी के हिसाब से दिखते हैं, इसलिए कुछ भी दिखाने के लिए आपकी लोकेशन ज़रूरी है.';
 
   @override
   String get boardNotVerifiedTitle => 'अभी राइड करने की मंज़ूरी नहीं है';
@@ -666,7 +710,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noActiveDeliveryTitle => 'अभी कोई ऑर्डर नहीं है';
 
   @override
-  String get noActiveDeliveryBody => 'सूची से कोई ऑर्डर स्वीकार करें, वह यहाँ दिखने लगेगा.';
+  String get noActiveDeliveryBody =>
+      'सूची से कोई ऑर्डर स्वीकार करें, वह यहाँ दिखने लगेगा.';
 
   @override
   String get confirmPickupButton => 'मैंने ले लिया है';
@@ -681,7 +726,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pickupCodeHint => 'कोड';
 
   @override
-  String get wrongPickupCode => 'यह कोड मेल नहीं खाया. रेस्टोरेंट से दोबारा पूछें.';
+  String get wrongPickupCode =>
+      'यह कोड मेल नहीं खाया. रेस्टोरेंट से दोबारा पूछें.';
 
   @override
   String get pickupConfirmed => 'ऑर्डर ले लिया. अब ग्राहक तक पहुँचाएँ.';
@@ -693,7 +739,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get confirmDeliveryTitle => 'डिलीवरी की पुष्टि करें';
 
   @override
-  String get confirmDeliveryBody => 'तभी पुष्टि करें जब ऑर्डर ग्राहक के हाथ में पहुँच चुका हो.';
+  String get confirmDeliveryBody =>
+      'तभी पुष्टि करें जब ऑर्डर ग्राहक के हाथ में पहुँच चुका हो.';
 
   @override
   String confirmDeliveryCashBody(String amount) {
@@ -710,16 +757,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get releaseOrderTitle => 'यह ऑर्डर वापस करना है?';
 
   @override
-  String get releaseOrderBody => 'यह दूसरे राइडर के लिए सूची में वापस चला जाएगा. खाना लेने से पहले ही ऐसा कर सकते हैं.';
+  String get releaseOrderBody =>
+      'यह दूसरे राइडर के लिए सूची में वापस चला जाएगा. खाना लेने से पहले ही ऐसा कर सकते हैं.';
 
   @override
   String get releaseReasonHint => 'कारण (ज़रूरी नहीं)';
 
   @override
-  String get orderReleased => 'वापस कर दिया. यह दूसरे राइडर के लिए फिर उपलब्ध है.';
+  String get orderReleased =>
+      'वापस कर दिया. यह दूसरे राइडर के लिए फिर उपलब्ध है.';
 
   @override
-  String get finishCurrentOrderFirst => 'पहले अपना मौजूदा ऑर्डर पूरा करें या वापस कर दें.';
+  String get finishCurrentOrderFirst =>
+      'पहले अपना मौजूदा ऑर्डर पूरा करें या वापस कर दें.';
 
   @override
   String get callRestaurant => 'रेस्टोरेंट को कॉल करें';
@@ -773,13 +823,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get trackingOn => 'लोकेशन साझा हो रही है';
 
   @override
-  String get locationUnavailableMessage => 'हम आपकी लोकेशन नहीं पढ़ पा रहे. लोकेशन चालू करें और Nexmile Rider को अनुमति दें.';
+  String get locationUnavailableMessage =>
+      'हम आपकी लोकेशन नहीं पढ़ पा रहे. लोकेशन चालू करें और Nexmile Rider को अनुमति दें.';
 
   @override
   String get locationPermissionTitle => 'लोकेशन ज़रूरी है';
 
   @override
-  String get locationPermissionBody => 'ऑर्डर आपकी दूरी के हिसाब से बाँटे जाते हैं, और ग्राहक नक्शे पर आपको देखता है. ऑनलाइन होने के लिए लोकेशन की अनुमति दें.';
+  String get locationPermissionBody =>
+      'ऑर्डर आपकी दूरी के हिसाब से बाँटे जाते हैं, और ग्राहक नक्शे पर आपको देखता है. ऑनलाइन होने के लिए लोकेशन की अनुमति दें.';
 
   @override
   String get locationSettingsButton => 'सेटिंग्स खोलें';

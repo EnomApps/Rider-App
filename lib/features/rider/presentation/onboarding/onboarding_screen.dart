@@ -47,7 +47,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   /// Every step, in order. The count drives the progress rail, so adding a step
   /// is a one-line change here.
-  static const List<OnboardingStep> _steps = <OnboardingStep>[
+  static const List<OnboardingStep> _allSteps = <OnboardingStep>[
     OnboardingStep.identity,
     OnboardingStep.vehicle,
     OnboardingStep.identityNumbers,
@@ -56,6 +56,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingStep.documents,
     OnboardingStep.review,
   ];
+
+  /// The steps this rider actually has to answer.
+  ///
+  /// A rider on foot or on a bicycle has no licence and no insurance policy,
+  /// so that step is dropped rather than shown with nothing they can put in
+  /// it. The list is derived from the saved vehicle type on every build, which
+  /// is what makes the rail recount itself the moment the vehicle step is
+  /// saved — and what lets a rider who goes back and switches to a motorcycle
+  /// get the licence step back.
+  static List<OnboardingStep> _stepsFor(RiderProfile? profile) {
+    final bool papers = profile?.vehicleType.hasPapers ?? true;
+    if (papers) return _allSteps;
+    return _allSteps
+        .where((OnboardingStep step) => step != OnboardingStep.licence)
+        .toList(growable: false);
+  }
+
+  List<OnboardingStep> get _steps =>
+      _stepsFor(context.read<RiderController>().profile);
 
   int _index = 0;
 
@@ -96,9 +115,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final RiderProfile? profile = rider.profile;
     if (profile == null) return;
 
+    final List<OnboardingStep> steps = _stepsFor(profile);
+    void land(OnboardingStep step) {
+      final int target = steps.indexOf(step);
+      if (target != -1) setState(() => _index = target);
+    }
+
     if (!profile.hasIdentity) return; // Step 0 — the default.
     if (!profile.hasVehicle) {
-      setState(() => _index = 1);
+      land(OnboardingStep.vehicle);
       return;
     }
 
@@ -108,11 +133,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // (Aadhaar and bank details are hidden on the model and never returned).
     final RiderKycSummary kyc = profile.kyc;
     if (kyc.pan == null) {
-      setState(() => _index = 2);
+      land(OnboardingStep.identityNumbers);
       return;
     }
-    if (kyc.drivingLicenceNo == null || kyc.insuranceExpiry == null) {
-      setState(() => _index = 3);
+    // Only asked of a rider who has papers at all. Without this guard a
+    // walking rider resumes here forever: the two fields are never filled
+    // because the step they live on is not in their wizard.
+    if (steps.contains(OnboardingStep.licence) &&
+        (kyc.drivingLicenceNo == null || kyc.insuranceExpiry == null)) {
+      land(OnboardingStep.licence);
       return;
     }
 
@@ -120,7 +149,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // whether that step was done. Land on the documents step if anything is
     // still missing there, otherwise on the review step, and let the rider
     // walk back if the bank details still need entering.
-    setState(() => _index = rider.kyc.missingDocuments.isEmpty ? 6 : 5);
+    land(
+      rider.kyc.missingDocuments.isEmpty
+          ? OnboardingStep.review
+          : OnboardingStep.documents,
+    );
   }
 
   void _clearFailure() {
@@ -160,6 +193,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final RiderController rider = context.watch<RiderController>();
 
+    final List<OnboardingStep> steps = _stepsFor(rider.profile);
+    // Saving "walk" on the vehicle step drops the licence step out from under
+    // the index the rider is standing on, and a rider sitting on the last step
+    // when that happens would otherwise index past the end.
+    final int index = _index.clamp(0, steps.length - 1);
+
     final Widget? banner = _failure == null
         ? null
         : AuthErrorBanner(message: _failure!.message(l10n));
@@ -168,12 +207,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // rider who cannot work yet, and a system back that dropped them onto a
     // dead route would be worse than one that walks back a step.
     return PopScope(
-      canPop: _index == 0,
+      canPop: index == 0,
       onPopInvokedWithResult: (bool didPop, _) {
-        if (!didPop && _index > 0) _back();
+        if (!didPop && index > 0) _back();
       },
       child: _buildStep(
-        step: _steps[_index],
+        step: steps[index],
+        index: index,
+        total: steps.length,
         rider: rider,
         banner: banner,
       ),
@@ -182,15 +223,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildStep({
     required OnboardingStep step,
+    required int index,
+    required int total,
     required RiderController rider,
     required Widget? banner,
   }) {
     final OnboardingStepContext stepContext = OnboardingStepContext(
-      index: _index,
-      total: _steps.length,
+      index: index,
+      total: total,
       rider: rider,
       banner: banner,
-      onBack: _index == 0 ? null : _back,
+      onBack: index == 0 ? null : _back,
       onResult: _handleResult,
       onEdited: _clearFailure,
       goTo: _goTo,

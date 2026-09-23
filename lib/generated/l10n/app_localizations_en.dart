@@ -18,7 +18,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseLanguageTitle => 'Choose your language';
 
   @override
-  String get chooseLanguageSubtitle => 'Pick the language you are most comfortable with. You can change it anytime from Settings.';
+  String get chooseLanguageSubtitle =>
+      'Pick the language you are most comfortable with. You can change it anytime from Settings.';
 
   @override
   String get searchLanguageHint => 'Search language';
@@ -44,7 +45,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitle => 'Welcome to Nexmile';
 
   @override
-  String get homeSubtitle => 'Fresh groceries, hot food and daily essentials delivered from shops near you.';
+  String get homeSubtitle =>
+      'Fresh groceries, hot food and daily essentials delivered from shops near you.';
 
   @override
   String get changeLanguage => 'Change language';
@@ -64,7 +66,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginTitle => 'Sign in to Nexmile';
 
   @override
-  String get loginSubtitle => 'Enter your email or mobile number and we will send you a verification code.';
+  String get loginSubtitle =>
+      'Enter your email or mobile number and we will send you a verification code.';
 
   @override
   String get emailOrPhoneLabel => 'Email or mobile number';
@@ -73,13 +76,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailOrPhoneHint => 'name@example.com or 9876543210';
 
   @override
-  String get invalidEmailOrPhone => 'Enter a valid email address or 10-digit mobile number';
+  String get invalidEmailOrPhone =>
+      'Enter a valid email address or 10-digit mobile number';
 
   @override
   String get sendCode => 'Send code';
 
   @override
-  String get agreeToTermsOnContinue => 'By continuing you agree to our Terms of Service and Privacy Policy.';
+  String get agreeToTermsOnContinue =>
+      'By continuing you agree to our Terms of Service and Privacy Policy.';
 
   @override
   String get otpTitle => 'Verify it is you';
@@ -104,22 +109,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get codeResent => 'A new code has been sent';
 
   @override
-  String get incorrectCode => 'That code is not correct or has expired. Request a new one.';
+  String get incorrectCode =>
+      'That code is not correct or has expired. Request a new one.';
 
   @override
   String get enterFullCode => 'Enter all 6 digits';
 
   @override
-  String get accountSuspended => 'This account has been suspended. Please contact support.';
+  String get accountSuspended =>
+      'This account has been suspended. Please contact support.';
 
   @override
-  String get tooManyAttempts => 'Too many attempts. Please wait a while and try again.';
+  String get tooManyAttempts =>
+      'Too many attempts. Please wait a while and try again.';
 
   @override
-  String get sessionExpired => 'Your session has expired. Please sign in again.';
+  String get sessionExpired =>
+      'Your session has expired. Please sign in again.';
 
   @override
-  String get networkError => 'No internet connection. Check your connection and try again.';
+  String get networkError =>
+      'No internet connection. Check your connection and try again.';
 
   @override
   String get developmentCode => 'Development code';
@@ -176,13 +186,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkingYourAccount => 'Checking your account';
 
   @override
-  String get couldNotLoadAccount => 'We could not load your account. Check your connection and try again.';
+  String get couldNotLoadAccount =>
+      'We could not load your account. Check your connection and try again.';
 
   @override
   String get notARiderAccountTitle => 'This is not a delivery partner account';
 
   @override
-  String get notARiderAccount => 'This email or mobile number is already registered on another Nexmile account. Sign out and use a different one to join as a delivery partner.';
+  String get notARiderAccount =>
+      'This email or mobile number is already registered on another Nexmile account. Sign out and use a different one to join as a delivery partner.';
 
   @override
   String notARiderAccountFor(String role) {
@@ -205,7 +217,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingTitle => 'Become a Nexmile partner';
 
   @override
-  String get onboardingSubtitle => 'A few details and your documents, then our team verifies you. It usually takes up to two working days.';
+  String get onboardingSubtitle =>
+      'A few details and your documents, then our team verifies you. It usually takes up to two working days.';
 
   @override
   String stepOfSteps(int current, int total) {
@@ -216,43 +229,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stepIdentityTitle => 'About you';
 
   @override
-  String get stepIdentitySubtitle => 'Enter your name exactly as it appears on your Aadhaar card.';
+  String get stepIdentitySubtitle =>
+      'Enter your name exactly as it appears on your Aadhaar card.';
 
   @override
   String get stepVehicleTitle => 'Your vehicle';
 
   @override
-  String get stepVehicleSubtitle => 'Tell us what you ride and the number plate it carries.';
+  String get stepVehicleSubtitle =>
+      'Tell us what you ride and the number plate it carries.';
 
   @override
   String get stepIdentityNumbersTitle => 'Identity numbers';
 
   @override
-  String get stepIdentityNumbersSubtitle => 'These must match the documents you upload later.';
+  String get stepIdentityNumbersSubtitle =>
+      'These must match the documents you upload later.';
 
   @override
   String get stepLicenceTitle => 'Licence and insurance';
 
   @override
-  String get stepLicenceSubtitle => 'Both must be valid on the day you start delivering.';
+  String get stepLicenceSubtitle =>
+      'Both must be valid on the day you start delivering.';
 
   @override
   String get stepBankTitle => 'Where you get paid';
 
   @override
-  String get stepBankSubtitle => 'Your earnings are settled to this account. Check it carefully.';
+  String get stepBankSubtitle =>
+      'Your earnings are settled to this account. Check it carefully.';
 
   @override
   String get stepDocumentsTitle => 'Your documents';
 
   @override
-  String get stepDocumentsSubtitle => 'Photograph each one in good light. JPG, PNG or PDF, up to 5 MB each.';
+  String get stepDocumentsSubtitle =>
+      'Photograph each one in good light. JPG, PNG or PDF, up to 5 MB each.';
 
   @override
   String get stepReviewTitle => 'Check and submit';
 
   @override
-  String get stepReviewSubtitle => 'Once you submit, your details are locked until our team has reviewed them.';
+  String get stepReviewSubtitle =>
+      'Once you submit, your details are locked until our team has reviewed them.';
 
   @override
   String get saveAndContinue => 'Save and continue';
@@ -286,6 +306,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vehicleBicycle => 'Bicycle';
+
+  @override
+  String get vehicleWalk => 'On foot';
+
+  @override
+  String get vehicleNoPapersNote =>
+      'No vehicle number or RC needed. You will be asked for Aadhaar and PAN only.';
 
   @override
   String get vehicleNumberLabel => 'Vehicle number';
@@ -374,16 +401,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get documentOptional => 'Optional';
 
   @override
-  String get fileTooLarge => 'That file is over 5 MB. Try a photo instead of a scan.';
+  String get fileTooLarge =>
+      'That file is over 5 MB. Try a photo instead of a scan.';
 
   @override
   String get unsupportedFileType => 'Choose a JPG, PNG or PDF.';
 
   @override
-  String get pickerUnavailable => 'We could not open that. Check the app\'s camera and photo permissions.';
+  String get pickerUnavailable =>
+      'We could not open that. Check the app\'s camera and photo permissions.';
 
   @override
-  String get uploadFailed => 'That upload did not go through. Please try again.';
+  String get uploadFailed =>
+      'That upload did not go through. Please try again.';
 
   @override
   String get submitForVerification => 'Submit for verification';
@@ -392,22 +422,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get submitConfirmTitle => 'Submit for verification?';
 
   @override
-  String get submitConfirmBody => 'Your details and documents will be locked while our team reviews them. You cannot change them until a decision is made.';
+  String get submitConfirmBody =>
+      'Your details and documents will be locked while our team reviews them. You cannot change them until a decision is made.';
 
   @override
   String get cancelLabel => 'Cancel';
 
   @override
-  String get completeEverythingBeforeSubmitting => 'Finish every step and upload all the documents before submitting.';
+  String get completeEverythingBeforeSubmitting =>
+      'Finish every step and upload all the documents before submitting.';
 
   @override
-  String get checkTheHighlightedFields => 'Check the highlighted fields and try again.';
+  String get checkTheHighlightedFields =>
+      'Check the highlighted fields and try again.';
 
   @override
   String get underReviewTitle => 'We are verifying your documents';
 
   @override
-  String get underReviewBody => 'Our team usually reviews within two working days. We will let you know as soon as you are approved.';
+  String get underReviewBody =>
+      'Our team usually reviews within two working days. We will let you know as soon as you are approved.';
 
   @override
   String get checkAgain => 'Check again';
@@ -419,7 +453,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rejectedTitle => 'We could not verify you';
 
   @override
-  String get rejectedBody => 'Fix what our team noted below, then send your documents again.';
+  String get rejectedBody =>
+      'Fix what our team noted below, then send your documents again.';
 
   @override
   String get rejectionReasonLabel => 'Reason';
@@ -431,10 +466,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blockedTitle => 'You cannot go online yet';
 
   @override
-  String get documentsExpiredMessage => 'Your licence or insurance has expired. Upload current documents to go online.';
+  String get documentsExpiredMessage =>
+      'Your licence or insurance has expired. Upload current documents to go online.';
 
   @override
-  String get awaitingVerificationMessage => 'Your documents are still being verified.';
+  String get awaitingVerificationMessage =>
+      'Your documents are still being verified.';
 
   @override
   String get updateDocuments => 'Update documents';
@@ -443,7 +480,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get riderHomeTitle => 'Ready to ride';
 
   @override
-  String get riderHomeSubtitle => 'Go online and we will send you nearby deliveries.';
+  String get riderHomeSubtitle =>
+      'Go online and we will send you nearby deliveries.';
 
   @override
   String get dutyStatusLabel => 'Duty status';
@@ -470,7 +508,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waitingForOrders => 'Waiting for orders nearby';
 
   @override
-  String get youAreOffline => 'You are offline. No deliveries will be sent to you.';
+  String get youAreOffline =>
+      'You are offline. No deliveries will be sent to you.';
 
   @override
   String get completedDeliveriesLabel => 'Deliveries completed';
@@ -512,7 +551,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidIfsc => 'Enter a valid IFSC code, like SBIN0001234';
 
   @override
-  String get invalidVehicleNumber => 'Enter the number exactly as it appears on the plate';
+  String get invalidVehicleNumber =>
+      'Enter the number exactly as it appears on the plate';
 
   @override
   String get invalidAccountNumber => 'Enter a valid account number';
@@ -560,7 +600,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderBoardTitle => 'Orders near you';
 
   @override
-  String get orderBoardSubtitle => 'Nearest restaurant first. The list refreshes on its own.';
+  String get orderBoardSubtitle =>
+      'Nearest restaurant first. The list refreshes on its own.';
 
   @override
   String orderNumberLabel(String number) {
@@ -621,7 +662,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderAccepted => 'Order accepted. Head to the restaurant.';
 
   @override
-  String get orderAlreadyTaken => 'Another rider took this one. Here is the latest list.';
+  String get orderAlreadyTaken =>
+      'Another rider took this one. Here is the latest list.';
 
   @override
   String get orderNoLongerYours => 'This order is no longer yours.';
@@ -630,7 +672,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boardEmptyTitle => 'No orders right now';
 
   @override
-  String get boardEmptyBody => 'Stay online. The list updates on its own as restaurants get busy.';
+  String get boardEmptyBody =>
+      'Stay online. The list updates on its own as restaurants get busy.';
 
   @override
   String get boardOfflineTitle => 'You are offline';
@@ -642,13 +685,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boardBusyTitle => 'Finish your delivery first';
 
   @override
-  String get boardBusyBody => 'You can take another order once this one is delivered.';
+  String get boardBusyBody =>
+      'You can take another order once this one is delivered.';
 
   @override
   String get boardNoLocationTitle => 'We cannot find you';
 
   @override
-  String get boardNoLocationBody => 'Orders are sorted by how close the restaurant is, so we need your location to show you anything.';
+  String get boardNoLocationBody =>
+      'Orders are sorted by how close the restaurant is, so we need your location to show you anything.';
 
   @override
   String get boardNotVerifiedTitle => 'Not approved to ride yet';
@@ -666,7 +711,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noActiveDeliveryTitle => 'Nothing in hand';
 
   @override
-  String get noActiveDeliveryBody => 'Accept an order from the board and it will show up here.';
+  String get noActiveDeliveryBody =>
+      'Accept an order from the board and it will show up here.';
 
   @override
   String get confirmPickupButton => 'I have collected it';
@@ -675,13 +721,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickupCodeTitle => 'Pickup code';
 
   @override
-  String get pickupCodeSubtitle => 'Ask the restaurant for the code and type it here.';
+  String get pickupCodeSubtitle =>
+      'Ask the restaurant for the code and type it here.';
 
   @override
   String get pickupCodeHint => 'Code';
 
   @override
-  String get wrongPickupCode => 'That code did not match. Check it with the restaurant.';
+  String get wrongPickupCode =>
+      'That code did not match. Check it with the restaurant.';
 
   @override
   String get pickupConfirmed => 'Picked up. Deliver to the customer.';
@@ -693,7 +741,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmDeliveryTitle => 'Confirm delivery';
 
   @override
-  String get confirmDeliveryBody => 'Only confirm once the customer has the order in hand.';
+  String get confirmDeliveryBody =>
+      'Only confirm once the customer has the order in hand.';
 
   @override
   String confirmDeliveryCashBody(String amount) {
@@ -710,16 +759,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get releaseOrderTitle => 'Hand this order back?';
 
   @override
-  String get releaseOrderBody => 'It goes back on the board for another rider. You can only do this before you collect the food.';
+  String get releaseOrderBody =>
+      'It goes back on the board for another rider. You can only do this before you collect the food.';
 
   @override
   String get releaseReasonHint => 'Reason (optional)';
 
   @override
-  String get orderReleased => 'Handed back. It is available to other riders again.';
+  String get orderReleased =>
+      'Handed back. It is available to other riders again.';
 
   @override
-  String get finishCurrentOrderFirst => 'Finish or hand back your current order first.';
+  String get finishCurrentOrderFirst =>
+      'Finish or hand back your current order first.';
 
   @override
   String get callRestaurant => 'Call restaurant';
@@ -746,7 +798,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyEmptyTitle => 'No deliveries yet';
 
   @override
-  String get historyEmptyBody => 'Orders you have completed will be listed here.';
+  String get historyEmptyBody =>
+      'Orders you have completed will be listed here.';
 
   @override
   String get orderDelivered => 'Delivered';
@@ -773,13 +826,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trackingOn => 'Location sharing on';
 
   @override
-  String get locationUnavailableMessage => 'We cannot read your location. Turn on location and allow it for Nexmile Rider.';
+  String get locationUnavailableMessage =>
+      'We cannot read your location. Turn on location and allow it for Nexmile Rider.';
 
   @override
   String get locationPermissionTitle => 'Location needed';
 
   @override
-  String get locationPermissionBody => 'Dispatch sorts orders by how close you are, and the customer follows you on a map. Allow location to go online.';
+  String get locationPermissionBody =>
+      'Dispatch sorts orders by how close you are, and the customer follows you on a map. Allow location to go online.';
 
   @override
   String get locationSettingsButton => 'Open settings';

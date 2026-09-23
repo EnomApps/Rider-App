@@ -124,6 +124,7 @@ class ReviewStep extends StatelessWidget {
       VehicleType.scooter => l10n.vehicleScooter,
       VehicleType.ev => l10n.vehicleEv,
       VehicleType.bicycle => l10n.vehicleBicycle,
+      VehicleType.walk => l10n.vehicleWalk,
       VehicleType.unknown => l10n.notProvided,
     };
     final String? number = profile.vehicleNumber;

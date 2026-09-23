@@ -4,6 +4,7 @@ import 'kyc_models.dart';
 
 /// The vehicle types `PATCH /v1/rider/profile` accepts.
 enum VehicleType {
+  walk,
   bicycle,
   motorcycle,
   scooter,
@@ -17,14 +18,33 @@ enum VehicleType {
     return VehicleType.unknown;
   }
 
-  /// The four the picker offers. [unknown] exists only to survive a value this
+  /// The five the picker offers. [unknown] exists only to survive a value this
   /// build predates and must never be selectable.
   static const List<VehicleType> selectable = <VehicleType>[
     VehicleType.motorcycle,
     VehicleType.scooter,
     VehicleType.ev,
     VehicleType.bicycle,
+    VehicleType.walk,
   ];
+
+  /// Whether this vehicle comes with papers: a number plate, an RC book, a
+  /// licence and an insurance policy.
+  ///
+  /// A rider on foot or on a bicycle has none of them and cannot obtain them,
+  /// so the fields and the whole licence step are skipped rather than shown
+  /// and left empty — an onboarding that demands an RC book for a pair of
+  /// shoes is one nobody finishes. Aadhaar and PAN are still asked for, and
+  /// which documents must be uploaded stays the server's call:
+  /// `required_documents` is never second-guessed here.
+  bool get hasPapers => switch (this) {
+        VehicleType.motorcycle || VehicleType.scooter || VehicleType.ev => true,
+        VehicleType.walk || VehicleType.bicycle => false,
+        // A type this build predates is treated as motorised: asking a rider
+        // for papers they happen to have is recoverable, letting one onto the
+        // road without the papers they need is not.
+        VehicleType.unknown => true,
+      };
 }
 
 /// The KYC block nested inside `RiderResource`.

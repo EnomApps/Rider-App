@@ -2619,6 +2619,100 @@ void main() {
       expect(rider.lastDetails?.rcNumber, 'RC12345');
     });
 
+    /// Walks the wizard as far as the vehicle step, which every walking-rider
+    /// test below starts from.
+    Future<FakeRiderRepository> openVehicleStep(WidgetTester tester) async {
+      final FakeRiderRepository rider = await openWizard(tester);
+
+      await tester.enterText(find.byType(TextFormField).first, 'Priya Kumar');
+      await tester.tap(find.text('Select a date'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save and continue'));
+      await tester.pumpAndSettle();
+
+      return rider;
+    }
+
+    testWidgets('a rider on foot is asked for no plate and no RC',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = await openVehicleStep(tester);
+
+      expect(find.text('On foot'), findsOneWidget);
+      // Both fields are on screen for the motorised default.
+      expect(find.byType(TextFormField), findsNWidgets(2));
+
+      await tester.tap(find.text('On foot'));
+      await tester.pumpAndSettle();
+
+      // Neither field can be filled in, so neither is shown.
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.text('Vehicle number'), findsNothing);
+      expect(find.text('RC number'), findsNothing);
+
+      await tester.tap(find.text('Save and continue'));
+      await tester.pumpAndSettle();
+
+      // It saves rather than failing validation on fields that are not there.
+      expect(rider.vehicleType, VehicleType.walk);
+      expect(rider.vehicleNumber, isNull);
+      expect(rider.lastDetails?.rcNumber, isNull);
+    });
+
+    testWidgets('a rider on foot is never asked for a licence',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = await openVehicleStep(tester);
+
+      await tester.tap(find.text('On foot'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save and continue'));
+      await tester.pumpAndSettle();
+      expect(rider.vehicleType, VehicleType.walk);
+
+      // The licence step is gone, so the wizard is a step shorter and the rail
+      // has to say so rather than counting a step nobody will see. The count
+      // follows the saved vehicle, not the tapped pill — an unsaved tap is not
+      // yet a decision.
+      expect(find.text('Step 3 of 6'), findsOneWidget);
+
+      // Identity numbers, then straight past where the licence step was.
+      await tester.enterText(find.byType(TextFormField).first, '123456789012');
+      await tester.enterText(find.byType(TextFormField).at(1), 'ABCDE1234F');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save and continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Licence and insurance'), findsNothing);
+      expect(find.text('Where you get paid'), findsOneWidget);
+    });
+
+    testWidgets('a walking rider is not sent back to a step they cannot fill',
+        (WidgetTester tester) async {
+      // The trap the licence step sets: resume looks for a licence number and
+      // an insurance expiry, and a rider on foot can never supply either. With
+      // the step dropped, resume has to skip that question too or the rider is
+      // returned to it on every launch.
+      _useTallPhone(tester);
+      final FakeRiderRepository rider = FakeRiderRepository(
+        fullName: 'Priya Kumar',
+        vehicleType: VehicleType.walk,
+      );
+      rider.pan = 'ABCDE1234F';
+
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        riderRepository: rider,
+      );
+      await _settleSplash(tester);
+
+      expect(find.text('Licence and insurance'), findsNothing);
+      expect(find.text('Your documents'), findsOneWidget);
+    });
+
     testWidgets('a malformed PAN is caught before the request goes out',
         (WidgetTester tester) async {
       // Already past the two profile steps, so the wizard resumes on the

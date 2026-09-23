@@ -87,9 +87,12 @@ class ApiClient {
 
   Future<Map<String, dynamic>> delete(
     String path, {
+    // Unusual for a DELETE, and needed by exactly one endpoint: unregistering
+    // a push token identifies the row by the token rather than by an id.
+    Map<String, dynamic>? body,
     bool authenticated = true,
   }) {
-    return _send('DELETE', path, authenticated: authenticated);
+    return _send('DELETE', path, body: body, authenticated: authenticated);
   }
 
   /// `multipart/form-data` POST — KYC document uploads.

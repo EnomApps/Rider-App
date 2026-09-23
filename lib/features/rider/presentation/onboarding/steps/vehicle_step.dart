@@ -53,6 +53,8 @@ class _VehicleStepState extends State<VehicleStep> {
         return l10n.vehicleEv;
       case VehicleType.bicycle:
         return l10n.vehicleBicycle;
+      case VehicleType.walk:
+        return l10n.vehicleWalk;
       case VehicleType.unknown:
         return '';
     }
@@ -68,6 +70,8 @@ class _VehicleStepState extends State<VehicleStep> {
         return Icons.electric_moped_rounded;
       case VehicleType.bicycle:
         return Icons.pedal_bike_rounded;
+      case VehicleType.walk:
+        return Icons.directions_walk_rounded;
       case VehicleType.unknown:
         return Icons.help_outline_rounded;
     }
@@ -83,14 +87,21 @@ class _VehicleStepState extends State<VehicleStep> {
     final bool formValid = _formKey.currentState?.validate() ?? false;
     if (!formValid || type == null) return;
 
+    // On foot or on a bicycle there is no plate and no RC book, and the two
+    // fields are not on screen to validate. Sending empty strings would write
+    // blanks into the KYC file that an admin then has to read past, so they go
+    // as null and the API keeps whatever it had.
+    final bool papers = type.hasPapers;
+
     widget.context.onResult(
       await widget.context.rider.saveVehicle(
         vehicleType: type,
         // Normalised on the way out so `TN 01 AB 1234` and `tn01ab1234` are
         // stored identically — an admin comparing this against a photographed
         // RC book should not be tripped by whitespace.
-        vehicleNumber: KycValidators.normalisePlate(_number.text),
-        rcNumber: _rc.text.trim().isEmpty ? null : _rc.text.trim(),
+        vehicleNumber:
+            papers ? KycValidators.normalisePlate(_number.text) : null,
+        rcNumber: papers && _rc.text.trim().isNotEmpty ? _rc.text.trim() : null,
       ),
     );
   }
@@ -129,32 +140,38 @@ class _VehicleStepState extends State<VehicleStep> {
             });
           },
         ),
-        RiderTextField(
-          label: l10n.vehicleNumberLabel,
-          hint: l10n.vehicleNumberHint,
-          controller: _number,
-          prefixIcon: Icons.confirmation_number_outlined,
-          textCapitalization: TextCapitalization.characters,
-          inputFormatters: <TextInputFormatter>[UpperCaseTextFormatter()],
-          maxLength: 15,
-          enabled: !busy,
-          serverError: step.rider.fieldError('vehicle_number'),
-          validator: (String? value) =>
-              KycValidators.vehicleNumber(value, l10n),
-          onChanged: (_) => step.onEdited(),
-        ),
-        RiderTextField(
-          label: l10n.rcNumberLabel,
-          controller: _rc,
-          prefixIcon: Icons.description_outlined,
-          textCapitalization: TextCapitalization.characters,
-          inputFormatters: <TextInputFormatter>[UpperCaseTextFormatter()],
-          maxLength: 30,
-          enabled: !busy,
-          serverError: step.rider.fieldError('rc_number'),
-          validator: (String? value) => KycValidators.required(value, l10n),
-          onChanged: (_) => step.onEdited(),
-        ),
+        // Both fields describe papers a walking or cycling rider does not
+        // have. They are removed rather than disabled: a greyed-out required
+        // field reads as something the rider has failed to do.
+        if (_type?.hasPapers ?? true) ...<Widget>[
+          RiderTextField(
+            label: l10n.vehicleNumberLabel,
+            hint: l10n.vehicleNumberHint,
+            controller: _number,
+            prefixIcon: Icons.confirmation_number_outlined,
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[UpperCaseTextFormatter()],
+            maxLength: 15,
+            enabled: !busy,
+            serverError: step.rider.fieldError('vehicle_number'),
+            validator: (String? value) =>
+                KycValidators.vehicleNumber(value, l10n),
+            onChanged: (_) => step.onEdited(),
+          ),
+          RiderTextField(
+            label: l10n.rcNumberLabel,
+            controller: _rc,
+            prefixIcon: Icons.description_outlined,
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[UpperCaseTextFormatter()],
+            maxLength: 30,
+            enabled: !busy,
+            serverError: step.rider.fieldError('rc_number'),
+            validator: (String? value) => KycValidators.required(value, l10n),
+            onChanged: (_) => step.onEdited(),
+          ),
+        ] else
+          RiderNote(text: l10n.vehicleNoPapersNote),
       ],
     );
   }

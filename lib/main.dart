@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'dart:async';
+
 import 'app.dart';
 import 'core/network/api_client.dart';
+import 'core/push/device_registrar.dart';
+import 'core/push/firebase_push_service.dart';
+import 'core/push/push_service.dart';
 import 'core/services/preferences_service.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/data/auth_session.dart';
+import 'features/auth/data/device_repository.dart';
 import 'features/auth/data/token_store.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/rider/data/location_service.dart';
@@ -41,12 +47,34 @@ Future<void> main() async {
   // make calls. Build the client first, then attach the controller as its
   // token provider.
   final ApiClient apiClient = ApiClient();
+
+  // Firebase when the project credentials are in the build, and the no-op
+  // transport when they are not: a checkout with no `google-services.json`
+  // still builds and runs a shift, with nothing to register and no tap to
+  // route. See docs/PUSH-SETUP.md.
+  final PushService pushService =
+      await FirebasePushService.start() ?? const NoopPushService();
+  final DeviceRegistrar deviceRegistrar = DeviceRegistrar(
+    push: pushService,
+    repository: ApiDeviceRepository(apiClient),
+  );
+
   final AuthController authController = AuthController(
     repository: ApiAuthRepository(apiClient),
     tokenStore: tokenStore,
     initialSession: session,
+    deviceRegistrar: deviceRegistrar,
   );
   apiClient.tokenProvider = authController;
+
+  // The channel has to exist before the first notification lands, and a
+  // mismatched id fails silently, so it is created at launch rather than at
+  // sign-in.
+  unawaited(pushService.ensureChannel());
+
+  // A token can rotate while the app is closed, and a rotated token that was
+  // never re-registered means an offer notification that never arrives.
+  if (authController.isSignedIn) unawaited(deviceRegistrar.register());
 
   // Shares the same client, and therefore the same single-flight refresh lock.
   // A rider opening the app cold fires `/rider/profile` and `/rider/kyc` at
@@ -72,6 +100,7 @@ Future<void> main() async {
       authController: authController,
       riderController: riderController,
       orderController: orderController,
+      pushService: pushService,
     ),
   );
 }

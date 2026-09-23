@@ -403,6 +403,12 @@
   "vehicleBicycle": "Bicycle",
   "@vehicleBicycle": { "description": "Vehicle type option." },
 
+  "vehicleWalk": "On foot",
+  "@vehicleWalk": { "description": "Vehicle type option for a rider who delivers walking." },
+
+  "vehicleNoPapersNote": "No vehicle number or RC needed. You will be asked for Aadhaar and PAN only.",
+  "@vehicleNoPapersNote": { "description": "Shown in place of the vehicle number and RC fields when the rider walks or cycles." },
+
   "vehicleNumberLabel": "Vehicle number",
   "@vehicleNumberLabel": { "description": "Onboarding field label." },
 

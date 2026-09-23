@@ -316,9 +316,13 @@ class RiderController extends ChangeNotifier {
   /// the vehicle the rider rides, `kyc/details` owns the number printed on the
   /// RC. Sending only one of them leaves the file inconsistent and the API
   /// refuses the submit later with no obvious cause.
+  /// [vehicleNumber] and [rcNumber] are null for a rider on foot or on a
+  /// bicycle — there is no plate to give. `KycDetails.toJson` drops nulls, so
+  /// the second call carries nothing and is skipped rather than blanking what
+  /// a rider who switched from a motorcycle had already saved.
   Future<RiderFailure?> saveVehicle({
     required VehicleType vehicleType,
-    required String vehicleNumber,
+    String? vehicleNumber,
     String? rcNumber,
   }) {
     return _save(() async {

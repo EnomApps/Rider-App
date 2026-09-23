@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/push/device_registrar.dart';
 import '../../../core/network/api_exception.dart';
 import '../data/auth_failure.dart';
 import '../data/auth_repository.dart';
@@ -24,9 +27,15 @@ class AuthController extends ChangeNotifier implements TokenProvider {
     required AuthRepository repository,
     required TokenStore tokenStore,
     AuthSession? initialSession,
+    DeviceRegistrar? deviceRegistrar,
   })  : _repository = repository,
         _tokenStore = tokenStore,
-        _session = initialSession;
+        _session = initialSession,
+        _devices = deviceRegistrar;
+
+  /// Null in a test and in a build with no push transport, which is why every
+  /// call below is null-guarded rather than the registrar being required.
+  final DeviceRegistrar? _devices;
 
   final AuthRepository _repository;
   final TokenStore _tokenStore;
@@ -110,6 +119,10 @@ class AuthController extends ChangeNotifier implements TokenProvider {
   Future<void> _persist(AuthSession session) async {
     _session = session;
     await _tokenStore.write(session);
+    // After the token is stored, never before: registering a device is an
+    // authenticated call and would 401 against a session that is not yet
+    // readable. Fire-and-forget — push must not hold up a sign-in.
+    unawaited(_devices?.register() ?? Future<void>.value());
   }
 
   // --- Session lifecycle ---------------------------------------------------
@@ -170,6 +183,10 @@ class AuthController extends ChangeNotifier implements TokenProvider {
 
   Future<void> signOut() async {
     _challenge = null;
+    // Withdraw the device first, while the token is still valid. After the
+    // session is cleared this call can only 401, and an orphaned row means the
+    // next rider to hold this phone gets somebody else's shift alerts.
+    await _devices?.unregister();
     // Revoke server-side first, while the token is still valid; the repository
     // swallows failures so an offline sign-out still clears local state.
     await _repository.signOut();
