@@ -8,6 +8,8 @@ import '../../data/order_models.dart';
 import '../../state/order_controller.dart';
 import 'active_delivery_screen.dart' show OrderItemList;
 import 'order_formatting.dart';
+import '../navigation/navigation_screen.dart';
+import '../../data/navigation_models.dart';
 import 'widgets/contact_actions.dart';
 
 /// One order in full.
@@ -127,7 +129,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               distance: formatDistance(l10n, order.pickup.distanceMetres),
               actions: ContactActions(
                 callLabel: l10n.callRestaurant,
-                directionsLabel: l10n.openInMaps,
+                directionsLabel: l10n.navStart,
+                onNavigate: NavigationScreen.canNavigate(order, NavTarget.pickup)
+                    ? () =>
+                        NavigationScreen.open(context, order, NavTarget.pickup)
+                    : null,
                 phone: order.pickup.phone,
                 latitude: order.pickup.latitude,
                 longitude: order.pickup.longitude,
@@ -145,7 +151,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 distance: formatDistance(l10n, order.deliveryDistanceMetres),
                 actions: ContactActions(
                   callLabel: l10n.callCustomer,
-                  directionsLabel: l10n.openInMaps,
+                  directionsLabel: l10n.navStart,
+                  onNavigate: NavigationScreen.canNavigate(order, NavTarget.dropoff)
+                      ? () =>
+                          NavigationScreen.open(context, order, NavTarget.dropoff)
+                      : null,
                   phone: order.dropoff!.contactPhone,
                   latitude: order.dropoff!.latitude,
                   longitude: order.dropoff!.longitude,

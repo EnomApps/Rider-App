@@ -13,6 +13,8 @@ import '../../data/rider_failure.dart';
 import '../../state/order_controller.dart';
 import '../../state/rider_controller.dart';
 import 'order_formatting.dart';
+import '../navigation/navigation_screen.dart';
+import '../../data/navigation_models.dart';
 import 'widgets/contact_actions.dart';
 import 'widgets/order_empty_state.dart';
 import 'widgets/pickup_code_sheet.dart';
@@ -110,7 +112,10 @@ class ActiveDeliveryScreen extends StatelessWidget {
             dimmed: collected,
             actions: ContactActions(
               callLabel: l10n.callRestaurant,
-              directionsLabel: l10n.openInMaps,
+              directionsLabel: l10n.navStart,
+              onNavigate: NavigationScreen.canNavigate(order, NavTarget.pickup)
+                  ? () => NavigationScreen.open(context, order, NavTarget.pickup)
+                  : null,
               phone: order.pickup.phone,
               latitude: order.pickup.latitude,
               longitude: order.pickup.longitude,
@@ -129,7 +134,11 @@ class ActiveDeliveryScreen extends StatelessWidget {
               dimmed: !collected,
               actions: ContactActions(
                 callLabel: l10n.callCustomer,
-                directionsLabel: l10n.openInMaps,
+                directionsLabel: l10n.navStart,
+                onNavigate: NavigationScreen.canNavigate(order, NavTarget.dropoff)
+                    ? () =>
+                        NavigationScreen.open(context, order, NavTarget.dropoff)
+                    : null,
                 phone: order.dropoff!.contactPhone,
                 latitude: order.dropoff!.latitude,
                 longitude: order.dropoff!.longitude,

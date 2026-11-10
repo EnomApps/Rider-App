@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:latlong2/latlong.dart' show LatLng;
 
 import '../../../core/network/api_exception.dart';
 import '../data/location_service.dart';
+import '../data/navigation_models.dart';
 import '../data/order_models.dart';
 import '../data/rider_failure.dart';
 import '../data/rider_repository.dart';
+import 'navigation_controller.dart';
 
 /// Owns the working half of a shift: the board, the order in hand, and the
 /// position ping that keeps the rider in dispatch.
@@ -372,6 +375,21 @@ class OrderController extends ChangeNotifier {
       // Here it only means the screen-off stream did not start.
     }
   }
+
+  /// Turn-by-turn for one leg of [order], sharing this controller's API
+  /// client and location source. The caller owns it and disposes it.
+  NavigationController navigate(
+    RiderOrder order, {
+    required NavTarget target,
+    required LatLng destination,
+  }) =>
+      NavigationController(
+        repository: _repository,
+        location: _location,
+        orderId: order.id,
+        target: target,
+        destination: destination,
+      );
 
   /// Asks for location permission up front, when the rider goes online.
   ///

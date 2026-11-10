@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import 'kyc_models.dart';
+import 'navigation_models.dart';
 import 'order_models.dart';
 import 'picked_document.dart';
 import 'rider_profile.dart';
@@ -91,6 +92,19 @@ abstract class RiderRepository {
 
   /// `POST /v1/rider/orders/{order}/deliver` — closes it out.
   Future<RiderOrder> confirmDelivery(String orderId);
+
+  /// `GET /v1/rider/orders/{order}/route` — the road from [latitude],
+  /// [longitude] to the next stop, with turn-by-turn steps.
+  ///
+  /// Null when the server cannot route right now (no Directions key yet, or
+  /// Google had no answer). Navigation then falls back to a straight line
+  /// and a distance, which is still enough to ride by.
+  Future<NavRoute?> route(
+    String orderId, {
+    required double latitude,
+    required double longitude,
+    required NavTarget target,
+  });
 }
 
 class ApiRiderRepository implements RiderRepository {
@@ -315,6 +329,37 @@ class ApiRiderRepository implements RiderRepository {
   }
 
   /// Every success response wraps its payload in `data`.
+  @override
+  Future<NavRoute?> route(
+    String orderId, {
+    required double latitude,
+    required double longitude,
+    required NavTarget target,
+  }) async {
+    try {
+      final Map<String, dynamic> response = await _client.get(
+        '/v1/rider/orders/$orderId/route',
+        query: <String, String>{
+          'latitude': latitude.toStringAsFixed(6),
+          'longitude': longitude.toStringAsFixed(6),
+          'target': target.name,
+        },
+      );
+      final Object? data = response['data'];
+      if (data is! Map<String, dynamic>) return null;
+      final NavRoute route = NavRoute.fromJson(data, target);
+      return route.isUsable ? route : null;
+    } on ApiException catch (error) {
+      // 404 before the endpoint ships, 503 until the key is configured, 422
+      // when Google finds no road. All mean "ride by the straight line".
+      if (error.kind == ApiErrorKind.network ||
+          error.kind == ApiErrorKind.unauthenticated) {
+        rethrow;
+      }
+      return null;
+    }
+  }
+
   static Map<String, dynamic> _data(Map<String, dynamic> response) {
     final Object? data = response['data'];
     if (data is Map<String, dynamic>) return data;

@@ -1777,6 +1777,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deductions'**
   String get payoutDeductions;
+
+  /// Navigation header while riding to the pickup.
+  ///
+  /// In en, this message translates to:
+  /// **'To the restaurant'**
+  String get navToRestaurant;
+
+  /// Navigation header while riding to the drop-off.
+  ///
+  /// In en, this message translates to:
+  /// **'To the customer'**
+  String get navToCustomer;
+
+  /// Navigation banner when there is no road route, only a direction.
+  ///
+  /// In en, this message translates to:
+  /// **'Head towards {place}'**
+  String navHeadTowards(String place);
+
+  /// Smaller line under the next turn, previewing the one after.
+  ///
+  /// In en, this message translates to:
+  /// **'Then: {instruction}'**
+  String navThen(String instruction);
+
+  /// Navigation banner within a few metres of the stop.
+  ///
+  /// In en, this message translates to:
+  /// **'You have arrived'**
+  String get navArrived;
+
+  /// Under the arrived banner.
+  ///
+  /// In en, this message translates to:
+  /// **'At {place}'**
+  String navArrivedAt(String place);
+
+  /// While the first route, or a reroute, is fetched.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding the best route…'**
+  String get navFindingRoute;
+
+  /// When the server cannot route; the map shows a dotted line.
+  ///
+  /// In en, this message translates to:
+  /// **'Road directions aren\'t available. Showing the straight-line distance.'**
+  String get navNoRoute;
+
+  /// Before the first GPS fix.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding your location…'**
+  String get navFindingLocation;
+
+  /// When location is off or denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location to navigate.'**
+  String get navLocationOff;
+
+  /// Tooltip on the button that leaves navigation.
+  ///
+  /// In en, this message translates to:
+  /// **'End navigation'**
+  String get navEnd;
+
+  /// Button that returns the camera to the rider.
+  ///
+  /// In en, this message translates to:
+  /// **'Recentre'**
+  String get navRecentre;
+
+  /// Under the ETA: distance left and the arrival clock time, both formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} · {time}'**
+  String navRemaining(String distance, String time);
+
+  /// Minutes left on the navigation panel.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String navMinutes(String minutes);
+
+  /// Button on the delivery screen that opens in-app navigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigate'**
+  String get navStart;
 }
 
 class _AppLocalizationsDelegate

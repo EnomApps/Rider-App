@@ -999,5 +999,50 @@
   "@payoutGross": { "description": "Payout line: everything earned in the week before deductions." },
 
   "payoutDeductions": "Deductions",
-  "@payoutDeductions": { "description": "Heading for money taken out of the week's earnings, such as tax." }
+  "@payoutDeductions": { "description": "Heading for money taken out of the week's earnings, such as tax." },
+
+  "navToRestaurant": "To the restaurant",
+  "@navToRestaurant": {"description": "Navigation header while riding to the pickup."},
+
+  "navToCustomer": "To the customer",
+  "@navToCustomer": {"description": "Navigation header while riding to the drop-off."},
+
+  "navHeadTowards": "Head towards {place}",
+  "@navHeadTowards": {"description": "Navigation banner when there is no road route, only a direction.", "placeholders": {"place": {"type": "String", "example": "Murugan Idli Shop"}}},
+
+  "navThen": "Then: {instruction}",
+  "@navThen": {"description": "Smaller line under the next turn, previewing the one after.", "placeholders": {"instruction": {"type": "String", "example": "Turn right onto 3rd Street"}}},
+
+  "navArrived": "You have arrived",
+  "@navArrived": {"description": "Navigation banner within a few metres of the stop."},
+
+  "navArrivedAt": "At {place}",
+  "@navArrivedAt": {"description": "Under the arrived banner.", "placeholders": {"place": {"type": "String", "example": "Murugan Idli Shop"}}},
+
+  "navFindingRoute": "Finding the best route…",
+  "@navFindingRoute": {"description": "While the first route, or a reroute, is fetched."},
+
+  "navNoRoute": "Road directions aren't available. Showing the straight-line distance.",
+  "@navNoRoute": {"description": "When the server cannot route; the map shows a dotted line."},
+
+  "navFindingLocation": "Finding your location…",
+  "@navFindingLocation": {"description": "Before the first GPS fix."},
+
+  "navLocationOff": "Turn on location to navigate.",
+  "@navLocationOff": {"description": "When location is off or denied."},
+
+  "navEnd": "End navigation",
+  "@navEnd": {"description": "Tooltip on the button that leaves navigation."},
+
+  "navRecentre": "Recentre",
+  "@navRecentre": {"description": "Button that returns the camera to the rider."},
+
+  "navRemaining": "{distance} · {time}",
+  "@navRemaining": {"description": "Under the ETA: distance left and the arrival clock time, both formatted.", "placeholders": {"distance": {"type": "String", "example": "2.3 km"}, "time": {"type": "String", "example": "8:42 PM"}}},
+
+  "navMinutes": "{minutes} min",
+  "@navMinutes": {"description": "Minutes left on the navigation panel.", "placeholders": {"minutes": {"type": "String", "example": "8"}}},
+
+  "navStart": "Navigate",
+  "@navStart": {"description": "Button on the delivery screen that opens in-app navigation."}
 }

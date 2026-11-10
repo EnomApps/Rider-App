@@ -15,6 +15,10 @@ Future<void> dial(String phone) async {
 
 /// Opens an address in whatever maps app the device has.
 ///
+/// Only the fallback now: a stop with coordinates navigates inside the app
+/// (see `NavigationScreen`). This covers the rare stop that came with a
+/// written address and no pin, which only an outside maps app can search.
+///
 /// Coordinates when the API sent them, the written address otherwise. A
 /// `geo:` URI with a `q` parameter is understood by Google Maps, and iOS
 /// resolves the same intent through its own Maps — so one call covers both
@@ -65,7 +69,12 @@ class ContactActions extends StatelessWidget {
     this.latitude,
     this.longitude,
     this.address,
+    this.onNavigate,
   });
+
+  /// In-app navigation. When set, it replaces handing the address to another
+  /// app, so the rider never leaves Nexmile to find their way.
+  final VoidCallback? onNavigate;
 
   final String callLabel;
   final String directionsLabel;
@@ -77,7 +86,8 @@ class ContactActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool canCall = phone != null && phone!.isNotEmpty;
-    final bool canNavigate = (latitude != null && longitude != null) ||
+    final bool canNavigate = onNavigate != null ||
+        (latitude != null && longitude != null) ||
         (address != null && address!.isNotEmpty);
 
     if (!canCall && !canNavigate) return const SizedBox.shrink();
@@ -96,13 +106,16 @@ class ContactActions extends StatelessWidget {
         if (canNavigate)
           Expanded(
             child: _Action(
-              icon: Icons.directions_outlined,
+              icon: onNavigate != null
+                  ? Icons.navigation_outlined
+                  : Icons.directions_outlined,
               label: directionsLabel,
-              onPressed: () => openDirections(
-                latitude: latitude,
-                longitude: longitude,
-                address: address,
-              ),
+              onPressed: onNavigate ??
+                  () => openDirections(
+                        latitude: latitude,
+                        longitude: longitude,
+                        address: address,
+                      ),
             ),
           ),
       ],

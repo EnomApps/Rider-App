@@ -43,10 +43,10 @@ dependencies:
   file_picker: ^8.1.2
 
   # Dispatch ranks the board by distance and the customer watches the rider on
-  # a map, so a position is needed while the app is in use. Foreground only —
-  # the heartbeat runs while the rider has the app open, which is what a shift
-  # looks like, and asking for background location would mean a Play Store
-  # review for a capability this app does not use.
+  # a map. While an order is in hand, location runs in geolocator's foreground
+  # service so it survives the screen locking; that works with the "while in
+  # use" grant, so no background-location permission (and no Play Store review
+  # for one) is needed.
   geolocator: ^14.0.2
   # Ringing the restaurant or the customer, and handing an address off to
   # whichever maps app the device has. Both need <queries> on Android and
@@ -57,7 +57,11 @@ dependencies:
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
   flutter_local_notifications: ^22.3.1
+  # In-app navigation: the map, the route maths, and keeping the screen on
+  # while the rider follows it.
   google_maps_flutter: ^2.19.0
+  latlong2: ^0.10.1
+  wakelock_plus: ^1.5.2
 
 dev_dependencies:
   flutter_test:

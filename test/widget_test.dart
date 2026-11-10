@@ -50,6 +50,8 @@ import 'package:nexmile_rider/features/profile/profile_screen.dart';
 import 'package:nexmile_rider/features/splash/splash_screen.dart';
 import 'package:nexmile_rider/generated/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nexmile_rider/features/rider/data/navigation_models.dart';
+import 'package:nexmile_rider/features/rider/presentation/navigation/navigation_screen.dart';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -609,6 +611,21 @@ class FakeRiderRepository implements RiderRepository {
     boardOrders = <RiderOrder>[...boardOrders, back];
     assigned = null;
     return back;
+  }
+
+  /// What [route] answers. Null is a server that cannot route yet.
+  NavRoute? navRoute;
+  int routeCalls = 0;
+
+  @override
+  Future<NavRoute?> route(
+    String orderId, {
+    required double latitude,
+    required double longitude,
+    required NavTarget target,
+  }) async {
+    routeCalls++;
+    return navRoute;
   }
 
   @override
@@ -1992,6 +2009,51 @@ void main() {
       expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
       expect(find.text('Head to the restaurant'), findsWidgets);
       expect(find.text('I have collected it'), findsOneWidget);
+    });
+
+    testWidgets('navigating stays inside the app',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      // The customer is about 2.3 km from the test position, and this server
+      // has no route yet, so it falls back to a direction and a distance.
+      final Finder toCustomer = find.text('Navigate').last;
+      await tester.ensureVisible(toCustomer);
+      await _pumpLive(tester);
+      await tester.tap(toCustomer);
+      await _pumpLive(tester);
+
+      expect(find.byType(NavigationScreen), findsOneWidget);
+      expect(rider.routeCalls, 1);
+      expect(find.text('To the customer'), findsOneWidget);
+      expect(find.text('Head towards Anand R'), findsOneWidget);
+      expect(find.textContaining('straight-line distance'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('End navigation'));
+      await _pumpLive(tester);
+      expect(find.byType(NavigationScreen), findsNothing);
+      expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
+    });
+
+    testWidgets('standing at the restaurant reads as arrived',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      // The test position is the restaurant's own pin.
+      await tester.tap(find.text('Navigate').first);
+      await _pumpLive(tester);
+
+      expect(find.text('You have arrived'), findsWidgets);
+      expect(find.text('At Amma Mess'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('End navigation'));
+      await _pumpLive(tester);
     });
 
     testWidgets('losing the race reads as news, not as a failure',

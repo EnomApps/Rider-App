@@ -916,4 +916,60 @@ class AppLocalizationsMai extends AppLocalizations {
 
   @override
   String get payoutDeductions => 'Deductions';
+
+  @override
+  String get navToRestaurant => 'To the restaurant';
+
+  @override
+  String get navToCustomer => 'To the customer';
+
+  @override
+  String navHeadTowards(String place) {
+    return 'Head towards $place';
+  }
+
+  @override
+  String navThen(String instruction) {
+    return 'Then: $instruction';
+  }
+
+  @override
+  String get navArrived => 'You have arrived';
+
+  @override
+  String navArrivedAt(String place) {
+    return 'At $place';
+  }
+
+  @override
+  String get navFindingRoute => 'Finding the best route…';
+
+  @override
+  String get navNoRoute =>
+      'Road directions aren\'t available. Showing the straight-line distance.';
+
+  @override
+  String get navFindingLocation => 'Finding your location…';
+
+  @override
+  String get navLocationOff => 'Turn on location to navigate.';
+
+  @override
+  String get navEnd => 'End navigation';
+
+  @override
+  String get navRecentre => 'Recentre';
+
+  @override
+  String navRemaining(String distance, String time) {
+    return '$distance · $time';
+  }
+
+  @override
+  String navMinutes(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get navStart => 'Navigate';
 }
