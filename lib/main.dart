@@ -93,7 +93,7 @@ Future<void> main() async {
   // and must queue behind the same refresh lock rather than racing it.
   final OrderController orderController = OrderController(
     repository: riderRepository,
-    location: const GeolocatorLocationService(),
+    location: GeolocatorLocationService(),
   );
 
   runApp(

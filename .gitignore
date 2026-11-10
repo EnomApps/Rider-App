@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Google Maps SDK keys. Restricted by package name and SHA-1, but they bill to
+# the project, so they stay out of version control.
+android/maps.properties
+ios/Flutter/Secrets.xcconfig

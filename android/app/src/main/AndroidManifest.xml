@@ -9,12 +9,22 @@
          app is in use. Coarse is declared alongside fine because Android 12+
          lets the rider grant only the approximate one, and an app that asks for
          fine alone is simply denied rather than downgraded. Background location
-         is deliberately NOT requested: the heartbeat runs while the rider has
-         the app open, which is what a shift looks like. -->
+         is deliberately NOT requested: while an order is in hand, location
+         runs in a foreground service the rider starts with the app open, and
+         Android lets a "while in use" grant carry on into that service with
+         the screen locked. -->
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- The foreground service geolocator runs during a delivery, so the
+         customer's map keeps moving after the rider locks the phone. -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission
+        android:name="android.permission.WAKE_LOCK"/>
     <!-- Delivery offers and updates to the order in hand. Android 13 and
          later need the rider to say yes; earlier versions grant it at install
          with no dialog. -->
@@ -55,6 +65,10 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="nexmile_orders"/>
+        <!-- Google Maps SDK key, injected from android/maps.properties. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsApiKey}"/>
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>

@@ -58,6 +58,12 @@
 		<string>Nexmile Rider uses the camera so you can photograph your licence, vehicle papers and profile photo for verification.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Nexmile Rider needs access to your photos so you can attach existing pictures of your documents for verification.</string>
+		<!-- Location keeps running with the screen locked while an order is in
+		     hand, under the blue location indicator. -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>location</string>
+		</array>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Nexmile Rider uses your location while you are online so we can offer you the nearest deliveries and the customer can follow your progress.</string>
 		<!-- Declared so the call and directions buttons on the delivery screen
@@ -70,6 +76,8 @@
 			<string>maps</string>
 			<string>comgooglemaps</string>
 		</array>
+		<key>GMSApiKey</key>
+		<string>$(GOOGLE_MAPS_API_KEY)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UILaunchStoryboardName</key>

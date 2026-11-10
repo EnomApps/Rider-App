@@ -59,6 +59,9 @@ abstract class RiderRepository {
     required double latitude,
     required double longitude,
     double? accuracyMetres,
+    double? headingDegrees,
+    double? speedMetresPerSecond,
+    DateTime? recordedAt,
   });
 
   /// `GET /v1/rider/orders/available` — the board, nearest restaurant first.
@@ -191,6 +194,9 @@ class ApiRiderRepository implements RiderRepository {
     required double latitude,
     required double longitude,
     double? accuracyMetres,
+    double? headingDegrees,
+    double? speedMetresPerSecond,
+    DateTime? recordedAt,
   }) async {
     final Map<String, dynamic> response = await _client.post(
       '/v1/rider/location',
@@ -198,11 +204,20 @@ class ApiRiderRepository implements RiderRepository {
         'latitude': latitude,
         'longitude': longitude,
         'accuracy_metres': accuracyMetres,
+        // Turns the customer's rider icon to face the road. A server that
+        // does not know these fields yet ignores them.
+        'heading': headingDegrees,
+        'speed': speedMetresPerSecond,
+        'recorded_at':
+            (recordedAt ?? DateTime.now()).toUtc().toIso8601String(),
       },
     );
     final Object? data = response['data'];
     if (data is Map<String, dynamic>) {
-      return data['tracking'] as bool? ?? false;
+      // `accepted: false` means a newer fix beat this one to the server. That
+      // is not the rider going off duty, so only an explicit `tracking: false`
+      // stops the heartbeat.
+      return data['tracking'] as bool? ?? true;
     }
     // A 200 with a body this client cannot read is still a 200 — the ping
     // landed. Assuming it did not would stop the heartbeat over a response

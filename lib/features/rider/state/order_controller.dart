@@ -290,6 +290,10 @@ class OrderController extends ChangeNotifier {
     final Duration interval =
         _active == null ? idlePingInterval : activePingInterval;
 
+    // Carrying an order is when the customer is watching, so that is when
+    // location has to survive the screen locking.
+    unawaited(_keepAlive(_active != null));
+
     // Already running at the right cadence. Restarting would reset the period
     // and, worse, fire an immediate extra ping every time a screen rebuilt.
     if (_pingTimer != null && _interval == interval) return;
@@ -301,6 +305,7 @@ class OrderController extends ChangeNotifier {
   }
 
   void stopTracking() {
+    unawaited(_keepAlive(false));
     _pingTimer?.cancel();
     _pingTimer = null;
     _interval = null;
@@ -331,6 +336,9 @@ class OrderController extends ChangeNotifier {
         latitude: position.latitude,
         longitude: position.longitude,
         accuracyMetres: position.accuracyMetres,
+        headingDegrees: position.headingDegrees,
+        speedMetresPerSecond: position.speedMetresPerSecond,
+        recordedAt: position.recordedAt,
       );
 
       // `tracking: false` is the server saying this rider is off duty. Not an
@@ -353,6 +361,15 @@ class OrderController extends ChangeNotifier {
       // A ping that failed on the network. The next tick tries again.
     } finally {
       _pinging = false;
+    }
+  }
+
+  Future<void> _keepAlive(bool on) async {
+    try {
+      await _location.keepAlive(on);
+    } catch (_) {
+      // Refused permission surfaces through the next ping, which records it.
+      // Here it only means the screen-off stream did not start.
     }
   }
 

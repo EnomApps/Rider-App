@@ -58,6 +58,17 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // The Maps SDK key lives in android/maps.properties so it stays out of
+        // version control. Without the file the build still works and any map
+        // draws grey.
+        val mapsProperties = Properties()
+        val mapsFile = rootProject.file("maps.properties")
+        if (mapsFile.exists()) {
+            mapsProperties.load(mapsFile.inputStream())
+        }
+        manifestPlaceholders["mapsApiKey"] =
+            mapsProperties.getProperty("MAPS_API_KEY", "")
     }
 
     signingConfigs {

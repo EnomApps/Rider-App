@@ -477,6 +477,9 @@ class FakeRiderRepository implements RiderRepository {
     required double latitude,
     required double longitude,
     double? accuracyMetres,
+    double? headingDegrees,
+    double? speedMetresPerSecond,
+    DateTime? recordedAt,
   }) async {
     final ApiException? error = locationError;
     if (error != null) throw error;
@@ -664,6 +667,9 @@ class FakeLocationService implements LocationService {
   int permissionChecks = 0;
   int fixes = 0;
 
+  /// Whether the screen-off stream is on, as the controller last asked.
+  bool keptAlive = false;
+
   static const RiderPosition _testPosition =
       RiderPosition(latitude: 9.9195, longitude: 78.1193, accuracyMetres: 12);
 
@@ -680,6 +686,9 @@ class FakeLocationService implements LocationService {
     fixes++;
     return position;
   }
+
+  @override
+  Future<void> keepAlive(bool on) async => keptAlive = on;
 }
 
 const OrderDropoff _testDropoff = OrderDropoff(
@@ -2308,6 +2317,11 @@ void main() {
       // which is worth the battery an idle rider's ping is not.
       expect(orders.active, isNotNull);
       expect(location.fixes, greaterThanOrEqualTo(2));
+      // And it keeps running with the screen locked until the order is done.
+      expect(location.keptAlive, isTrue);
+
+      orders.stopTracking();
+      expect(location.keptAlive, isFalse);
     });
 
     test('a delivered order is kept out of the history list', () async {
