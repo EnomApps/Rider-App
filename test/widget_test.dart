@@ -27,6 +27,8 @@ import 'package:nexmile_rider/features/rider/data/kyc_models.dart';
 import 'package:nexmile_rider/features/rider/data/kyc_validators.dart';
 import 'package:nexmile_rider/features/rider/data/location_service.dart';
 import 'package:nexmile_rider/features/rider/data/order_models.dart';
+import 'package:nexmile_rider/features/rider/data/payout_models.dart';
+import 'package:nexmile_rider/features/rider/data/payout_repository.dart';
 import 'package:nexmile_rider/features/rider/data/picked_document.dart';
 import 'package:nexmile_rider/features/rider/data/rider_failure.dart';
 import 'package:nexmile_rider/features/rider/data/rider_profile.dart';
@@ -37,8 +39,11 @@ import 'package:nexmile_rider/features/rider/presentation/orders/active_delivery
 import 'package:nexmile_rider/features/rider/presentation/orders/order_board_screen.dart';
 import 'package:nexmile_rider/features/rider/presentation/orders/widgets/order_card.dart';
 import 'package:nexmile_rider/features/rider/presentation/orders/widgets/pickup_code_sheet.dart';
+import 'package:nexmile_rider/features/rider/presentation/payouts/payout_details_screen.dart';
+import 'package:nexmile_rider/features/rider/presentation/payouts/payouts_screen.dart';
 import 'package:nexmile_rider/features/rider/presentation/review/kyc_decision_screen.dart';
 import 'package:nexmile_rider/features/rider/state/order_controller.dart';
+import 'package:nexmile_rider/features/rider/state/payout_controller.dart';
 import 'package:nexmile_rider/features/rider/state/rider_controller.dart';
 import 'package:nexmile_rider/features/language/language_screen.dart';
 import 'package:nexmile_rider/features/profile/profile_screen.dart';
@@ -182,6 +187,60 @@ class FakeAuthRepository implements AuthRepository {
 /// makes it worth having — the gate's whole job is to react to those
 /// transitions, and a repository that only ever returned one shape could not
 /// exercise it.
+/// The weekly payouts, as the backend currently sends them: pending, with no
+/// transfer made and TDS switched off.
+class FakePayoutRepository implements PayoutRepository {
+  FakePayoutRepository({List<Map<String, dynamic>>? rows})
+      : rows = rows ?? <Map<String, dynamic>>[_payoutRow()];
+
+  List<Map<String, dynamic>> rows;
+
+  @override
+  Future<List<Payout>> payouts() async =>
+      <Payout>[for (final Map<String, dynamic> row in rows) Payout.fromJson(row)];
+
+  @override
+  Future<Payout> payout(String id) async => Payout.fromJson(
+        rows.firstWhere((Map<String, dynamic> row) => '${row['id']}' == id),
+      );
+}
+
+/// The backend's sample row, with the overrides a test cares about.
+Map<String, dynamic> _payoutRow([Map<String, dynamic> overrides = const {}]) =>
+    <String, dynamic>{
+      'id': 1,
+      'period_start': '2026-09-07',
+      'period_end': '2026-09-13',
+      'delivery_earnings': 6200.00,
+      'referral_earnings': 400.00,
+      'carried_in': 26.00,
+      'gross': 6626.00,
+      'deductions_total': 0,
+      'deductions': <Object?>[],
+      'net': 6626.00,
+      'status': 'pending',
+      'paid_at': null,
+      'reference': null,
+      ...overrides,
+    };
+
+/// A week with TDS switched on, worded the way the server words it.
+Map<String, dynamic> _payoutRowWithTds([
+  Map<String, dynamic> overrides = const {},
+]) =>
+    _payoutRow(<String, dynamic>{
+      'deductions_total': 66.26,
+      'deductions': <Object?>[
+        <String, dynamic>{
+          'label': 'TDS deducted at 1%',
+          'amount': 66.26,
+          'note': 'Paid to the government against your PAN.',
+        },
+      ],
+      'net': 6559.74,
+      ...overrides,
+    });
+
 class FakeRiderRepository implements RiderRepository {
   FakeRiderRepository({
     this.kycStatus = KycStatus.pending,
@@ -702,6 +761,7 @@ Future<void> _pumpApp(
   FakeRiderRepository? riderRepository,
   AuthSession? session,
   FakeLocationService? location,
+  FakePayoutRepository? payoutRepository,
 }) async {
   final PreferencesService preferences = await _prefs(seed);
   _controller = AuthController(
@@ -725,8 +785,33 @@ Future<void> _pumpApp(
       authController: _controller,
       riderController: _rider,
       orderController: _ordersRef!,
+      payoutController: PayoutController(
+        repository: payoutRepository ?? FakePayoutRepository(),
+      ),
     ),
   );
+}
+
+/// Signs in an approved rider and opens the payouts screen from the shift tab.
+Future<void> openPayouts(
+  WidgetTester tester,
+  FakePayoutRepository payouts,
+) async {
+  _useTallPhone(tester);
+  await _pumpApp(
+    tester,
+    seed: _languageChosen,
+    session: _testSession(),
+    payoutRepository: payouts,
+  );
+  await _settleSplash(tester);
+
+  final Finder entry = find.byIcon(Icons.account_balance_wallet_outlined);
+  await tester.ensureVisible(entry);
+  await tester.pumpAndSettle();
+  await tester.tap(entry);
+  await tester.pumpAndSettle();
+  expect(find.byType(PayoutsScreen), findsOneWidget);
 }
 
 /// A rider who has been through onboarding and may work.
@@ -1588,9 +1673,14 @@ void main() {
       );
       await _settleSplash(tester);
 
-      // The language row sits below the duty card and the stats, so it is off
-      // the fold on a test-sized viewport.
-      await tester.ensureVisible(find.byIcon(Icons.translate_rounded).first);
+      // The language row sits below the duty card, the stats and the payouts
+      // row — far enough down that the list has not built it yet, so it has to
+      // be scrolled to rather than merely brought into view.
+      await tester.dragUntilVisible(
+        find.byIcon(Icons.translate_rounded),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.translate_rounded).first);
       await tester.pumpAndSettle();
@@ -1602,6 +1692,12 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RiderHomeScreen), findsOneWidget);
+      // Back up to the title, which the scroll above left out of view.
+      await tester.dragUntilVisible(
+        find.text('பயணத்திற்குத் தயார்'),
+        find.byType(ListView).first,
+        const Offset(0, 200),
+      );
       expect(find.text('பயணத்திற்குத் தயார்'), findsOneWidget);
     });
 
@@ -3436,6 +3532,148 @@ void main() {
       expect(directionality.textDirection, TextDirection.rtl);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // The two things the backend asked for above all: nothing says the money was
+  // sent unless the status is `paid`, and deductions are the server's words,
+  // with no Deductions section at all when there are none.
+  group('payouts', () {
+    /// Signs in an approved rider and opens the first week's details.
+    Future<void> openFirstWeek(
+      WidgetTester tester,
+      FakePayoutRepository payouts,
+    ) async {
+      await openPayouts(tester, payouts);
+      await tester.tap(find.byIcon(Icons.chevron_right_rounded).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(PayoutDetailsScreen), findsOneWidget);
+    }
+
+    test('decodes the row the backend documents', () {
+      final Payout payout = Payout.fromJson(_payoutRowWithTds());
+      expect(payout.id, '1');
+      expect(payout.periodStart, DateTime(2026, 9, 7));
+      expect(payout.periodEnd, DateTime(2026, 9, 13));
+      expect(payout.deliveryEarnings, 6200);
+      expect(payout.referralEarnings, 400);
+      expect(payout.carriedIn, 26);
+      expect(payout.gross, 6626);
+      expect(payout.deductions.single.label, 'TDS deducted at 1%');
+      expect(payout.deductions.single.amount, 66.26);
+      expect(payout.net, 6559.74);
+      expect(payout.status, PayoutStatus.pending);
+      expect(payout.paidAt, isNull);
+      expect(payout.reference, isNull);
+    });
+
+    test('only a paid status counts as paid', () {
+      expect(Payout.fromJson(_payoutRow()).isPaid, isFalse);
+      expect(
+        Payout.fromJson(_payoutRow(<String, dynamic>{'status': 'paid'})).isPaid,
+        isTrue,
+      );
+      // A status this build has never seen is not a transfer.
+      final Payout unknown =
+          Payout.fromJson(_payoutRow(<String, dynamic>{'status': 'queued'}));
+      expect(unknown.isPaid, isFalse);
+      expect(unknown.status, PayoutStatus.processing);
+      // Nor is a paid_at or a reference without the status to go with it.
+      expect(
+        Payout.fromJson(_payoutRow(<String, dynamic>{
+          'paid_at': '2026-09-15T10:00:00Z',
+          'reference': 'UTR123',
+        })).isPaid,
+        isFalse,
+      );
+    });
+
+    testWidgets('a pending week never says the money was sent',
+        (WidgetTester tester) async {
+      await openFirstWeek(
+        tester,
+        FakePayoutRepository(rows: <Map<String, dynamic>>[
+          // A reference arriving early must still not read as a transfer.
+          _payoutRow(<String, dynamic>{'reference': 'UTR123'}),
+        ]),
+      );
+
+      expect(find.text('Pending'), findsOneWidget);
+      expect(
+        find.text('Your earnings for this week have been worked out. '
+            'The money has not been sent to your bank yet.'),
+        findsOneWidget,
+      );
+      expect(find.text('Paid'), findsNothing);
+      expect(find.textContaining('Sent to your bank'), findsNothing);
+      expect(find.textContaining('successful'), findsNothing);
+      expect(find.text('Transfer reference'), findsNothing);
+      expect(find.text('UTR123'), findsNothing);
+    });
+
+    testWidgets('no deductions hides the Deductions section entirely',
+        (WidgetTester tester) async {
+      await openFirstWeek(tester, FakePayoutRepository());
+
+      expect(find.text('Deductions'), findsNothing);
+      // Carried-in money is shown, so a rider can see where last week went.
+      expect(find.text('From an earlier week'), findsOneWidget);
+      expect(find.text('₹26'), findsOneWidget);
+    });
+
+    testWidgets("deductions render the server's own label and note",
+        (WidgetTester tester) async {
+      await openFirstWeek(
+        tester,
+        FakePayoutRepository(rows: <Map<String, dynamic>>[
+          _payoutRowWithTds(<String, dynamic>{
+            'deductions': <Object?>[
+              <String, dynamic>{
+                'label': 'உங்கள் PAN-க்கு எதிராக 1% TDS',
+                'amount': 66.26,
+                'note': 'வரி தாக்கல் செய்யும்போது திரும்பப் பெறலாம்.',
+              },
+            ],
+          }),
+        ]),
+      );
+
+      expect(find.text('Deductions'), findsOneWidget);
+      expect(find.text('உங்கள் PAN-க்கு எதிராக 1% TDS'), findsOneWidget);
+      expect(
+        find.text('வரி தாக்கல் செய்யும்போது திரும்பப் பெறலாம்.'),
+        findsOneWidget,
+      );
+      expect(find.text('−₹66.26'), findsOneWidget);
+    });
+
+    testWidgets('a paid week says when, with the bank reference',
+        (WidgetTester tester) async {
+      await openFirstWeek(
+        tester,
+        FakePayoutRepository(rows: <Map<String, dynamic>>[
+          _payoutRow(<String, dynamic>{
+            'status': 'paid',
+            'paid_at': '2026-09-15T10:00:00',
+            'reference': 'UTR123',
+          }),
+        ]),
+      );
+
+      expect(find.text('Paid'), findsOneWidget);
+      expect(find.textContaining('Sent to your bank on'), findsOneWidget);
+      expect(find.text('Transfer reference'), findsOneWidget);
+      expect(find.text('UTR123'), findsOneWidget);
+      expect(find.textContaining('has not been sent'), findsNothing);
+    });
+
+    testWidgets('an empty history says so', (WidgetTester tester) async {
+      await openPayouts(
+        tester,
+        FakePayoutRepository(rows: <Map<String, dynamic>>[]),
+      );
+      expect(find.text('No payouts yet'), findsOneWidget);
     });
   });
 }

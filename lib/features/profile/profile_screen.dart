@@ -14,6 +14,7 @@ import '../auth/state/auth_controller.dart';
 import '../rider/data/kyc_models.dart';
 import '../rider/data/rider_profile.dart';
 import '../rider/state/order_controller.dart';
+import '../rider/state/payout_controller.dart';
 import '../rider/state/rider_controller.dart';
 
 /// Rider profile, backed by `GET /v1/profile` and the already-loaded
@@ -232,6 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final RiderController rider = context.read<RiderController>();
     final OrderController orders = context.read<OrderController>();
+    final PayoutController payouts = context.read<PayoutController>();
 
     await context.read<AuthController>().signOut();
     // Dropped before navigating, so the next rider to sign in on this device
@@ -241,6 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // the order. A timer that outlived its session would keep a signed-out
     // rider on the dispatch map.
     orders.reset();
+    payouts.reset();
     if (!mounted) return;
 
     navigator.pushNamedAndRemoveUntil(

@@ -10,6 +10,7 @@ import '../../../auth/state/auth_controller.dart';
 import '../../data/kyc_models.dart';
 import '../../data/rider_failure.dart';
 import '../../state/order_controller.dart';
+import '../../state/payout_controller.dart';
 import '../../state/rider_controller.dart';
 import '../widgets/rider_form_field.dart';
 
@@ -240,6 +241,7 @@ class KycDecisionScreen extends StatelessWidget {
     final AuthController auth = context.read<AuthController>();
     final RiderController rider = context.read<RiderController>();
     final OrderController orders = context.read<OrderController>();
+    final PayoutController payouts = context.read<PayoutController>();
 
     await auth.signOut();
     // Dropped before navigating, so the next rider to sign in on this device
@@ -249,6 +251,7 @@ class KycDecisionScreen extends StatelessWidget {
     // the order. A timer that outlived its session would keep a signed-out
     // rider on the dispatch map.
     orders.reset();
+    payouts.reset();
 
     navigator.pushNamedAndRemoveUntil(
       AppRoutes.login,

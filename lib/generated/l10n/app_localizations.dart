@@ -1657,6 +1657,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shift'**
   String get shiftTab;
+
+  /// Title of the weekly payouts screen, and the label of the row that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Payouts'**
+  String get payoutsTitle;
+
+  /// Value line on the shift tab row that opens the payouts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly earnings'**
+  String get payoutsEntryValue;
+
+  /// Title of the screen showing one week's payout.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly payout'**
+  String get payoutDetailsTitle;
+
+  /// Empty state on the payouts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No payouts yet'**
+  String get payoutsEmptyTitle;
+
+  /// Supporting copy for the empty payouts screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your earnings for each week will be listed here once the week is worked out.'**
+  String get payoutsEmptyBody;
+
+  /// The week a payout covers, as two short dates.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String payoutPeriod(String start, String end);
+
+  /// Payout status: the amount is worked out but the money has NOT been sent. Must not suggest the money was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get payoutStatusPending;
+
+  /// Payout status: in progress, the money has NOT reached the rider yet. Must not suggest the money was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Being processed'**
+  String get payoutStatusProcessing;
+
+  /// Payout status: the bank transfer has gone through.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get payoutStatusPaid;
+
+  /// Shown on a payout that has not been transferred. Must say plainly that the money has not been sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your earnings for this week have been worked out. The money has not been sent to your bank yet.'**
+  String get payoutNotSentNote;
+
+  /// Shown only on a payout the bank transfer has completed for.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to your bank on {date}'**
+  String payoutPaidOn(String date);
+
+  /// Shown on a paid payout when the server did not say when it was paid.
+  ///
+  /// In en, this message translates to:
+  /// **'The bank transfer for this week has gone through.'**
+  String get payoutPaidNote;
+
+  /// Label for the bank's reference number on a paid payout.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer reference'**
+  String get payoutReferenceLabel;
+
+  /// The money the rider is owed for the week, after deductions.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount payable'**
+  String get payoutNetLabel;
+
+  /// Payout line: money earned from deliveries.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery earnings'**
+  String get payoutDeliveryEarnings;
+
+  /// Payout line: money earned from referring other riders.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral earnings'**
+  String get payoutReferralEarnings;
+
+  /// Payout line: money from a previous week that was too small to transfer and was added to this one.
+  ///
+  /// In en, this message translates to:
+  /// **'From an earlier week'**
+  String get payoutCarriedIn;
+
+  /// Explains the carried-over line.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts under ₹100 are not transferred on their own. They are added to the next week instead.'**
+  String get payoutCarriedInNote;
+
+  /// Payout line: everything earned in the week before deductions.
+  ///
+  /// In en, this message translates to:
+  /// **'Total earned'**
+  String get payoutGross;
+
+  /// Heading for money taken out of the week's earnings, such as tax.
+  ///
+  /// In en, this message translates to:
+  /// **'Deductions'**
+  String get payoutDeductions;
 }
 
 class _AppLocalizationsDelegate

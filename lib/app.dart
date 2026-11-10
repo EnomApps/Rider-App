@@ -15,6 +15,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/app_typography.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/rider/state/order_controller.dart';
+import 'features/rider/state/payout_controller.dart';
 import 'features/rider/state/rider_controller.dart';
 import 'generated/l10n/app_localizations.dart';
 
@@ -25,6 +26,7 @@ class NexmileRiderApp extends StatefulWidget {
     required this.authController,
     required this.riderController,
     required this.orderController,
+    required this.payoutController,
     this.pushService = const NoopPushService(),
   });
 
@@ -42,6 +44,10 @@ class NexmileRiderApp extends StatefulWidget {
   /// position heartbeat. Built alongside the two above, sharing their API
   /// client so its timers queue behind the same refresh lock.
   final OrderController orderController;
+
+  /// The weekly pay statements. Built alongside the rest on the same API
+  /// client.
+  final PayoutController payoutController;
 
   /// The push transport. Defaults to the no-op one so a test — and a build
   /// with no Firebase config in it — needs to know nothing about push.
@@ -111,6 +117,9 @@ class _NexmileRiderAppState extends State<NexmileRiderApp> {
         ChangeNotifierProvider<AuthController>.value(value: authController),
         ChangeNotifierProvider<RiderController>.value(value: riderController),
         ChangeNotifierProvider<OrderController>.value(value: orderController),
+        ChangeNotifierProvider<PayoutController>.value(
+          value: widget.payoutController,
+        ),
       ],
       child: Consumer<LocaleController>(
         builder: (BuildContext context, LocaleController controller, _) {

@@ -22,6 +22,7 @@ import '../../state/rider_controller.dart';
 import '../orders/active_delivery_screen.dart';
 import '../orders/delivery_history_screen.dart';
 import '../orders/order_board_screen.dart';
+import '../payouts/payouts_screen.dart';
 
 /// The main UI, reached only when `can_go_online` is true.
 ///
@@ -276,6 +277,15 @@ class _ShiftTab extends StatelessWidget {
             ],
             EntranceFade(index: 6, child: _StatsRow(profile: profile)),
             const SizedBox(height: 16),
+            InfoTile(
+              icon: Icons.account_balance_wallet_outlined,
+              label: l10n.payoutsTitle,
+              value: l10n.payoutsEntryValue,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PayoutsScreen()),
+              ),
+            ),
+            const SizedBox(height: 12),
             InfoTile(
               icon: Icons.two_wheeler_outlined,
               label: l10n.vehicleLabel,

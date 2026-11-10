@@ -849,4 +849,72 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get shiftTab => 'Shift';
+
+  @override
+  String get payoutsTitle => 'Payouts';
+
+  @override
+  String get payoutsEntryValue => 'Weekly earnings';
+
+  @override
+  String get payoutDetailsTitle => 'Weekly payout';
+
+  @override
+  String get payoutsEmptyTitle => 'No payouts yet';
+
+  @override
+  String get payoutsEmptyBody =>
+      'Your earnings for each week will be listed here once the week is worked out.';
+
+  @override
+  String payoutPeriod(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get payoutStatusPending => 'Pending';
+
+  @override
+  String get payoutStatusProcessing => 'Being processed';
+
+  @override
+  String get payoutStatusPaid => 'Paid';
+
+  @override
+  String get payoutNotSentNote =>
+      'Your earnings for this week have been worked out. The money has not been sent to your bank yet.';
+
+  @override
+  String payoutPaidOn(String date) {
+    return 'Sent to your bank on $date';
+  }
+
+  @override
+  String get payoutPaidNote =>
+      'The bank transfer for this week has gone through.';
+
+  @override
+  String get payoutReferenceLabel => 'Transfer reference';
+
+  @override
+  String get payoutNetLabel => 'Amount payable';
+
+  @override
+  String get payoutDeliveryEarnings => 'Delivery earnings';
+
+  @override
+  String get payoutReferralEarnings => 'Referral earnings';
+
+  @override
+  String get payoutCarriedIn => 'From an earlier week';
+
+  @override
+  String get payoutCarriedInNote =>
+      'Amounts under ₹100 are not transferred on their own. They are added to the next week instead.';
+
+  @override
+  String get payoutGross => 'Total earned';
+
+  @override
+  String get payoutDeductions => 'Deductions';
 }

@@ -11,6 +11,7 @@ import '../../auth/data/auth_user.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/rider_failure.dart';
 import '../state/order_controller.dart';
+import '../state/payout_controller.dart';
 import '../state/rider_controller.dart';
 import 'home/rider_home_screen.dart';
 import 'onboarding/onboarding_screen.dart';
@@ -387,6 +388,7 @@ Future<void> signOutToLogin(BuildContext context) async {
   final AuthController auth = context.read<AuthController>();
   final RiderController rider = context.read<RiderController>();
   final OrderController orders = context.read<OrderController>();
+  final PayoutController payouts = context.read<PayoutController>();
 
   await auth.signOut();
   rider.reset();
@@ -394,6 +396,7 @@ Future<void> signOutToLogin(BuildContext context) async {
   // order. A timer that outlived its session would keep a signed-out rider on
   // the dispatch map.
   orders.reset();
+  payouts.reset();
 
   navigator.pushNamedAndRemoveUntil(
     AppRoutes.login,

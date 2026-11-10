@@ -15,8 +15,10 @@ import 'features/auth/data/device_repository.dart';
 import 'features/auth/data/token_store.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/rider/data/location_service.dart';
+import 'features/rider/data/payout_repository.dart';
 import 'features/rider/data/rider_repository.dart';
 import 'features/rider/state/order_controller.dart';
+import 'features/rider/state/payout_controller.dart';
 import 'features/rider/state/rider_controller.dart';
 
 Future<void> main() async {
@@ -100,6 +102,9 @@ Future<void> main() async {
       authController: authController,
       riderController: riderController,
       orderController: orderController,
+      payoutController: PayoutController(
+        repository: ApiPayoutRepository(apiClient),
+      ),
       pushService: pushService,
     ),
   );

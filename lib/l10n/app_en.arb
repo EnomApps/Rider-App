@@ -930,5 +930,74 @@
   },
 
 "shiftTab": "Shift",
-  "@shiftTab": { "description": "Bottom navigation label for the duty and summary tab." }
+  "@shiftTab": { "description": "Bottom navigation label for the duty and summary tab." },
+
+  "payoutsTitle": "Payouts",
+  "@payoutsTitle": { "description": "Title of the weekly payouts screen, and the label of the row that opens it." },
+
+  "payoutsEntryValue": "Weekly earnings",
+  "@payoutsEntryValue": { "description": "Value line on the shift tab row that opens the payouts screen." },
+
+  "payoutDetailsTitle": "Weekly payout",
+  "@payoutDetailsTitle": { "description": "Title of the screen showing one week's payout." },
+
+  "payoutsEmptyTitle": "No payouts yet",
+  "@payoutsEmptyTitle": { "description": "Empty state on the payouts screen." },
+
+  "payoutsEmptyBody": "Your earnings for each week will be listed here once the week is worked out.",
+  "@payoutsEmptyBody": { "description": "Supporting copy for the empty payouts screen." },
+
+  "payoutPeriod": "{start} – {end}",
+  "@payoutPeriod": {
+    "description": "The week a payout covers, as two short dates.",
+    "placeholders": {
+      "start": { "type": "String", "example": "Sep 7" },
+      "end": { "type": "String", "example": "Sep 13" }
+    }
+  },
+
+  "payoutStatusPending": "Pending",
+  "@payoutStatusPending": { "description": "Payout status: the amount is worked out but the money has NOT been sent. Must not suggest the money was sent." },
+
+  "payoutStatusProcessing": "Being processed",
+  "@payoutStatusProcessing": { "description": "Payout status: in progress, the money has NOT reached the rider yet. Must not suggest the money was sent." },
+
+  "payoutStatusPaid": "Paid",
+  "@payoutStatusPaid": { "description": "Payout status: the bank transfer has gone through." },
+
+  "payoutNotSentNote": "Your earnings for this week have been worked out. The money has not been sent to your bank yet.",
+  "@payoutNotSentNote": { "description": "Shown on a payout that has not been transferred. Must say plainly that the money has not been sent." },
+
+  "payoutPaidOn": "Sent to your bank on {date}",
+  "@payoutPaidOn": {
+    "description": "Shown only on a payout the bank transfer has completed for.",
+    "placeholders": { "date": { "type": "String", "example": "Sep 15, 2026" } }
+  },
+
+  "payoutPaidNote": "The bank transfer for this week has gone through.",
+  "@payoutPaidNote": { "description": "Shown on a paid payout when the server did not say when it was paid." },
+
+  "payoutReferenceLabel": "Transfer reference",
+  "@payoutReferenceLabel": { "description": "Label for the bank's reference number on a paid payout." },
+
+  "payoutNetLabel": "Amount payable",
+  "@payoutNetLabel": { "description": "The money the rider is owed for the week, after deductions." },
+
+  "payoutDeliveryEarnings": "Delivery earnings",
+  "@payoutDeliveryEarnings": { "description": "Payout line: money earned from deliveries." },
+
+  "payoutReferralEarnings": "Referral earnings",
+  "@payoutReferralEarnings": { "description": "Payout line: money earned from referring other riders." },
+
+  "payoutCarriedIn": "From an earlier week",
+  "@payoutCarriedIn": { "description": "Payout line: money from a previous week that was too small to transfer and was added to this one." },
+
+  "payoutCarriedInNote": "Amounts under ₹100 are not transferred on their own. They are added to the next week instead.",
+  "@payoutCarriedInNote": { "description": "Explains the carried-over line." },
+
+  "payoutGross": "Total earned",
+  "@payoutGross": { "description": "Payout line: everything earned in the week before deductions." },
+
+  "payoutDeductions": "Deductions",
+  "@payoutDeductions": { "description": "Heading for money taken out of the week's earnings, such as tax." }
 }
