@@ -108,6 +108,11 @@ class OrderController extends ChangeNotifier {
 
   LocationDenial? get locationDenial => _locationDenial;
 
+  /// True when the last fix came from a mock-location app, which the server
+  /// refuses. Orders will not be offered until it is turned off.
+  bool get mockLocation => _mockLocation;
+  bool _mockLocation = false;
+
   bool get isTracking => _isTracking;
 
   /// True when the rider is carrying something. The home screen leads with the
@@ -248,6 +253,29 @@ class OrderController extends ChangeNotifier {
     );
   }
 
+  /// The order won from an offer card. The accept call already happened in
+  /// the offer flow; this only puts the order in hand and tightens the ping.
+  void adopt(RiderOrder order) {
+    _active = order;
+    if (_pingTimer != null) startTracking();
+    notifyListeners();
+  }
+
+  /// Tells the kitchen the rider is at the counter. Optional — pickup works
+  /// without it — so a failure here never blocks the rider.
+  Future<RiderFailure?> reachedRestaurant(String orderId) {
+    return _act(() async {
+      _active = await _repository.reachedRestaurant(orderId);
+    });
+  }
+
+  /// Tells the customer the rider is outside. Optional, like the above.
+  Future<RiderFailure?> reachedCustomer(String orderId) {
+    return _act(() async {
+      _active = await _repository.reachedCustomer(orderId);
+    });
+  }
+
   /// Confirms collection with the merchant's code.
   ///
   /// A wrong code is a 422 on `pickup_code` and the rider simply retypes it;
@@ -293,9 +321,11 @@ class OrderController extends ChangeNotifier {
     final Duration interval =
         _active == null ? idlePingInterval : activePingInterval;
 
-    // Carrying an order is when the customer is watching, so that is when
-    // location has to survive the screen locking.
-    unawaited(_keepAlive(_active != null));
+    // Online at all is when location has to survive the screen locking:
+    // dispatch needs a fresh position to offer orders, and a customer may be
+    // watching. The foreground service's notification says the rider is
+    // online, which is also the honest thing to show.
+    unawaited(_keepAlive(true));
 
     // Already running at the right cadence. Restarting would reset the period
     // and, worse, fire an immediate extra ping every time a screen rebuilt.
@@ -334,6 +364,7 @@ class OrderController extends ChangeNotifier {
         highAccuracy: _active != null,
       );
       _locationDenial = null;
+      _mockLocation = position.isMocked;
 
       final bool tracking = await _repository.sendLocation(
         latitude: position.latitude,
@@ -342,6 +373,7 @@ class OrderController extends ChangeNotifier {
         headingDegrees: position.headingDegrees,
         speedMetresPerSecond: position.speedMetresPerSecond,
         recordedAt: position.recordedAt,
+        isMock: position.isMocked,
       );
 
       // `tracking: false` is the server saying this rider is off duty. Not an
@@ -360,12 +392,23 @@ class OrderController extends ChangeNotifier {
       // timer stops and the board explains itself instead of sitting empty.
       _locationDenial = error.denial;
       stopTracking();
+    } on ApiException catch (error) {
+      // A mock-location fix is refused with a 422. Retrying sends the same
+      // fake position, so the timer stops and the home screen says why.
+      if (error.isValidation && _mentionsMock(error)) {
+        _mockLocation = true;
+        stopTracking();
+      }
     } catch (_) {
       // A ping that failed on the network. The next tick tries again.
     } finally {
       _pinging = false;
     }
   }
+
+  static bool _mentionsMock(ApiException error) =>
+      error.errors.keys.any((String key) => key.contains('mock')) ||
+      (error.message ?? '').toLowerCase().contains('mock');
 
   Future<void> _keepAlive(bool on) async {
     try {

@@ -63,6 +63,8 @@
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>location</string>
+			<!-- Lets a data-only push wake the app to draw its notification. -->
+			<string>remote-notification</string>
 		</array>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Nexmile Rider uses your location while you are online so we can offer you the nearest deliveries and the customer can follow your progress.</string>

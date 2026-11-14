@@ -1044,5 +1044,152 @@
   "@navMinutes": {"description": "Minutes left on the navigation panel.", "placeholders": {"minutes": {"type": "String", "example": "8"}}},
 
   "navStart": "Navigate",
-  "@navStart": {"description": "Button on the delivery screen that opens in-app navigation."}
+  "@navStart": {"description": "Button on the delivery screen that opens in-app navigation."},
+
+  "orderReachedRestaurant": "At the restaurant",
+  "@orderReachedRestaurant": {"description": "Order status: the rider told the kitchen they are at the counter."},
+
+  "orderReachedCustomer": "At the customer",
+  "@orderReachedCustomer": {"description": "Order status: the rider told the customer they are outside."},
+
+  "reachedRestaurantButton": "I've reached the restaurant",
+  "@reachedRestaurantButton": {"description": "Optional button that tells the kitchen the rider is waiting."},
+
+  "reachedCustomerButton": "I've reached the customer",
+  "@reachedCustomerButton": {"description": "Optional button that tells the customer the rider is outside."},
+
+  "reachedRestaurantDone": "The kitchen knows you're here",
+  "@reachedRestaurantDone": {"description": "Confirmation after tapping reached restaurant."},
+
+  "reachedCustomerDone": "The customer knows you're outside",
+  "@reachedCustomerDone": {"description": "Confirmation after tapping reached customer."},
+
+  "offerTitle": "New order",
+  "@offerTitle": {"description": "Heading of the incoming order card."},
+
+  "offerYouEarn": "You earn",
+  "@offerYouEarn": {"description": "Label over the earnings on the incoming order card."},
+
+  "offerPickup": "Pickup",
+  "@offerPickup": {"description": "Label over the restaurant on the incoming order card."},
+
+  "offerDrop": "Drop",
+  "@offerDrop": {"description": "Label over the drop area on the incoming order card."},
+
+  "offerAway": "{distance} away",
+  "@offerAway": {"description": "How far the restaurant is from the rider. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "240 m"}}},
+
+  "offerTrip": "{distance} trip",
+  "@offerTrip": {"description": "Restaurant to customer distance. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "620 m"}}},
+
+  "offerItems": "{count} items",
+  "@offerItems": {"description": "Item count on the incoming order card.", "placeholders": {"count": {"type": "String", "example": "3"}}},
+
+  "offerCollectCash": "Collect {amount} cash",
+  "@offerCollectCash": {"description": "Cash to collect at the door. The amount arrives formatted.", "placeholders": {"amount": {"type": "String", "example": "₹430"}}},
+
+  "offerPrepaid": "Prepaid · no cash",
+  "@offerPrepaid": {"description": "Shown when there is no cash to collect."},
+
+  "offerFoodReadyIn": "Food ready in about {minutes} min",
+  "@offerFoodReadyIn": {"description": "The offer can arrive while the food cooks; this says the wait is expected.", "placeholders": {"minutes": {"type": "String", "example": "12"}}},
+
+  "offerSwipeToAccept": "Swipe to accept",
+  "@offerSwipeToAccept": {"description": "Label on the swipe-to-accept slider."},
+
+  "offerAccepting": "Accepting…",
+  "@offerAccepting": {"description": "While the accept request is in flight."},
+
+  "offerReject": "Reject",
+  "@offerReject": {"description": "Button that declines the order offer."},
+
+  "offerRejectTitle": "Why are you declining?",
+  "@offerRejectTitle": {"description": "Title of the decline reason sheet."},
+
+  "offerReasonTooFar": "Too far",
+  "@offerReasonTooFar": {"description": "Decline reason."},
+
+  "offerReasonBusy": "Busy right now",
+  "@offerReasonBusy": {"description": "Decline reason."},
+
+  "offerReasonVehicle": "Vehicle problem",
+  "@offerReasonVehicle": {"description": "Decline reason."},
+
+  "offerReasonOther": "Other reason",
+  "@offerReasonOther": {"description": "Decline reason."},
+
+  "offerTaken": "Order taken by another rider",
+  "@offerTaken": {"description": "When another rider accepted first."},
+
+  "offerAutoOffline": "You were set offline after missing 3 orders. Go online when you're ready.",
+  "@offerAutoOffline": {"description": "When the server takes the rider off duty for letting offers ring out."},
+
+  "mockLocationBlocked": "Turn off any fake-location app to receive orders.",
+  "@mockLocationBlocked": {"description": "When the server refuses a mock location."},
+
+  "setupTitle": "Phone setup",
+  "@setupTitle": {"description": "Title of the guided permissions screen."},
+
+  "setupIntro": "Finish these so new orders ring even when the app is closed or your phone is locked.",
+  "@setupIntro": {"description": "Intro on the setup screen."},
+
+  "setupNotifications": "Notifications",
+  "@setupNotifications": {"description": "Setup step."},
+
+  "setupNotificationsBody": "So new orders can ring and show.",
+  "@setupNotificationsBody": {"description": "Why the notifications step matters."},
+
+  "setupFullScreen": "Full-screen order alerts",
+  "@setupFullScreen": {"description": "Setup step for full-screen intents."},
+
+  "setupFullScreenBody": "Shows a new order over your lock screen, like a call.",
+  "@setupFullScreenBody": {"description": "Why the full-screen step matters."},
+
+  "setupBattery": "Battery: don't optimise",
+  "@setupBattery": {"description": "Setup step for battery optimisation exemption."},
+
+  "setupBatteryBody": "Stops your phone closing the app while you're online.",
+  "@setupBatteryBody": {"description": "Why the battery step matters."},
+
+  "setupAutostart": "Autostart",
+  "@setupAutostart": {"description": "Setup step for OEM autostart."},
+
+  "setupAutostartBody": "{brand} phones also need Autostart on for Nexmile Rider. Open settings, find Autostart, and switch it on.",
+  "@setupAutostartBody": {"description": "Autostart instructions for the phone's brand.", "placeholders": {"brand": {"type": "String", "example": "Xiaomi"}}},
+
+  "setupLocation": "Location",
+  "@setupLocation": {"description": "Setup step."},
+
+  "setupLocationBody": "Needed to send you orders nearby.",
+  "@setupLocationBody": {"description": "Why the location step matters."},
+
+  "setupAllow": "Allow",
+  "@setupAllow": {"description": "Button that grants a setup step."},
+
+  "setupOpenSettings": "Open settings",
+  "@setupOpenSettings": {"description": "Button that opens system settings for a setup step."},
+
+  "setupMarkDone": "I've done this",
+  "@setupMarkDone": {"description": "Button for a step the app cannot check, such as Autostart."},
+
+  "setupDoneStep": "Done",
+  "@setupDoneStep": {"description": "Shown on a finished setup step."},
+
+  "setupBannerTitle": "Finish phone setup",
+  "@setupBannerTitle": {"description": "Home banner while setup steps are missing."},
+
+  "setupBannerBody": "{count} left so order alerts aren't missed",
+  "@setupBannerBody": {"description": "Home banner body. The count is a number.", "placeholders": {"count": {"type": "String", "example": "2"}}},
+
+  "offerEstimatedEarnings": "Estimated earnings",
+  "@offerEstimatedEarnings": {"description": "Under the amount on the incoming order card."},
+
+  "offerPickupLine": "Pickup: {name}",
+  "@offerPickupLine": {"description": "Restaurant line on the incoming order card.", "placeholders": {"name": {"type": "String", "example": "Sri Murugan Mess"}}},
+
+  "offerDropLine": "Drop: {area}",
+  "@offerDropLine": {"description": "Drop area line on the incoming order card. Area only, never the street.", "placeholders": {"area": {"type": "String", "example": "Anna Nagar West"}}},
+
+  "offerFromYou": "{distance} from you",
+  "@offerFromYou": {"description": "How far the restaurant is from the rider. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "1.2 km"}}}
 }

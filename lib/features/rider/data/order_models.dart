@@ -18,8 +18,16 @@ enum OrderStatus {
   /// This rider has taken it. Ride to the restaurant.
   assigned,
 
+  /// The rider told the kitchen they are at the counter. Optional: pickup
+  /// works from [assigned] too.
+  reachedRestaurant,
+
   /// Collected. The food is in the bag.
   pickedUp,
+
+  /// The rider told the customer they are outside. Optional: delivery works
+  /// from [pickedUp] too.
+  reachedCustomer,
 
   /// On the way to the customer.
   outForDelivery,
@@ -41,8 +49,12 @@ enum OrderStatus {
       case 'assigned':
       case 'rider_assigned':
         return OrderStatus.assigned;
+      case 'reached_restaurant':
+        return OrderStatus.reachedRestaurant;
       case 'picked_up':
         return OrderStatus.pickedUp;
+      case 'reached_customer':
+        return OrderStatus.reachedCustomer;
       case 'out_for_delivery':
         return OrderStatus.outForDelivery;
       case 'delivered':
@@ -62,7 +74,9 @@ enum OrderStatus {
   bool get isActive {
     switch (this) {
       case OrderStatus.assigned:
+      case OrderStatus.reachedRestaurant:
       case OrderStatus.pickedUp:
+      case OrderStatus.reachedCustomer:
       case OrderStatus.outForDelivery:
         return true;
       case OrderStatus.preparing:
@@ -80,7 +94,9 @@ enum OrderStatus {
   /// kitchen has to be delivered — so the hand-back button is hidden rather
   /// than offered and then rejected.
   bool get isCollected {
-    return this == OrderStatus.pickedUp || this == OrderStatus.outForDelivery;
+    return this == OrderStatus.pickedUp ||
+        this == OrderStatus.reachedCustomer ||
+        this == OrderStatus.outForDelivery;
   }
 }
 
@@ -359,7 +375,9 @@ class RiderOrder {
 
   /// True once the merchant's code is the only thing left between the rider
   /// and the road.
-  bool get awaitingPickup => status == OrderStatus.assigned;
+  bool get awaitingPickup =>
+      status == OrderStatus.assigned ||
+      status == OrderStatus.reachedRestaurant;
 
   static RiderOrder fromJson(Map<String, dynamic> json) {
     final Object? pickup = json['pickup'];

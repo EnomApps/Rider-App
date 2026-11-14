@@ -15,9 +15,11 @@ import 'features/auth/data/device_repository.dart';
 import 'features/auth/data/token_store.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/rider/data/location_service.dart';
+import 'core/push/offer_ringer.dart';
 import 'features/rider/data/payout_repository.dart';
 import 'features/rider/data/rider_repository.dart';
 import 'features/rider/state/order_controller.dart';
+import 'features/rider/state/offer_controller.dart';
 import 'features/rider/state/payout_controller.dart';
 import 'features/rider/state/rider_controller.dart';
 
@@ -48,7 +50,10 @@ Future<void> main() async {
   // a bearer token and a way to refresh it, the controller needs the client to
   // make calls. Build the client first, then attach the controller as its
   // token provider.
-  final ApiClient apiClient = ApiClient();
+  final ApiClient apiClient = ApiClient()
+    // Read from preferences each time rather than captured once, so picking
+    // a new language in the app changes the next request too.
+    ..languageProvider = () => preferences.languageCode;
 
   // Firebase when the project credentials are in the build, and the no-op
   // transport when they are not: a checkout with no `google-services.json`
@@ -104,6 +109,13 @@ Future<void> main() async {
       orderController: orderController,
       payoutController: PayoutController(
         repository: ApiPayoutRepository(apiClient),
+      ),
+      // The live order offer card. Rings through the push transport so that
+      // answering it in the app also stops a ring that began in the
+      // background.
+      offerController: OfferController(
+        repository: riderRepository,
+        alert: AppOfferAlert(push: pushService),
       ),
       pushService: pushService,
     ),

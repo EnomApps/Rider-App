@@ -62,6 +62,9 @@ dependencies:
   google_maps_flutter: ^2.19.0
   latlong2: ^0.10.1
   wakelock_plus: ^1.5.2
+  # Loops the incoming-order ring on the alarm stream while the app is open,
+  # so it plays at full volume even when the ringer is turned down.
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +80,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icon/
+    # The incoming-order ring, looped on the alarm stream while the app is open.
+    - assets/sounds/
 
 # ---------------------------------------------------------------------------
 # App launcher icons  ->  dart run flutter_launcher_icons

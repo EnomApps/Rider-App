@@ -14,6 +14,7 @@ import '../../state/rider_controller.dart';
 import 'order_details_screen.dart';
 import 'widgets/order_card.dart';
 import 'widgets/order_empty_state.dart';
+import '../setup/phone_setup.dart';
 
 /// The board: what a rider can take right now, nearest restaurant first.
 ///
@@ -175,6 +176,20 @@ class _OrderBoardScreenState extends State<OrderBoardScreen>
             ),
           ]),
           const SizedBox(height: 18),
+
+          // Order alerts depend on phone settings an app cannot assume, so a
+          // missing one is shown above everything else on the board.
+          const PhoneSetupBanner(),
+
+          // A fake-location app makes the server refuse every position, so
+          // no order will ever be offered until it is off.
+          if (orders.mockLocation) ...<Widget>[
+            OrderBanner(
+              icon: Icons.gps_off_rounded,
+              message: l10n.mockLocationBlocked,
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // A refused location outranks whatever the board says, because it is
           // the reason the board is empty and the only one the rider can do

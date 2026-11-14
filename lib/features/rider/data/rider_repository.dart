@@ -2,6 +2,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import 'kyc_models.dart';
 import 'navigation_models.dart';
+import 'offer_models.dart';
 import 'order_models.dart';
 import 'picked_document.dart';
 import 'rider_profile.dart';
@@ -63,6 +64,7 @@ abstract class RiderRepository {
     double? headingDegrees,
     double? speedMetresPerSecond,
     DateTime? recordedAt,
+    bool isMock = false,
   });
 
   /// `GET /v1/rider/orders/available` — the board, nearest restaurant first.
@@ -92,6 +94,28 @@ abstract class RiderRepository {
 
   /// `POST /v1/rider/orders/{order}/deliver` — closes it out.
   Future<RiderOrder> confirmDelivery(String orderId);
+
+  /// `POST /v1/rider/orders/{order}/reached-restaurant` — tells the kitchen
+  /// someone is waiting. Optional: pickup works without it.
+  Future<RiderOrder> reachedRestaurant(String orderId);
+
+  /// `POST /v1/rider/orders/{order}/reached-customer` — tells the customer
+  /// the rider is outside. Optional: delivery works without it.
+  Future<RiderOrder> reachedCustomer(String orderId);
+
+  /// `GET /v1/rider/offers/current` — the live offer card, or null. A 200
+  /// with `data: null` is the normal "nothing on offer", not an error.
+  Future<OrderOffer?> currentOffer();
+
+  /// `POST /v1/rider/offers/{offer}/accept`. 200 returns the full order,
+  /// drop address and customer phone included. 409, 410, 422 and 404 come
+  /// back as [ApiException]s for the controller to tell apart. Safe to retry:
+  /// accepting the same offer twice is 200 both times.
+  Future<RiderOrder> acceptOffer(String offerId);
+
+  /// `POST /v1/rider/offers/{offer}/reject`. Declining costs the rider
+  /// nothing; letting it ring out does.
+  Future<void> rejectOffer(String offerId, {String? reason});
 
   /// `GET /v1/rider/orders/{order}/route` — the road from [latitude],
   /// [longitude] to the next stop, with turn-by-turn steps.
@@ -211,6 +235,7 @@ class ApiRiderRepository implements RiderRepository {
     double? headingDegrees,
     double? speedMetresPerSecond,
     DateTime? recordedAt,
+    bool isMock = false,
   }) async {
     final Map<String, dynamic> response = await _client.post(
       '/v1/rider/location',
@@ -224,6 +249,8 @@ class ApiRiderRepository implements RiderRepository {
         'speed': speedMetresPerSecond,
         'recorded_at':
             (recordedAt ?? DateTime.now()).toUtc().toIso8601String(),
+        // The server refuses fixes from a mock-location app with a 422.
+        'is_mock': isMock,
       },
     );
     final Object? data = response['data'];
@@ -329,6 +356,46 @@ class ApiRiderRepository implements RiderRepository {
   }
 
   /// Every success response wraps its payload in `data`.
+  @override
+  Future<RiderOrder> reachedRestaurant(String orderId) async {
+    final Map<String, dynamic> response =
+        await _client.post('/v1/rider/orders/$orderId/reached-restaurant');
+    return RiderOrder.fromJson(_data(response));
+  }
+
+  @override
+  Future<RiderOrder> reachedCustomer(String orderId) async {
+    final Map<String, dynamic> response =
+        await _client.post('/v1/rider/orders/$orderId/reached-customer');
+    return RiderOrder.fromJson(_data(response));
+  }
+
+  @override
+  Future<OrderOffer?> currentOffer() async {
+    final Map<String, dynamic> response =
+        await _client.get('/v1/rider/offers/current');
+    final Object? data = response['data'];
+    if (data is! Map<String, dynamic>) return null;
+    return OrderOffer.fromData(data);
+  }
+
+  @override
+  Future<RiderOrder> acceptOffer(String offerId) async {
+    final Map<String, dynamic> response =
+        await _client.post('/v1/rider/offers/$offerId/accept');
+    return RiderOrder.fromJson(_data(response));
+  }
+
+  @override
+  Future<void> rejectOffer(String offerId, {String? reason}) async {
+    await _client.post(
+      '/v1/rider/offers/$offerId/reject',
+      body: <String, dynamic>{
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
+  }
+
   @override
   Future<NavRoute?> route(
     String orderId, {

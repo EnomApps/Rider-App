@@ -26,6 +26,10 @@ const String _ordersChannelDescription =
 /// the server posts to `nexmile_orders` by name, so that is a coordinated
 /// change rather than a one-line edit here.
 const String _androidSound = 'nexmile';
+
+const String _offersChannelName = 'Incoming orders';
+const String _offersChannelDescription =
+    'Rings like a call when a new order is offered to you.';
 const String _iosSound = 'nexmile.caf';
 
 /// Handles a message that arrived while the app was not in the foreground.
@@ -49,7 +53,131 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     ),
   );
   await _ensureAndroidChannel(local);
+  await _ensureOffersChannel(local);
+  if (await _handleDispatchMessage(local, message.data)) return;
   await _showDataMessage(local, message);
+}
+
+/// The dispatch messages, drawn or cleared here because the app is not on
+/// screen to do it. Returns true when [data] was one of them.
+Future<bool> _handleDispatchMessage(
+  FlutterLocalNotificationsPlugin local,
+  Map<String, dynamic> data,
+) async {
+  switch ('${data['type'] ?? ''}') {
+    case 'ORDER_OFFER':
+      await _showOffer(local, data);
+      return true;
+    case 'OFFER_CANCELLED':
+      // Stops the ring the moment the order is gone, rather than leaving it
+      // to ring out for an order somebody else already has.
+      await local.cancel(id: 0, tag: _offerTag('${data['order_id'] ?? ''}'));
+      return true;
+    case 'rider.auto_offline':
+      // Usually comes with its own text; when it does not, say it plainly.
+      if (_string(data['title']) == null && _string(data['body']) == null) {
+        await local.show(
+          id: _uniqueId(),
+          title: 'You are offline',
+          body: 'You missed 3 orders in a row, so you were set offline. '
+              'Go online in the app when you are ready.',
+          notificationDetails: const NotificationDetails(
+            android: AndroidNotificationDetails(
+              kOrdersChannelId,
+              _ordersChannelName,
+              channelDescription: _ordersChannelDescription,
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+          payload: jsonEncode(data),
+        );
+        return true;
+      }
+      return false;
+  }
+  return false;
+}
+
+String _offerTag(String orderId) => 'offer-$orderId';
+
+/// The incoming order, drawn like an incoming call: full screen over the lock
+/// screen, ringing on the alarm stream until it is answered or gone.
+///
+/// Written in English: this runs in a background isolate with no access to
+/// the rider's chosen language. The card inside the app is translated.
+Future<void> _showOffer(
+  FlutterLocalNotificationsPlugin local,
+  Map<String, dynamic> data,
+) async {
+  final String orderId = '${data['order_id'] ?? ''}';
+  if (orderId.isEmpty) return;
+
+  final DateTime? expiresAt = DateTime.tryParse('${data['expires_at'] ?? ''}');
+  final int? secondsLeft = int.tryParse('${data['seconds_left'] ?? ''}');
+  int windowMs = (secondsLeft ?? 30) * 1000;
+  if (expiresAt != null) {
+    final int byClock = expiresAt.difference(DateTime.now()).inMilliseconds;
+    // Trust the server's deadline unless this phone's clock is clearly off.
+    if (secondsLeft == null || (byClock - windowMs).abs() < 5000) {
+      windowMs = byClock;
+    }
+  }
+  // Landed after its window: nothing to ring for.
+  if (windowMs <= 0) return;
+
+  final String earnings = _string(data['earnings']) ?? '';
+  final String restaurant = _string(data['restaurant']) ?? 'New order';
+  final String? distance = _distance(_string(data['pickup_distance_metres']));
+
+  await local.show(
+    id: 0,
+    title: earnings.isEmpty ? 'New order' : 'New order · Earn ₹$earnings',
+    body: distance == null ? restaurant : '$restaurant · $distance away',
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        kOffersChannelId,
+        _offersChannelName,
+        channelDescription: _offersChannelDescription,
+        tag: _offerTag(orderId),
+        importance: Importance.max,
+        priority: Priority.max,
+        category: AndroidNotificationCategory.call,
+        fullScreenIntent: true,
+        ongoing: true,
+        autoCancel: false,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+        sound: const RawResourceAndroidNotificationSound(_androidSound),
+        // FLAG_INSISTENT: the sound repeats until the notification goes.
+        additionalFlags: Int32List.fromList(<int>[4]),
+        // Gone on its own when the window closes.
+        timeoutAfter: windowMs,
+        actions: const <AndroidNotificationAction>[
+          AndroidNotificationAction(
+            kOfferDeclineAction,
+            'Decline',
+            showsUserInterface: true,
+          ),
+          AndroidNotificationAction(
+            kOfferAcceptAction,
+            'Accept',
+            showsUserInterface: true,
+          ),
+        ],
+      ),
+      iOS: const DarwinNotificationDetails(
+        sound: _iosSound,
+        interruptionLevel: InterruptionLevel.timeSensitive,
+      ),
+    ),
+    payload: jsonEncode(data),
+  );
+}
+
+String? _distance(String? metres) {
+  final double? m = metres == null ? null : double.tryParse(metres);
+  if (m == null) return null;
+  return m < 1000 ? '${m.round()} m' : '${(m / 1000).toStringAsFixed(1)} km';
 }
 
 /// Firebase Cloud Messaging, behind [PushService].
@@ -126,6 +254,9 @@ class FirebasePushService implements PushService {
   final StreamController<Map<String, Object?>> _taps =
       StreamController<Map<String, Object?>>.broadcast();
 
+  final StreamController<Map<String, Object?>> _data =
+      StreamController<Map<String, Object?>>.broadcast();
+
   void _listen() {
     // A tap on a notification the system drew while the app was backgrounded.
     FirebaseMessaging.onMessageOpenedApp.listen(_emitTap);
@@ -138,13 +269,37 @@ class FirebasePushService implements PushService {
       }),
     );
 
+    // A notification this app drew — an offer, usually — that launched it
+    // from cold: its full-screen intent over the lock screen, or a tap on
+    // Accept. Read once, after the app has had a moment to subscribe.
+    unawaited(
+      Future<void>.delayed(const Duration(milliseconds: 500), () async {
+        final NotificationAppLaunchDetails? launch =
+            await _local.getNotificationAppLaunchDetails();
+        final NotificationResponse? response = launch?.notificationResponse;
+        if (launch?.didNotificationLaunchApp ?? false) {
+          if (response != null) _onLocalTap(response);
+        }
+      }),
+    );
+
     // In the foreground Android draws nothing at all, so an order update that
     // lands while the rider is looking at the app would otherwise be
-    // invisible.
+    // invisible. Dispatch messages go to the app, which shows its own card.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (!_data.isClosed) {
+        _data.add(Map<String, Object?>.from(message.data));
+      }
+      if (_isDispatch(message.data)) return;
       unawaited(_showForeground(message));
     });
   }
+
+  static bool _isDispatch(Map<String, dynamic> data) => const <String>{
+        'ORDER_OFFER',
+        'OFFER_CANCELLED',
+        'rider.auto_offline',
+      }.contains('${data['type'] ?? ''}');
 
   Future<void> _showForeground(RemoteMessage message) async {
     // iOS is told below to present banners itself, so drawing a second one
@@ -169,7 +324,10 @@ class FirebasePushService implements PushService {
     try {
       final Object? decoded = jsonDecode(payload);
       if (decoded is Map<String, dynamic>) {
-        _taps.add(Map<String, Object?>.from(decoded));
+        _taps.add(<String, Object?>{
+          ...decoded,
+          if (response.actionId != null) kTapAction: response.actionId,
+        });
       }
     } catch (_) {
       // A payload this build cannot read routes nowhere, which is the same
@@ -185,6 +343,13 @@ class FirebasePushService implements PushService {
 
   @override
   Stream<Map<String, Object?>> get onTap => _taps.stream;
+
+  @override
+  Stream<Map<String, Object?>> get onData => _data.stream;
+
+  @override
+  Future<void> cancelOffer(String orderId) =>
+      _local.cancel(id: 0, tag: _offerTag(orderId));
 
   @override
   Future<bool> requestPermission() async {
@@ -203,7 +368,18 @@ class FirebasePushService implements PushService {
   }
 
   @override
-  Future<void> ensureChannel() => _ensureAndroidChannel(_local);
+  Future<bool> notificationsAllowed() async {
+    final NotificationSettings settings =
+        await _messaging.getNotificationSettings();
+    return settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+  }
+
+  @override
+  Future<void> ensureChannel() async {
+    await _ensureAndroidChannel(_local);
+    await _ensureOffersChannel(_local);
+  }
 }
 
 /// Creates [kOrdersChannelId] if it is not already there.
@@ -228,6 +404,28 @@ Future<void> _ensureAndroidChannel(FlutterLocalNotificationsPlugin local) async 
       );
 }
 
+/// Creates [kOffersChannelId]: maximum importance, the alarm stream so it
+/// rings at low ringer volume, and vibration.
+Future<void> _ensureOffersChannel(FlutterLocalNotificationsPlugin local) async {
+  if (defaultTargetPlatform != TargetPlatform.android) return;
+
+  await local
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(
+        AndroidNotificationChannel(
+          kOffersChannelId,
+          _offersChannelName,
+          description: _offersChannelDescription,
+          importance: Importance.max,
+          sound: const RawResourceAndroidNotificationSound(_androidSound),
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+          enableVibration: true,
+          vibrationPattern: Int64List.fromList(<int>[0, 600, 400, 600, 400]),
+        ),
+      );
+}
+
 /// Draws a notification for a message the system did not draw itself.
 ///
 /// The title and body come from the `notification` block when there is one and
@@ -248,39 +446,51 @@ Future<void> _showDataMessage(
     return;
   }
 
+  // Keyed by order with the same tag the server puts on the notification it
+  // sends, `order-{id}`. Android identifies a notification by tag and id, and
+  // FCM draws tagged ones with id 0, so matching both means an update shown
+  // here in the foreground replaces the one the system drew in the
+  // background, and the reverse: one live notification per order.
+  final String? tag = _orderTag(message);
   await local.show(
-    // Keyed by order, so a later update to the same order replaces the earlier
-    // one instead of stacking four rows for one delivery.
-    id: _notificationId(message),
+    id: tag == null ? _uniqueId() : 0,
     title: title,
     body: body,
-    notificationDetails: const NotificationDetails(
+    notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         kOrdersChannelId,
         _ordersChannelName,
         channelDescription: _ordersChannelDescription,
+        tag: tag,
         importance: Importance.high,
         priority: Priority.high,
         // Android 8 and later take the sound from the channel and ignore
         // this; it is here for the older devices that still read it per
         // notification.
-        sound: RawResourceAndroidNotificationSound(_androidSound),
+        sound: const RawResourceAndroidNotificationSound(_androidSound),
       ),
-      iOS: DarwinNotificationDetails(sound: _iosSound),
+      iOS: DarwinNotificationDetails(
+        sound: _iosSound,
+        // The iOS counterpart of the Android tag: updates to one order
+        // group together instead of interleaving with other orders.
+        threadIdentifier: tag,
+      ),
     ),
     payload: jsonEncode(message.data),
   );
 }
 
-/// A stable id per order, falling back to something unique when the payload
-/// carries no order — two unrelated notifications must not overwrite each
-/// other. Kept inside 32 bits: Android ids are ints.
-int _notificationId(RemoteMessage message) {
+/// `order-{id}`, the tag the server sets on every notification about one
+/// order. Null when the payload carries no order: two unrelated
+/// notifications must not overwrite each other.
+String? _orderTag(RemoteMessage message) {
   final String? orderId = _string(message.data['order_id']);
-  final int? parsed = orderId == null ? null : int.tryParse(orderId.trim());
-  if (parsed != null) return parsed % 0x7fffffff;
-  return DateTime.now().millisecondsSinceEpoch % 0x7fffffff;
+  return orderId == null ? null : 'order-$orderId';
 }
+
+/// Something unique for a notification that is not about an order. Kept
+/// inside 32 bits: Android ids are ints.
+int _uniqueId() => DateTime.now().millisecondsSinceEpoch % 0x7fffffff;
 
 String? _string(Object? raw) {
   if (raw == null) return null;

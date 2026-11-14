@@ -16,6 +16,7 @@ class RiderPosition {
     this.headingDegrees,
     this.speedMetresPerSecond,
     this.recordedAt,
+    this.isMocked = false,
   });
 
   final double latitude;
@@ -31,6 +32,9 @@ class RiderPosition {
   /// When the phone took the fix. The server orders pings by this, so a
   /// burst that arrives late after a basement still lands in sequence.
   final DateTime? recordedAt;
+
+  /// True when Android reports the fix came from a mock-location app.
+  final bool isMocked;
 }
 
 /// Why a fix could not be taken.
@@ -81,9 +85,9 @@ abstract class LocationService {
 
   /// Keeps location running with the screen locked, while [on].
   ///
-  /// On for as long as an order is in hand. Without it Android stops the app
-  /// the moment the rider pockets the phone, and the customer's map freezes
-  /// at the restaurant. Android shows an ongoing notification for as long as
+  /// On for as long as the rider is online. Without it Android stops the app
+  /// the moment the rider pockets the phone: dispatch loses their position
+  /// and offers stop, and a customer's map freezes at the restaurant. Android shows an ongoing notification for as long as
   /// it is on; iOS shows the blue location pill.
   Future<void> keepAlive(bool on);
 }
@@ -194,9 +198,9 @@ class GeolocatorLocationService implements LocationService {
           // screen locks. Android insists it be visible, so it is honest
           // about what it is doing.
           foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: 'Delivering an order',
+            notificationTitle: 'You are online – receiving orders',
             notificationText:
-                'Sharing your location with the customer until delivery.',
+                'Sharing your location so nearby orders reach you.',
             enableWakeLock: true,
             setOngoing: true,
           ),
@@ -229,5 +233,6 @@ class GeolocatorLocationService implements LocationService {
             : null,
         speedMetresPerSecond: position.speed >= 0 ? position.speed : null,
         recordedAt: position.timestamp,
+        isMocked: position.isMocked,
       );
 }

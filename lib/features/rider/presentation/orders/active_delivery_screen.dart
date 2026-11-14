@@ -165,6 +165,7 @@ class ActiveDeliveryScreen extends StatelessWidget {
           ],
 
           const SizedBox(height: 26),
+          _ReachedAction(order: order),
           _PrimaryAction(order: order),
 
           if (order.canRelease) ...<Widget>[
@@ -199,6 +200,74 @@ class ActiveDeliveryScreen extends StatelessWidget {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(l10n.orderReleased)));
+  }
+}
+
+/// "I've reached the restaurant" / "I've reached the customer".
+///
+/// Optional and secondary: it tells the kitchen or the customer the rider is
+/// here, but pickup and delivery never wait on it — a rider holding the bag
+/// must never be blocked by a button they did not press. Shown only until it
+/// has been pressed for this stop.
+class _ReachedAction extends StatelessWidget {
+  const _ReachedAction({required this.order});
+
+  final RiderOrder order;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final OrderController orders = context.watch<OrderController>();
+
+    final bool atRestaurantStep = order.status == OrderStatus.assigned;
+    final bool atCustomerStep = order.status == OrderStatus.pickedUp ||
+        order.status == OrderStatus.outForDelivery;
+    if (!atRestaurantStep && !atCustomerStep) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: OutlinedButton.icon(
+        onPressed: orders.isActing
+            ? null
+            : () async {
+                final ScaffoldMessengerState messenger =
+                    ScaffoldMessenger.of(context);
+                final RiderFailure? failure = atRestaurantStep
+                    ? await orders.reachedRestaurant(order.id)
+                    : await orders.reachedCustomer(order.id);
+                if (failure != null) return;
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        atRestaurantStep
+                            ? l10n.reachedRestaurantDone
+                            : l10n.reachedCustomerDone,
+                      ),
+                    ),
+                  );
+              },
+        icon: Icon(
+          atRestaurantStep
+              ? Icons.storefront_outlined
+              : Icons.door_front_door_outlined,
+        ),
+        label: Text(
+          atRestaurantStep
+              ? l10n.reachedRestaurantButton
+              : l10n.reachedCustomerButton,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radius),
+          ),
+        ),
+      ),
+    );
   }
 }
 

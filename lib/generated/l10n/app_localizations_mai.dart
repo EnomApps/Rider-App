@@ -972,4 +972,176 @@ class AppLocalizationsMai extends AppLocalizations {
 
   @override
   String get navStart => 'Navigate';
+
+  @override
+  String get orderReachedRestaurant => 'At the restaurant';
+
+  @override
+  String get orderReachedCustomer => 'At the customer';
+
+  @override
+  String get reachedRestaurantButton => 'I\'ve reached the restaurant';
+
+  @override
+  String get reachedCustomerButton => 'I\'ve reached the customer';
+
+  @override
+  String get reachedRestaurantDone => 'The kitchen knows you\'re here';
+
+  @override
+  String get reachedCustomerDone => 'The customer knows you\'re outside';
+
+  @override
+  String get offerTitle => 'New order';
+
+  @override
+  String get offerYouEarn => 'You earn';
+
+  @override
+  String get offerPickup => 'Pickup';
+
+  @override
+  String get offerDrop => 'Drop';
+
+  @override
+  String offerAway(String distance) {
+    return '$distance away';
+  }
+
+  @override
+  String offerTrip(String distance) {
+    return '$distance trip';
+  }
+
+  @override
+  String offerItems(String count) {
+    return '$count items';
+  }
+
+  @override
+  String offerCollectCash(String amount) {
+    return 'Collect $amount cash';
+  }
+
+  @override
+  String get offerPrepaid => 'Prepaid · no cash';
+
+  @override
+  String offerFoodReadyIn(String minutes) {
+    return 'Food ready in about $minutes min';
+  }
+
+  @override
+  String get offerSwipeToAccept => 'Swipe to accept';
+
+  @override
+  String get offerAccepting => 'Accepting…';
+
+  @override
+  String get offerReject => 'Reject';
+
+  @override
+  String get offerRejectTitle => 'Why are you declining?';
+
+  @override
+  String get offerReasonTooFar => 'Too far';
+
+  @override
+  String get offerReasonBusy => 'Busy right now';
+
+  @override
+  String get offerReasonVehicle => 'Vehicle problem';
+
+  @override
+  String get offerReasonOther => 'Other reason';
+
+  @override
+  String get offerTaken => 'Order taken by another rider';
+
+  @override
+  String get offerAutoOffline =>
+      'You were set offline after missing 3 orders. Go online when you\'re ready.';
+
+  @override
+  String get mockLocationBlocked =>
+      'Turn off any fake-location app to receive orders.';
+
+  @override
+  String get setupTitle => 'Phone setup';
+
+  @override
+  String get setupIntro =>
+      'Finish these so new orders ring even when the app is closed or your phone is locked.';
+
+  @override
+  String get setupNotifications => 'Notifications';
+
+  @override
+  String get setupNotificationsBody => 'So new orders can ring and show.';
+
+  @override
+  String get setupFullScreen => 'Full-screen order alerts';
+
+  @override
+  String get setupFullScreenBody =>
+      'Shows a new order over your lock screen, like a call.';
+
+  @override
+  String get setupBattery => 'Battery: don\'t optimise';
+
+  @override
+  String get setupBatteryBody =>
+      'Stops your phone closing the app while you\'re online.';
+
+  @override
+  String get setupAutostart => 'Autostart';
+
+  @override
+  String setupAutostartBody(String brand) {
+    return '$brand phones also need Autostart on for Nexmile Rider. Open settings, find Autostart, and switch it on.';
+  }
+
+  @override
+  String get setupLocation => 'Location';
+
+  @override
+  String get setupLocationBody => 'Needed to send you orders nearby.';
+
+  @override
+  String get setupAllow => 'Allow';
+
+  @override
+  String get setupOpenSettings => 'Open settings';
+
+  @override
+  String get setupMarkDone => 'I\'ve done this';
+
+  @override
+  String get setupDoneStep => 'Done';
+
+  @override
+  String get setupBannerTitle => 'Finish phone setup';
+
+  @override
+  String setupBannerBody(String count) {
+    return '$count left so order alerts aren\'t missed';
+  }
+
+  @override
+  String get offerEstimatedEarnings => 'Estimated earnings';
+
+  @override
+  String offerPickupLine(String name) {
+    return 'Pickup: $name';
+  }
+
+  @override
+  String offerDropLine(String area) {
+    return 'Drop: $area';
+  }
+
+  @override
+  String offerFromYou(String distance) {
+    return '$distance from you';
+  }
 }

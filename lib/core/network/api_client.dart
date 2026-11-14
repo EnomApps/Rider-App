@@ -52,6 +52,18 @@ class ApiClient {
   /// Null for endpoints that never authenticate (OTP request and verify).
   TokenProvider? tokenProvider;
 
+  /// The rider's chosen language, sent as `Accept-Language` so text the
+  /// server writes for them, such as turn instructions, comes in that
+  /// language. Read per request, so a language change applies straight away.
+  String? Function()? languageProvider;
+
+  Map<String, String> get _languageHeader {
+    final String? language = languageProvider?.call();
+    return language == null || language.isEmpty
+        ? const <String, String>{}
+        : <String, String>{'Accept-Language': language};
+  }
+
   Future<bool>? _refreshLock;
 
   void close() => _http.close();
@@ -118,6 +130,7 @@ class ApiClient {
       final http.MultipartRequest request =
           http.MultipartRequest('POST', uri)
             ..headers['Accept'] = 'application/json'
+            ..headers.addAll(_languageHeader)
             ..fields.addAll(fields)
             ..files.add(
               http.MultipartFile.fromBytes(
@@ -214,6 +227,7 @@ class ApiClient {
       // Non-negotiable — see the class doc.
       'Accept': 'application/json',
       if (body != null) 'Content-Type': 'application/json',
+      ..._languageHeader,
     };
 
     final String? token = tokenProvider?.accessToken;

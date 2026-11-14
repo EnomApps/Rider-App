@@ -130,12 +130,27 @@ class NavRoute {
         points: decodePolyline('${json['polyline'] ?? ''}'),
         distanceMetres: _int(json['distance_metres']),
         durationSeconds: _int(json['duration_seconds']),
-        steps: <NavStep>[
-          for (final Object? raw
-              in json['steps'] as List<Object?>? ?? const <Object?>[])
-            if (raw is Map<String, dynamic>) NavStep.fromJson(raw),
-        ],
+        steps: _steps(json['steps']),
       );
+
+  /// The server sends no maneuver on the first and last steps, since "head
+  /// north" and "arrive" are not turns. The last one is shown as the finish
+  /// flag rather than as a straight-on arrow.
+  static List<NavStep> _steps(Object? raw) {
+    final List<Map<String, dynamic>> items = <Map<String, dynamic>>[
+      for (final Object? item in raw as List<Object?>? ?? const <Object?>[])
+        if (item is Map<String, dynamic>) item,
+    ];
+    return <NavStep>[
+      for (int i = 0; i < items.length; i++)
+        i == items.length - 1 && items[i]['maneuver'] == null
+            ? NavStep.fromJson(<String, dynamic>{
+                ...items[i],
+                'maneuver': 'arrive',
+              })
+            : NavStep.fromJson(items[i]),
+    ];
+  }
 }
 
 int _int(Object? raw) => switch (raw) {

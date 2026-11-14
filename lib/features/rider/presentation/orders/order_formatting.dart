@@ -24,8 +24,12 @@ extension OrderPresentation on RiderOrder {
         return l10n.orderReadyForPickup;
       case OrderStatus.assigned:
         return l10n.orderAssigned;
+      case OrderStatus.reachedRestaurant:
+        return l10n.orderReachedRestaurant;
       case OrderStatus.pickedUp:
         return l10n.orderPickedUp;
+      case OrderStatus.reachedCustomer:
+        return l10n.orderReachedCustomer;
       case OrderStatus.outForDelivery:
         return l10n.orderOutForDelivery;
       case OrderStatus.delivered:
@@ -44,7 +48,9 @@ extension OrderPresentation on RiderOrder {
       case OrderStatus.cancelled:
         return StatusTone.negative;
       case OrderStatus.assigned:
+      case OrderStatus.reachedRestaurant:
       case OrderStatus.pickedUp:
+      case OrderStatus.reachedCustomer:
       case OrderStatus.outForDelivery:
         return StatusTone.warning;
       case OrderStatus.preparing:

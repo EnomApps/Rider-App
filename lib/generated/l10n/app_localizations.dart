@@ -1867,6 +1867,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Navigate'**
   String get navStart;
+
+  /// Order status: the rider told the kitchen they are at the counter.
+  ///
+  /// In en, this message translates to:
+  /// **'At the restaurant'**
+  String get orderReachedRestaurant;
+
+  /// Order status: the rider told the customer they are outside.
+  ///
+  /// In en, this message translates to:
+  /// **'At the customer'**
+  String get orderReachedCustomer;
+
+  /// Optional button that tells the kitchen the rider is waiting.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve reached the restaurant'**
+  String get reachedRestaurantButton;
+
+  /// Optional button that tells the customer the rider is outside.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve reached the customer'**
+  String get reachedCustomerButton;
+
+  /// Confirmation after tapping reached restaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'The kitchen knows you\'re here'**
+  String get reachedRestaurantDone;
+
+  /// Confirmation after tapping reached customer.
+  ///
+  /// In en, this message translates to:
+  /// **'The customer knows you\'re outside'**
+  String get reachedCustomerDone;
+
+  /// Heading of the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'New order'**
+  String get offerTitle;
+
+  /// Label over the earnings on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'You earn'**
+  String get offerYouEarn;
+
+  /// Label over the restaurant on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get offerPickup;
+
+  /// Label over the drop area on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop'**
+  String get offerDrop;
+
+  /// How far the restaurant is from the rider. The distance arrives with its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} away'**
+  String offerAway(String distance);
+
+  /// Restaurant to customer distance. The distance arrives with its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} trip'**
+  String offerTrip(String distance);
+
+  /// Item count on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String offerItems(String count);
+
+  /// Cash to collect at the door. The amount arrives formatted.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect {amount} cash'**
+  String offerCollectCash(String amount);
+
+  /// Shown when there is no cash to collect.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepaid · no cash'**
+  String get offerPrepaid;
+
+  /// The offer can arrive while the food cooks; this says the wait is expected.
+  ///
+  /// In en, this message translates to:
+  /// **'Food ready in about {minutes} min'**
+  String offerFoodReadyIn(String minutes);
+
+  /// Label on the swipe-to-accept slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to accept'**
+  String get offerSwipeToAccept;
+
+  /// While the accept request is in flight.
+  ///
+  /// In en, this message translates to:
+  /// **'Accepting…'**
+  String get offerAccepting;
+
+  /// Button that declines the order offer.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get offerReject;
+
+  /// Title of the decline reason sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you declining?'**
+  String get offerRejectTitle;
+
+  /// Decline reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Too far'**
+  String get offerReasonTooFar;
+
+  /// Decline reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Busy right now'**
+  String get offerReasonBusy;
+
+  /// Decline reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle problem'**
+  String get offerReasonVehicle;
+
+  /// Decline reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Other reason'**
+  String get offerReasonOther;
+
+  /// When another rider accepted first.
+  ///
+  /// In en, this message translates to:
+  /// **'Order taken by another rider'**
+  String get offerTaken;
+
+  /// When the server takes the rider off duty for letting offers ring out.
+  ///
+  /// In en, this message translates to:
+  /// **'You were set offline after missing 3 orders. Go online when you\'re ready.'**
+  String get offerAutoOffline;
+
+  /// When the server refuses a mock location.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off any fake-location app to receive orders.'**
+  String get mockLocationBlocked;
+
+  /// Title of the guided permissions screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone setup'**
+  String get setupTitle;
+
+  /// Intro on the setup screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish these so new orders ring even when the app is closed or your phone is locked.'**
+  String get setupIntro;
+
+  /// Setup step.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get setupNotifications;
+
+  /// Why the notifications step matters.
+  ///
+  /// In en, this message translates to:
+  /// **'So new orders can ring and show.'**
+  String get setupNotificationsBody;
+
+  /// Setup step for full-screen intents.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-screen order alerts'**
+  String get setupFullScreen;
+
+  /// Why the full-screen step matters.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows a new order over your lock screen, like a call.'**
+  String get setupFullScreenBody;
+
+  /// Setup step for battery optimisation exemption.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery: don\'t optimise'**
+  String get setupBattery;
+
+  /// Why the battery step matters.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops your phone closing the app while you\'re online.'**
+  String get setupBatteryBody;
+
+  /// Setup step for OEM autostart.
+  ///
+  /// In en, this message translates to:
+  /// **'Autostart'**
+  String get setupAutostart;
+
+  /// Autostart instructions for the phone's brand.
+  ///
+  /// In en, this message translates to:
+  /// **'{brand} phones also need Autostart on for Nexmile Rider. Open settings, find Autostart, and switch it on.'**
+  String setupAutostartBody(String brand);
+
+  /// Setup step.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get setupLocation;
+
+  /// Why the location step matters.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed to send you orders nearby.'**
+  String get setupLocationBody;
+
+  /// Button that grants a setup step.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get setupAllow;
+
+  /// Button that opens system settings for a setup step.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get setupOpenSettings;
+
+  /// Button for a step the app cannot check, such as Autostart.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve done this'**
+  String get setupMarkDone;
+
+  /// Shown on a finished setup step.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get setupDoneStep;
+
+  /// Home banner while setup steps are missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish phone setup'**
+  String get setupBannerTitle;
+
+  /// Home banner body. The count is a number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left so order alerts aren\'t missed'**
+  String setupBannerBody(String count);
+
+  /// Under the amount on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated earnings'**
+  String get offerEstimatedEarnings;
+
+  /// Restaurant line on the incoming order card.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup: {name}'**
+  String offerPickupLine(String name);
+
+  /// Drop area line on the incoming order card. Area only, never the street.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop: {area}'**
+  String offerDropLine(String area);
+
+  /// How far the restaurant is from the rider. The distance arrives with its unit.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} from you'**
+  String offerFromYou(String distance);
 }
 
 class _AppLocalizationsDelegate

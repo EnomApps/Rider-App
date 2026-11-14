@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The notification sound is only ever named in Dart, as the string
+     "nexmile", so resource shrinking sees nothing referencing it and deletes
+     it from release builds. Creating the nexmile_orders channel with a sound
+     that is not there then fails, and Android drops every notification sent
+     to that channel without a word. This file keeps it. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/nexmile" />

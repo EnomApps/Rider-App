@@ -30,6 +30,18 @@
          with no dialog. -->
     <uses-permission
         android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- An incoming order rings and shows over the lock screen the way a call
+         does. Android 14 grants this only after the rider allows it, which the
+         phone-setup screen checks and asks for. -->
+    <uses-permission
+        android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- Lets the setup screen ask once for the battery exemption, so the
+         phone does not close the app while the rider is online. -->
+    <uses-permission
+        android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- Vibration with the incoming-order ring. -->
+    <uses-permission
+        android:name="android.permission.VIBRATE"/>
     <application
         android:label="Nexmile Rider"
         android:name="${applicationName}"

@@ -52,6 +52,9 @@ import 'package:nexmile_rider/generated/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nexmile_rider/features/rider/data/navigation_models.dart';
 import 'package:nexmile_rider/features/rider/presentation/navigation/navigation_screen.dart';
+import 'package:nexmile_rider/features/rider/data/offer_models.dart';
+import 'package:nexmile_rider/features/rider/state/offer_controller.dart';
+import 'package:nexmile_rider/features/rider/presentation/offers/incoming_offer_card.dart';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -482,6 +485,7 @@ class FakeRiderRepository implements RiderRepository {
     double? headingDegrees,
     double? speedMetresPerSecond,
     DateTime? recordedAt,
+    bool isMock = false,
   }) async {
     final ApiException? error = locationError;
     if (error != null) throw error;
@@ -611,6 +615,57 @@ class FakeRiderRepository implements RiderRepository {
     boardOrders = <RiderOrder>[...boardOrders, back];
     assigned = null;
     return back;
+  }
+
+  /// The offer `/offers/current` answers with, and what accept does.
+  OrderOffer? liveOffer;
+  ApiException? offerAcceptError;
+  int offerAccepts = 0;
+  int offerSyncs = 0;
+  String? lastRejectReason;
+  int offerRejects = 0;
+  int reachedCalls = 0;
+
+  @override
+  Future<OrderOffer?> currentOffer() async {
+    offerSyncs++;
+    return liveOffer;
+  }
+
+  @override
+  Future<RiderOrder> acceptOffer(String offerId) async {
+    offerAccepts++;
+    final ApiException? error = offerAcceptError;
+    if (error != null) throw error;
+    liveOffer = null;
+    // The full order comes back with the drop address and customer phone.
+    assigned = _copyWith(
+      boardOrders.isNotEmpty ? boardOrders.removeAt(0) : _boardOrder(),
+      status: OrderStatus.assigned,
+      withDropoff: true,
+    );
+    return assigned!;
+  }
+
+  @override
+  Future<void> rejectOffer(String offerId, {String? reason}) async {
+    offerRejects++;
+    lastRejectReason = reason;
+    liveOffer = null;
+  }
+
+  @override
+  Future<RiderOrder> reachedRestaurant(String orderId) async {
+    reachedCalls++;
+    assigned = _copyWith(assigned!, status: OrderStatus.reachedRestaurant);
+    return assigned!;
+  }
+
+  @override
+  Future<RiderOrder> reachedCustomer(String orderId) async {
+    reachedCalls++;
+    assigned = _copyWith(assigned!, status: OrderStatus.reachedCustomer);
+    return assigned!;
   }
 
   /// What [route] answers. Null is a server that cannot route yet.
@@ -779,6 +834,7 @@ late FakeLocationService _location;
 /// without having to know whether the test built an app at all — the unit
 /// tests in this file never do.
 OrderController? _ordersRef;
+late OfferController _offers;
 
 Future<void> _pumpApp(
   WidgetTester tester, {
@@ -805,6 +861,7 @@ Future<void> _pumpApp(
   // so a delivery confirmed through the order controller is visible to the
   // profile refresh that follows it.
   _ordersRef = OrderController(repository: rider, location: _location);
+  _offers = OfferController(repository: rider);
   await tester.pumpWidget(
     NexmileRiderApp(
       preferences: preferences,
@@ -814,6 +871,7 @@ Future<void> _pumpApp(
       payoutController: PayoutController(
         repository: payoutRepository ?? FakePayoutRepository(),
       ),
+      offerController: _offers,
     ),
   );
 }
@@ -2008,6 +2066,127 @@ void main() {
       expect(rider.assigned, isNotNull);
       expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
       expect(find.text('Head to the restaurant'), findsWidgets);
+      expect(find.text('I have collected it'), findsOneWidget);
+    });
+
+    OrderOffer liveOffer({String orderId = '1001'}) => OrderOffer.fromData(
+          <String, Object?>{
+            'offer_id': 'offer-$orderId',
+            'order_id': orderId,
+            'order_number': 'NX-$orderId',
+            'seconds_left': '30',
+            'restaurant': 'Amma Mess',
+            'restaurant_area': 'Madurai',
+            'pickup_distance_metres': '240',
+            'dropoff_area': 'Anna Nagar',
+            'delivery_distance_metres': '620',
+            'item_count': '3',
+            'earnings': '34.50',
+            'collect_cash': '430.00',
+          },
+        )!;
+
+    Future<void> swipeToAccept(WidgetTester tester) async {
+      await tester.drag(
+        find.byIcon(Icons.arrow_forward_rounded),
+        const Offset(600, 0),
+      );
+      await _pumpLive(tester);
+    }
+
+    testWidgets('an offer rings over the board and a swipe takes it',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+
+      _offers.present(liveOffer());
+      await _pumpLive(tester);
+
+      expect(find.byType(IncomingOfferCard), findsOneWidget);
+      expect(find.text('₹34.50'), findsOneWidget);
+      expect(find.text('Pickup: Amma Mess'), findsOneWidget);
+      expect(find.text('240 m from you'), findsOneWidget);
+      expect(find.text('Drop: Anna Nagar'), findsOneWidget);
+      expect(
+        find.text('Estimated earnings · 3 items · Collect ₹430 cash'),
+        findsOneWidget,
+      );
+      // No customer address until the order is won.
+      expect(find.text('12 Anna Nagar, Madurai'), findsNothing);
+
+      await swipeToAccept(tester);
+
+      expect(rider.offerAccepts, 1);
+      expect(find.byType(IncomingOfferCard), findsNothing);
+      expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
+      expect(find.text('12 Anna Nagar, Madurai'), findsOneWidget);
+    });
+
+    testWidgets('a rider who was too slow is told plainly',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()
+        ..offerAcceptError =
+            const ApiException(kind: ApiErrorKind.server, statusCode: 409);
+      await onBoard(tester, rider);
+      _offers.present(liveOffer());
+      await _pumpLive(tester);
+
+      await swipeToAccept(tester);
+
+      expect(find.byType(IncomingOfferCard), findsNothing);
+      expect(find.text('Order taken by another rider'), findsOneWidget);
+    });
+
+    testWidgets('declining asks why and closes the card',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+      _offers.present(liveOffer());
+      await _pumpLive(tester);
+
+      await tester.tap(find.text('Reject'));
+      await _pumpLive(tester);
+      await tester.tap(find.text('Too far'));
+      await _pumpLive(tester);
+
+      expect(rider.offerRejects, 1);
+      expect(rider.lastRejectReason, 'Too far');
+      expect(find.byType(IncomingOfferCard), findsNothing);
+    });
+
+    testWidgets('a withdrawn offer disappears on its own',
+        (WidgetTester tester) async {
+      await onBoard(tester, workingRider());
+      _offers.present(liveOffer());
+      await _pumpLive(tester);
+
+      _offers.handleMessage(<String, Object?>{
+        'type': 'OFFER_CANCELLED',
+        'order_id': '1001',
+        'reason': 'taken',
+      });
+      await _pumpLive(tester);
+
+      expect(find.byType(IncomingOfferCard), findsNothing);
+    });
+
+    testWidgets('reaching the restaurant is optional and one tap',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider();
+      await onBoard(tester, rider);
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+
+      final Finder reached = find.text("I've reached the restaurant");
+      await tester.ensureVisible(reached);
+      await _pumpLive(tester);
+      await tester.tap(reached);
+      await _pumpLive(tester);
+
+      expect(rider.reachedCalls, 1);
+      expect(find.text('The kitchen knows you\'re here'), findsOneWidget);
+      // Pressed once for this stop, so it goes; pickup is still there.
+      expect(find.text("I've reached the restaurant"), findsNothing);
       expect(find.text('I have collected it'), findsOneWidget);
     });
 

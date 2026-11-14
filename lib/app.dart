@@ -14,6 +14,10 @@ import 'core/services/preferences_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_typography.dart';
 import 'features/auth/state/auth_controller.dart';
+import 'features/rider/data/offer_models.dart';
+import 'features/rider/data/order_models.dart';
+import 'features/rider/presentation/offers/incoming_offer_card.dart';
+import 'features/rider/state/offer_controller.dart';
 import 'features/rider/state/order_controller.dart';
 import 'features/rider/state/payout_controller.dart';
 import 'features/rider/state/rider_controller.dart';
@@ -27,6 +31,7 @@ class NexmileRiderApp extends StatefulWidget {
     required this.riderController,
     required this.orderController,
     required this.payoutController,
+    required this.offerController,
     this.pushService = const NoopPushService(),
   });
 
@@ -49,6 +54,9 @@ class NexmileRiderApp extends StatefulWidget {
   /// client.
   final PayoutController payoutController;
 
+  /// The live order offer card, if any. Shown over every screen.
+  final OfferController offerController;
+
   /// The push transport. Defaults to the no-op one so a test — and a build
   /// with no Firebase config in it — needs to know nothing about push.
   final PushService pushService;
@@ -57,23 +65,106 @@ class NexmileRiderApp extends StatefulWidget {
   State<NexmileRiderApp> createState() => _NexmileRiderAppState();
 }
 
-class _NexmileRiderAppState extends State<NexmileRiderApp> {
+class _NexmileRiderAppState extends State<NexmileRiderApp>
+    with WidgetsBindingObserver {
   /// Needed because a notification tap has no `BuildContext` of its own — it
   /// arrives from a stream, not from a widget.
   final GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
 
+  /// For messages about an offer that arrive from a stream, with no context.
+  final GlobalKey<ScaffoldMessengerState> _messenger =
+      GlobalKey<ScaffoldMessengerState>();
+
   StreamSubscription<Map<String, Object?>>? _taps;
+  StreamSubscription<Map<String, Object?>>? _data;
+
+  OfferController get offerController => widget.offerController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _taps = widget.pushService.onTap.listen(_follow);
+    _data = widget.pushService.onData.listen(_onData);
+    widget.authController.addListener(_onAuthChanged);
+    // Cold start: a push may have been dropped or landed while the phone was
+    // off, so the server is asked what is live rather than trusting it.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncOffer());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.authController.removeListener(_onAuthChanged);
     _taps?.cancel();
+    _data?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Every resume, for the same reason as the cold start — and because a
+    // full-screen offer alert over the lock screen opens the app this way.
+    if (state == AppLifecycleState.resumed) _syncOffer();
+  }
+
+  void _onAuthChanged() {
+    // No card for whoever signs in next on this phone.
+    if (!widget.authController.isSignedIn) offerController.reset();
+  }
+
+  Future<void> _syncOffer() async {
+    if (!widget.authController.isSignedIn) return;
+    await offerController.sync();
+  }
+
+  /// A dispatch message while the app is open.
+  void _onData(Map<String, Object?> data) {
+    if (!widget.authController.isSignedIn) return;
+    final bool setOffline = offerController.handleMessage(data);
+    if (setOffline) _wentOffline();
+  }
+
+  /// The server took the rider off duty for letting three offers ring out.
+  /// It has already happened there; the toggle must not keep saying online.
+  void _wentOffline() {
+    orderController.stopTracking();
+    unawaited(riderController.refresh());
+    final BuildContext? context = _navigator.currentContext;
+    if (context == null) return;
+    _messenger.currentState
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).offerAutoOffline)),
+      );
+  }
+
+  /// An accepted offer: the order is in hand, and the working screen shows it.
+  void _onWon(RiderOrder order) {
+    orderController.adopt(order);
+    final NavigatorState? navigator = _navigator.currentState;
+    if (navigator == null) return;
+    navigator.popUntil((Route<Object?> route) => route.isFirst);
+    navigator.pushNamed(AppRoutes.home);
+  }
+
+  /// A tap on an offer notification, or on its Accept or Decline button.
+  ///
+  /// The server is asked first: the notification may be for an offer that is
+  /// already gone, and acting on a stale one would be worse than doing
+  /// nothing.
+  Future<void> _followOffer(Map<String, Object?> data) async {
+    await offerController.sync();
+    final OrderOffer? live = offerController.offer;
+    if (live == null || live.offerId != '${data['offer_id'] ?? ''}') return;
+
+    switch (data[kTapAction]) {
+      case kOfferAcceptAction:
+        final AcceptOutcome outcome = await offerController.accept();
+        if (outcome case OfferWon(:final RiderOrder order)) _onWon(order);
+      case kOfferDeclineAction:
+        await offerController.reject();
+    }
   }
 
   /// Opens what the notification was about.
@@ -83,6 +174,16 @@ class _NexmileRiderAppState extends State<NexmileRiderApp> {
   /// rider has no token to fill.
   void _follow(Map<String, Object?> data) {
     if (!widget.authController.isSignedIn) return;
+    switch (OfferMessage.typeOf(data)) {
+      case OfferMessage.offer:
+        unawaited(_followOffer(data));
+        return;
+      case OfferMessage.cancelled:
+        return;
+      case OfferMessage.autoOffline:
+        _wentOffline();
+        return;
+    }
     final PushDestination? destination = PushDestination.fromData(data);
     if (destination == null) return;
 
@@ -120,6 +221,8 @@ class _NexmileRiderAppState extends State<NexmileRiderApp> {
         ChangeNotifierProvider<PayoutController>.value(
           value: widget.payoutController,
         ),
+        ChangeNotifierProvider<OfferController>.value(value: offerController),
+        Provider<PushService>.value(value: widget.pushService),
       ],
       child: Consumer<LocaleController>(
         builder: (BuildContext context, LocaleController controller, _) {
@@ -145,6 +248,7 @@ class _NexmileRiderAppState extends State<NexmileRiderApp> {
             ],
 
             navigatorKey: _navigator,
+            scaffoldMessengerKey: _messenger,
             initialRoute: AppRoutes.splash,
             onGenerateRoute: AppRouter.onGenerateRoute,
 
@@ -157,7 +261,12 @@ class _NexmileRiderAppState extends State<NexmileRiderApp> {
                 child: MediaQuery.withClampedTextScaling(
                   minScaleFactor: AppTypography.minTextScale,
                   maxScaleFactor: AppTypography.maxTextScale,
-                  child: child ?? const SizedBox.shrink(),
+                  // Over every route, so an offer lands on top of whatever
+                  // the rider was looking at, like an incoming call.
+                  child: OfferOverlay(
+                    onWon: _onWon,
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               );
             },

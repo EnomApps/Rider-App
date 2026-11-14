@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:latlong2/latlong.dart' show LatLng;
+import 'package:nexmile_rider/core/network/api_client.dart';
 import 'package:nexmile_rider/features/rider/data/location_service.dart';
 import 'package:nexmile_rider/features/rider/data/navigation_models.dart';
 import 'package:nexmile_rider/features/rider/data/rider_repository.dart';
@@ -141,6 +146,79 @@ void main() {
   });
 
   tearDown(() => nav.dispose());
+
+  test('the last step with no maneuver is the finish, not straight on', () {
+    // The server leaves maneuver null on the first and last steps.
+    final NavRoute route = NavRoute.fromJson(<String, dynamic>{
+      'polyline': _encode(const <(double, double)>[
+        (_lat0, _lng0),
+        (_cornerLat, _lng0),
+      ]),
+      'steps': <Map<String, dynamic>>[
+        <String, dynamic>{'instruction': 'Head north', 'maneuver': null},
+        <String, dynamic>{'instruction': 'Arrive', 'maneuver': null},
+      ],
+    }, NavTarget.pickup);
+
+    expect(route.steps.first.maneuver, Maneuver.straight);
+    expect(route.steps.last.maneuver, Maneuver.arrive);
+  });
+
+  test('asks for the route in the rider\'s language', () async {
+    late http.Request sent;
+    final ApiClient client = ApiClient(
+      baseUrl: 'https://api.test/api',
+      httpClient: MockClient((http.Request request) async {
+        sent = request;
+        return http.Response(
+          jsonEncode(<String, dynamic>{
+            'data': <String, dynamic>{
+              'target': 'pickup',
+              'polyline': _encode(const <(double, double)>[
+                (_lat0, _lng0),
+                (_cornerLat, _lng0),
+              ]),
+              'distance_metres': 1112,
+              'duration_seconds': 240,
+              'steps': <Object>[],
+            },
+          }),
+          200,
+          headers: <String, String>{'content-type': 'application/json'},
+        );
+      }),
+    )..languageProvider = () => 'ta';
+
+    final NavRoute? route = await ApiRiderRepository(client).route(
+      '1001',
+      latitude: _lat0,
+      longitude: _lng0,
+      target: NavTarget.pickup,
+    );
+
+    expect(route, isNotNull);
+    expect(sent.headers['Accept-Language'], 'ta');
+    expect(sent.url.path, '/api/v1/rider/orders/1001/route');
+    expect(sent.url.queryParameters['target'], 'pickup');
+  });
+
+  test('a 404 before deploy is a fallback, not a crash', () async {
+    final ApiClient client = ApiClient(
+      baseUrl: 'https://api.test/api',
+      httpClient: MockClient(
+        (_) async => http.Response('{"message":"Not Found"}', 404),
+      ),
+    );
+
+    final NavRoute? route = await ApiRiderRepository(client).route(
+      '1001',
+      latitude: _lat0,
+      longitude: _lng0,
+      target: NavTarget.pickup,
+    );
+
+    expect(route, isNull);
+  });
 
   test('decodes both maneuver spellings', () {
     expect(Maneuver.fromWire('turn-right'), Maneuver.turnRight);
