@@ -1144,6 +1144,6 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String offerFromYou(String distance) {
-    return '$distance from you';
+    return 'About $distance from you';
   }
 }

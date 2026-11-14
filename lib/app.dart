@@ -105,7 +105,13 @@ class _NexmileRiderAppState extends State<NexmileRiderApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Every resume, for the same reason as the cold start — and because a
     // full-screen offer alert over the lock screen opens the app this way.
-    if (state == AppLifecycleState.resumed) _syncOffer();
+    if (state == AppLifecycleState.resumed) {
+      _syncOffer();
+      // Duty status can change on the server while the app is away — set
+      // offline after three missed offers, say — and the toggle must show
+      // what the server says, not what it said before.
+      if (widget.authController.isSignedIn) unawaited(riderController.refresh());
+    }
   }
 
   void _onAuthChanged() {

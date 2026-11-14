@@ -1928,7 +1928,7 @@ abstract class AppLocalizations {
   /// **'Drop'**
   String get offerDrop;
 
-  /// How far the restaurant is from the rider. The distance arrives with its unit.
+  /// How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.
   ///
   /// In en, this message translates to:
   /// **'{distance} away'**
@@ -2156,10 +2156,10 @@ abstract class AppLocalizations {
   /// **'Drop: {area}'**
   String offerDropLine(String area);
 
-  /// How far the restaurant is from the rider. The distance arrives with its unit.
+  /// How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.
   ///
   /// In en, this message translates to:
-  /// **'{distance} from you'**
+  /// **'About {distance} from you'**
   String offerFromYou(String distance);
 }
 

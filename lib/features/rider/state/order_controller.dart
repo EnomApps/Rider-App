@@ -376,6 +376,9 @@ class OrderController extends ChangeNotifier {
         isMock: position.isMocked,
       );
 
+      // Accepted, so whatever fake-location app there was is gone.
+      _mockLocation = false;
+
       // `tracking: false` is the server saying this rider is off duty. Not an
       // error — just stop the timer.
       if (!tracking) {
@@ -393,11 +396,15 @@ class OrderController extends ChangeNotifier {
       _locationDenial = error.denial;
       stopTracking();
     } on ApiException catch (error) {
-      // A mock-location fix is refused with a 422. Retrying sends the same
-      // fake position, so the timer stops and the home screen says why.
+      // A mock-location fix is refused with a 422, but the rider stays
+      // online. The heartbeat keeps going so the first real fix after the
+      // fake-location app is turned off is accepted and offers resume; the
+      // board says why nothing is arriving meanwhile.
       if (error.isValidation && _mentionsMock(error)) {
-        _mockLocation = true;
-        stopTracking();
+        if (!_mockLocation) {
+          _mockLocation = true;
+          notifyListeners();
+        }
       }
     } catch (_) {
       // A ping that failed on the network. The next tick tries again.

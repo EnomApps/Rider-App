@@ -1077,7 +1077,7 @@
   "@offerDrop": {"description": "Label over the drop area on the incoming order card."},
 
   "offerAway": "{distance} away",
-  "@offerAway": {"description": "How far the restaurant is from the rider. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "240 m"}}},
+  "@offerAway": {"description": "How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "240 m"}}},
 
   "offerTrip": "{distance} trip",
   "@offerTrip": {"description": "Restaurant to customer distance. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "620 m"}}},
@@ -1190,6 +1190,6 @@
   "offerDropLine": "Drop: {area}",
   "@offerDropLine": {"description": "Drop area line on the incoming order card. Area only, never the street.", "placeholders": {"area": {"type": "String", "example": "Anna Nagar West"}}},
 
-  "offerFromYou": "{distance} from you",
-  "@offerFromYou": {"description": "How far the restaurant is from the rider. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "1.2 km"}}}
+  "offerFromYou": "About {distance} from you",
+  "@offerFromYou": {"description": "How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "1.2 km"}}}
 }

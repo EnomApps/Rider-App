@@ -2105,7 +2105,8 @@ void main() {
       expect(find.byType(IncomingOfferCard), findsOneWidget);
       expect(find.text('₹34.50'), findsOneWidget);
       expect(find.text('Pickup: Amma Mess'), findsOneWidget);
-      expect(find.text('240 m from you'), findsOneWidget);
+      // From a position up to 25 seconds old, so never shown as exact.
+      expect(find.text('About 240 m from you'), findsOneWidget);
       expect(find.text('Drop: Anna Nagar'), findsOneWidget);
       expect(
         find.text('Estimated earnings · 3 items · Collect ₹430 cash'),
