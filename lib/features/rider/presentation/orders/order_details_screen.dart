@@ -11,6 +11,7 @@ import 'order_formatting.dart';
 import '../navigation/navigation_screen.dart';
 import '../../data/navigation_models.dart';
 import 'widgets/contact_actions.dart';
+import '../widgets/dropoff_details.dart';
 
 /// One order in full.
 ///
@@ -149,6 +150,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 name: order.dropoff!.contactName,
                 address: order.dropoff!.address,
                 distance: formatDistance(l10n, order.deliveryDistanceMetres),
+                details: DropoffDetails.isEmpty(order.dropoff!)
+                    ? null
+                    : DropoffDetails(dropoff: order.dropoff!),
                 actions: ContactActions(
                   callLabel: l10n.callCustomer,
                   directionsLabel: l10n.navStart,
@@ -255,6 +259,7 @@ class _Place extends StatelessWidget {
     required this.actions,
     this.name,
     this.distance,
+    this.details,
   });
 
   final IconData icon;
@@ -263,6 +268,9 @@ class _Place extends StatelessWidget {
   final String address;
   final String? distance;
   final Widget actions;
+
+  /// More about the place, under the address: for the drop, the door.
+  final Widget? details;
 
   @override
   Widget build(BuildContext context) {
@@ -320,6 +328,13 @@ class _Place extends StatelessWidget {
               ],
             ],
           ),
+          if (details != null) ...<Widget>[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 34),
+              child: details!,
+            ),
+          ],
           const SizedBox(height: 14),
           actions,
         ],

@@ -112,6 +112,21 @@
     "description": "Validation error when the sign-in field is neither a valid email nor a valid Indian mobile number."
   },
 
+  "loginHeadline": "Deliver with Nexmile. Earn on your own time.",
+  "@loginHeadline": {"description":"Big line on the rider login screen, under the illustration."},
+
+  "loginOrSignUp": "Log in or sign up",
+  "@loginOrSignUp": {"description":"Small heading over the login field. The same field serves new and returning riders."},
+
+  "loginEmailHint": "Enter your email address",
+  "@loginEmailHint": {"description":"Hint inside the login field."},
+
+  "invalidEmail": "Enter a valid email address",
+  "@invalidEmail": {"description":"Error under the login field when the text is not an email address."},
+
+  "loginHeroBadge": "Delivery partner",
+  "@loginHeroBadge": {"description":"Small pill under the Nexmile name on the rider login picture. Must stay short."},
+
   "sendCode": "Send code",
   "@sendCode": {
     "description": "Primary button on the sign-in screen."
@@ -1127,6 +1142,135 @@
   "mockLocationBlocked": "Turn off any fake-location app to receive orders.",
   "@mockLocationBlocked": {"description": "When the server refuses a mock location."},
 
+  "dropoffDoorLabel": "Flat / floor",
+  "@dropoffDoorLabel": {"description":"Label read out for the flat, floor or house number the customer typed."},
+
+  "dropoffStreetLabel": "Street",
+  "@dropoffStreetLabel": {"description":"Label read out for the street from the customer's map pin."},
+
+  "dropoffLandmarkLabel": "Landmark",
+  "@dropoffLandmarkLabel": {"description":"Label read out for the landmark near the drop."},
+
+  "doorPhotoLabel": "Door photo",
+  "@doorPhotoLabel": {"description":"Caption on the photo of the customer's door or building."},
+
+  "doorPhotoHint": "Tap to see it bigger",
+  "@doorPhotoHint": {"description":"Hint on the door photo thumbnail."},
+
+  "doorPhotoUnavailable": "Photo not available right now",
+  "@doorPhotoUnavailable": {"description":"Shown when the door photo cannot load, for example after its link expired."},
+
+  "permStepCount": "{step} of {total}",
+  "@permStepCount": {"description":"Progress on the first-run permission pages, e.g. '1 of 4'.","placeholders":{"step":{"type":"int"},"total":{"type":"int"}}},
+
+  "permNotNow": "Not now",
+  "@permNotNow": {"description":"Skips one first-run permission page without asking."},
+
+  "permLocationTitle": "Turn on location",
+  "@permLocationTitle": {"description":"Title of the first-run page that asks for location."},
+
+  "permLocationBody": "Orders go to the rider closest to the restaurant, and customers follow their food on the map.",
+  "@permLocationBody": {"description":"Why the rider app needs location."},
+
+  "permLocationNearTitle": "Orders near you",
+  "@permLocationNearTitle": {"description":"First reason for location."},
+
+  "permLocationNearBody": "We offer you orders from restaurants close by, so you ride less and earn more.",
+  "@permLocationNearBody": {"description":"Supporting line for the first location reason."},
+
+  "permLocationTrackTitle": "Live tracking",
+  "@permLocationTrackTitle": {"description":"Second reason for location."},
+
+  "permLocationTrackBody": "Customers see you on the map, so they call you less.",
+  "@permLocationTrackBody": {"description":"Supporting line for the second location reason."},
+
+  "permLocationOnlineTitle": "Only while you're online",
+  "@permLocationOnlineTitle": {"description":"Third reason: location is shared only during a shift."},
+
+  "permLocationOnlineBody": "Go offline and it stops. A notification shows whenever it is in use.",
+  "@permLocationOnlineBody": {"description":"Supporting line for the third location reason."},
+
+  "permLocationAllow": "Allow location",
+  "@permLocationAllow": {"description":"Button that shows the system location prompt."},
+
+  "permNotifyTitle": "Never miss an order",
+  "@permNotifyTitle": {"description":"Title of the first-run page that asks for notifications."},
+
+  "permNotifyBody": "New orders ring like a phone call, even when your screen is locked.",
+  "@permNotifyBody": {"description":"Why the rider app needs notifications."},
+
+  "permNotifyRingTitle": "Order alerts that ring",
+  "@permNotifyRingTitle": {"description":"First reason for notifications."},
+
+  "permNotifyRingBody": "Accept or decline straight from the alert.",
+  "@permNotifyRingBody": {"description":"Supporting line for the first notification reason."},
+
+  "permNotifyUpdatesTitle": "Payouts and approvals",
+  "@permNotifyUpdatesTitle": {"description":"Second reason for notifications."},
+
+  "permNotifyUpdatesBody": "Know when your documents are approved and when money is sent.",
+  "@permNotifyUpdatesBody": {"description":"Supporting line for the second notification reason."},
+
+  "permNotifyControlTitle": "You stay in control",
+  "@permNotifyControlTitle": {"description":"Third reason: the rider can change this later."},
+
+  "permNotifyControlBody": "Change it any time in your phone's Settings.",
+  "@permNotifyControlBody": {"description":"Supporting line for the third notification reason."},
+
+  "permNotifyAllow": "Turn on notifications",
+  "@permNotifyAllow": {"description":"Button that shows the system notification prompt."},
+
+  "permBatteryTitle": "Keep orders coming",
+  "@permBatteryTitle": {"description":"Title of the first-run page that asks to stop battery optimisation."},
+
+  "permBatteryBody": "Phones close apps in the background to save battery. Let Nexmile Rider keep running while you're online.",
+  "@permBatteryBody": {"description":"Why the rider app asks to be left out of battery optimisation."},
+
+  "permBatteryOrdersTitle": "No missed orders",
+  "@permBatteryOrdersTitle": {"description":"First reason for the battery setting."},
+
+  "permBatteryOrdersBody": "Offers reach you with the app closed and the phone in your pocket.",
+  "@permBatteryOrdersBody": {"description":"Supporting line for the first battery reason."},
+
+  "permBatteryLiveTitle": "Tracking stays live",
+  "@permBatteryLiveTitle": {"description":"Second reason for the battery setting."},
+
+  "permBatteryLiveBody": "Customers keep seeing you on the map until you deliver.",
+  "@permBatteryLiveBody": {"description":"Supporting line for the second battery reason."},
+
+  "permBatteryLightTitle": "Light on battery",
+  "@permBatteryLightTitle": {"description":"Third reason for the battery setting."},
+
+  "permBatteryLightBody": "It only works hard while you're online.",
+  "@permBatteryLightBody": {"description":"Supporting line for the third battery reason."},
+
+  "permBatteryAllow": "Allow background use",
+  "@permBatteryAllow": {"description":"Button that shows the system battery optimisation prompt."},
+
+  "permFullScreenTitle": "Orders on your lock screen",
+  "@permFullScreenTitle": {"description":"Title of the first-run page about full-screen order alerts."},
+
+  "permFullScreenBody": "Let new orders appear over the lock screen, like an incoming call, so you can accept in one tap.",
+  "@permFullScreenBody": {"description":"Why the rider app asks for full-screen alerts."},
+
+  "permFullScreenCallTitle": "Answer like a call",
+  "@permFullScreenCallTitle": {"description":"First reason for full-screen alerts."},
+
+  "permFullScreenCallBody": "See the order and accept it without unlocking.",
+  "@permFullScreenCallBody": {"description":"Supporting line for the first full-screen reason."},
+
+  "permFullScreenTimeTitle": "Respond in time",
+  "@permFullScreenTimeTitle": {"description":"Second reason for full-screen alerts."},
+
+  "permFullScreenTimeBody": "An offer you don't answer moves on to another rider.",
+  "@permFullScreenTimeBody": {"description":"Supporting line for the second full-screen reason."},
+
+  "permFullScreenOnlyTitle": "Only for new orders",
+  "@permFullScreenOnlyTitle": {"description":"Third reason: nothing else uses the lock screen."},
+
+  "permFullScreenOnlyBody": "Nothing else ever appears over your lock screen.",
+  "@permFullScreenOnlyBody": {"description":"Supporting line for the third full-screen reason."},
+
   "setupTitle": "Phone setup",
   "@setupTitle": {"description": "Title of the guided permissions screen."},
 
@@ -1191,5 +1335,143 @@
   "@offerDropLine": {"description": "Drop area line on the incoming order card. Area only, never the street.", "placeholders": {"area": {"type": "String", "example": "Anna Nagar West"}}},
 
   "offerFromYou": "About {distance} from you",
-  "@offerFromYou": {"description": "How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "1.2 km"}}}
+  "@offerFromYou": {"description": "How far the restaurant is from the rider, from a position up to 25 seconds old, so approximate. The distance arrives with its unit.", "placeholders": {"distance": {"type": "String", "example": "1.2 km"}}},
+
+  "exitTitle": "Exit Nexmile Rider?",
+  "@exitTitle": {"description": "Title of the dialog shown when back is pressed on the main screen."},
+
+  "exitBody": "Are you sure you want to exit the app?",
+  "@exitBody": {"description": "Body of the exit confirmation dialog."},
+
+  "exitConfirm": "Exit",
+  "@exitConfirm": {"description": "Button that closes the app."},
+
+  "onboardingWelcomeTitle": "Become a Nexmile delivery partner",
+  "@onboardingWelcomeTitle": {"description": "Heading of the welcome screen before registration."},
+
+  "onboardingWelcomeSubtitle": "Deliver in your area, pick your own hours, and get paid every week.",
+  "@onboardingWelcomeSubtitle": {"description": "Under the welcome heading."},
+
+  "onboardingWelcomeNeed": "Keep these ready",
+  "@onboardingWelcomeNeed": {"description": "Heading over the list of documents a rider needs to register."},
+
+  "onboardingNeedAadhaar": "Aadhaar card",
+  "@onboardingNeedAadhaar": {"description": "Item in the documents-needed list."},
+
+  "onboardingNeedPan": "PAN card",
+  "@onboardingNeedPan": {"description": "Item in the documents-needed list."},
+
+  "onboardingNeedLicence": "Driving licence and vehicle RC",
+  "@onboardingNeedLicence": {"description": "Item in the documents-needed list."},
+
+  "onboardingNeedInsurance": "Vehicle insurance",
+  "@onboardingNeedInsurance": {"description": "Item in the documents-needed list."},
+
+  "onboardingNeedBank": "Bank account details",
+  "@onboardingNeedBank": {"description": "Item in the documents-needed list."},
+
+  "onboardingNeedNote": "Riding a bicycle or on foot? You only need Aadhaar, PAN and a bank account.",
+  "@onboardingNeedNote": {"description": "Under the documents-needed list."},
+
+  "onboardingWelcomeTime": "Takes about 10 minutes",
+  "@onboardingWelcomeTime": {"description": "How long registration takes."},
+
+  "onboardingGetStarted": "Get started",
+  "@onboardingGetStarted": {"description": "Button that starts registration."},
+
+  "onboardingSavedNote": "Saved securely after every step",
+  "@onboardingSavedNote": {"description": "Reassurance under the save button on every registration step."},
+
+  "docsTip": "Clear photos in good light get approved fastest.",
+  "@docsTip": {"description": "Tip at the top of the document checklist."},
+
+  "docsAllDone": "All required documents are in. Continue to review.",
+  "@docsAllDone": {"description": "Shown on the document checklist once nothing required is missing."},
+
+  "docGroupIdentity": "Identity proof",
+  "@docGroupIdentity": {"description": "Heading over Aadhaar and PAN on the document checklist."},
+
+  "docGroupVehicle": "Licence and vehicle papers",
+  "@docGroupVehicle": {"description": "Heading over licence, RC and insurance on the document checklist."},
+
+  "docGroupMore": "More documents",
+  "@docGroupMore": {"description": "Heading over the remaining documents on the checklist."},
+
+  "docTapToAdd": "Tap to add",
+  "@docTapToAdd": {"description": "Status line on a document not yet uploaded."},
+
+  "docUploading": "Uploading…",
+  "@docUploading": {"description": "While a document uploads."},
+
+  "docView": "View",
+  "@docView": {"description": "Opens a larger preview of an uploaded document."},
+
+  "docSheetSubtitle": "How to get it approved the first time",
+  "@docSheetSubtitle": {"description": "Under the document name in the upload sheet."},
+
+  "docTipCorners": "All four corners inside the photo",
+  "@docTipCorners": {"description": "Upload tip."},
+
+  "docTipGlare": "Sharp text, no glare or shadows",
+  "@docTipGlare": {"description": "Upload tip."},
+
+  "docTipOriginal": "The original document, not a photocopy",
+  "@docTipOriginal": {"description": "Upload tip."},
+
+  "docTipFace": "Your face clearly visible, looking straight ahead",
+  "@docTipFace": {"description": "Upload tip for the profile photo."},
+
+  "docTipBackground": "Plain background and good light",
+  "@docTipBackground": {"description": "Upload tip for the profile photo."},
+
+  "docTipNoCap": "No cap, mask or sunglasses",
+  "@docTipNoCap": {"description": "Upload tip for the profile photo."},
+
+  "docTipFullPage": "The full page, with every line readable",
+  "@docTipFullPage": {"description": "Upload tip for insurance and bank papers."},
+
+  "docSourceCamera": "Camera",
+  "@docSourceCamera": {"description": "Upload option: take a photo."},
+
+  "docSourceGallery": "Gallery",
+  "@docSourceGallery": {"description": "Upload option: choose a photo."},
+
+  "docSourceFile": "PDF or file",
+  "@docSourceFile": {"description": "Upload option: choose a file."},
+
+  "reviewSectionDetails": "Your details",
+  "@reviewSectionDetails": {"description": "Section heading on the review step."},
+
+  "reviewSectionDocuments": "Documents",
+  "@reviewSectionDocuments": {"description": "Section heading on the review step."},
+
+  "reviewSectionBank": "Bank account",
+  "@reviewSectionBank": {"description": "Section heading on the review step."},
+
+  "reviewBankHidden": "Added · hidden for your security",
+  "@reviewBankHidden": {"description": "Bank account line on the review step; the number is never shown back."},
+
+  "reviewEdit": "Edit",
+  "@reviewEdit": {"description": "Link that reopens a step from the review summary."},
+
+  "reviewNextTitle": "What happens next",
+  "@reviewNextTitle": {"description": "Heading over the after-submission timeline."},
+
+  "reviewNext1": "You submit your application",
+  "@reviewNext1": {"description": "First item of the after-submission timeline."},
+
+  "reviewNext2": "Our team checks your details and documents",
+  "@reviewNext2": {"description": "Second item of the after-submission timeline."},
+
+  "reviewNext3": "You're notified, go online and start earning",
+  "@reviewNext3": {"description": "Third item of the after-submission timeline."},
+
+  "kycStepSubmitted": "Application submitted",
+  "@kycStepSubmitted": {"description": "First stop on the verification timeline."},
+
+  "kycStepVerifying": "Verifying your documents",
+  "@kycStepVerifying": {"description": "Current stop on the verification timeline."},
+
+  "kycStepApproved": "Approved — go online and start earning",
+  "@kycStepApproved": {"description": "Last stop on the verification timeline."}
 }

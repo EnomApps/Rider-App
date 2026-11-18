@@ -79,6 +79,21 @@ class AppLocalizationsMai extends AppLocalizations {
   String get invalidEmailOrPhone => 'सही ईमेल पता वा 10 अंकक मोबाइल नंबर लिखू';
 
   @override
+  String get loginHeadline => 'Deliver with Nexmile. Earn on your own time.';
+
+  @override
+  String get loginOrSignUp => 'Log in or sign up';
+
+  @override
+  String get loginEmailHint => 'Enter your email address';
+
+  @override
+  String get invalidEmail => 'Enter a valid email address';
+
+  @override
+  String get loginHeroBadge => 'Delivery partner';
+
+  @override
   String get sendCode => 'कोड पठाबू';
 
   @override
@@ -1067,6 +1082,151 @@ class AppLocalizationsMai extends AppLocalizations {
       'Turn off any fake-location app to receive orders.';
 
   @override
+  String get dropoffDoorLabel => 'Flat / floor';
+
+  @override
+  String get dropoffStreetLabel => 'Street';
+
+  @override
+  String get dropoffLandmarkLabel => 'Landmark';
+
+  @override
+  String get doorPhotoLabel => 'Door photo';
+
+  @override
+  String get doorPhotoHint => 'Tap to see it bigger';
+
+  @override
+  String get doorPhotoUnavailable => 'Photo not available right now';
+
+  @override
+  String permStepCount(int step, int total) {
+    return '$step of $total';
+  }
+
+  @override
+  String get permNotNow => 'Not now';
+
+  @override
+  String get permLocationTitle => 'Turn on location';
+
+  @override
+  String get permLocationBody =>
+      'Orders go to the rider closest to the restaurant, and customers follow their food on the map.';
+
+  @override
+  String get permLocationNearTitle => 'Orders near you';
+
+  @override
+  String get permLocationNearBody =>
+      'We offer you orders from restaurants close by, so you ride less and earn more.';
+
+  @override
+  String get permLocationTrackTitle => 'Live tracking';
+
+  @override
+  String get permLocationTrackBody =>
+      'Customers see you on the map, so they call you less.';
+
+  @override
+  String get permLocationOnlineTitle => 'Only while you\'re online';
+
+  @override
+  String get permLocationOnlineBody =>
+      'Go offline and it stops. A notification shows whenever it is in use.';
+
+  @override
+  String get permLocationAllow => 'Allow location';
+
+  @override
+  String get permNotifyTitle => 'Never miss an order';
+
+  @override
+  String get permNotifyBody =>
+      'New orders ring like a phone call, even when your screen is locked.';
+
+  @override
+  String get permNotifyRingTitle => 'Order alerts that ring';
+
+  @override
+  String get permNotifyRingBody => 'Accept or decline straight from the alert.';
+
+  @override
+  String get permNotifyUpdatesTitle => 'Payouts and approvals';
+
+  @override
+  String get permNotifyUpdatesBody =>
+      'Know when your documents are approved and when money is sent.';
+
+  @override
+  String get permNotifyControlTitle => 'You stay in control';
+
+  @override
+  String get permNotifyControlBody =>
+      'Change it any time in your phone\'s Settings.';
+
+  @override
+  String get permNotifyAllow => 'Turn on notifications';
+
+  @override
+  String get permBatteryTitle => 'Keep orders coming';
+
+  @override
+  String get permBatteryBody =>
+      'Phones close apps in the background to save battery. Let Nexmile Rider keep running while you\'re online.';
+
+  @override
+  String get permBatteryOrdersTitle => 'No missed orders';
+
+  @override
+  String get permBatteryOrdersBody =>
+      'Offers reach you with the app closed and the phone in your pocket.';
+
+  @override
+  String get permBatteryLiveTitle => 'Tracking stays live';
+
+  @override
+  String get permBatteryLiveBody =>
+      'Customers keep seeing you on the map until you deliver.';
+
+  @override
+  String get permBatteryLightTitle => 'Light on battery';
+
+  @override
+  String get permBatteryLightBody => 'It only works hard while you\'re online.';
+
+  @override
+  String get permBatteryAllow => 'Allow background use';
+
+  @override
+  String get permFullScreenTitle => 'Orders on your lock screen';
+
+  @override
+  String get permFullScreenBody =>
+      'Let new orders appear over the lock screen, like an incoming call, so you can accept in one tap.';
+
+  @override
+  String get permFullScreenCallTitle => 'Answer like a call';
+
+  @override
+  String get permFullScreenCallBody =>
+      'See the order and accept it without unlocking.';
+
+  @override
+  String get permFullScreenTimeTitle => 'Respond in time';
+
+  @override
+  String get permFullScreenTimeBody =>
+      'An offer you don\'t answer moves on to another rider.';
+
+  @override
+  String get permFullScreenOnlyTitle => 'Only for new orders';
+
+  @override
+  String get permFullScreenOnlyBody =>
+      'Nothing else ever appears over your lock screen.';
+
+  @override
   String get setupTitle => 'Phone setup';
 
   @override
@@ -1144,4 +1304,145 @@ class AppLocalizationsMai extends AppLocalizations {
   String offerFromYou(String distance) {
     return 'About $distance from you';
   }
+
+  @override
+  String get exitTitle => 'Exit Nexmile Rider?';
+
+  @override
+  String get exitBody => 'Are you sure you want to exit the app?';
+
+  @override
+  String get exitConfirm => 'Exit';
+
+  @override
+  String get onboardingWelcomeTitle => 'Become a Nexmile delivery partner';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'Deliver in your area, pick your own hours, and get paid every week.';
+
+  @override
+  String get onboardingWelcomeNeed => 'Keep these ready';
+
+  @override
+  String get onboardingNeedAadhaar => 'Aadhaar card';
+
+  @override
+  String get onboardingNeedPan => 'PAN card';
+
+  @override
+  String get onboardingNeedLicence => 'Driving licence and vehicle RC';
+
+  @override
+  String get onboardingNeedInsurance => 'Vehicle insurance';
+
+  @override
+  String get onboardingNeedBank => 'Bank account details';
+
+  @override
+  String get onboardingNeedNote =>
+      'Riding a bicycle or on foot? You only need Aadhaar, PAN and a bank account.';
+
+  @override
+  String get onboardingWelcomeTime => 'Takes about 10 minutes';
+
+  @override
+  String get onboardingGetStarted => 'Get started';
+
+  @override
+  String get onboardingSavedNote => 'Saved securely after every step';
+
+  @override
+  String get docsTip => 'Clear photos in good light get approved fastest.';
+
+  @override
+  String get docsAllDone =>
+      'All required documents are in. Continue to review.';
+
+  @override
+  String get docGroupIdentity => 'Identity proof';
+
+  @override
+  String get docGroupVehicle => 'Licence and vehicle papers';
+
+  @override
+  String get docGroupMore => 'More documents';
+
+  @override
+  String get docTapToAdd => 'Tap to add';
+
+  @override
+  String get docUploading => 'Uploading…';
+
+  @override
+  String get docView => 'View';
+
+  @override
+  String get docSheetSubtitle => 'How to get it approved the first time';
+
+  @override
+  String get docTipCorners => 'All four corners inside the photo';
+
+  @override
+  String get docTipGlare => 'Sharp text, no glare or shadows';
+
+  @override
+  String get docTipOriginal => 'The original document, not a photocopy';
+
+  @override
+  String get docTipFace => 'Your face clearly visible, looking straight ahead';
+
+  @override
+  String get docTipBackground => 'Plain background and good light';
+
+  @override
+  String get docTipNoCap => 'No cap, mask or sunglasses';
+
+  @override
+  String get docTipFullPage => 'The full page, with every line readable';
+
+  @override
+  String get docSourceCamera => 'Camera';
+
+  @override
+  String get docSourceGallery => 'Gallery';
+
+  @override
+  String get docSourceFile => 'PDF or file';
+
+  @override
+  String get reviewSectionDetails => 'Your details';
+
+  @override
+  String get reviewSectionDocuments => 'Documents';
+
+  @override
+  String get reviewSectionBank => 'Bank account';
+
+  @override
+  String get reviewBankHidden => 'Added · hidden for your security';
+
+  @override
+  String get reviewEdit => 'Edit';
+
+  @override
+  String get reviewNextTitle => 'What happens next';
+
+  @override
+  String get reviewNext1 => 'You submit your application';
+
+  @override
+  String get reviewNext2 => 'Our team checks your details and documents';
+
+  @override
+  String get reviewNext3 => 'You\'re notified, go online and start earning';
+
+  @override
+  String get kycStepSubmitted => 'Application submitted';
+
+  @override
+  String get kycStepVerifying => 'Verifying your documents';
+
+  @override
+  String get kycStepApproved => 'Approved — go online and start earning';
 }

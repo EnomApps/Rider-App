@@ -5,8 +5,24 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../generated/l10n/app_localizations.dart';
 
-/// Shared chrome for every onboarding step: a progress rail, the step's own
-/// headline, a scrolling body, and a pinned action bar.
+/// The brand panel behind the header of every registration screen.
+const LinearGradient kOnboardingHeaderGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: <Color>[Color(0xFF1F6A08), AppColors.greenDeep, AppColors.green],
+  stops: <double>[0.0, 0.55, 1.0],
+);
+
+/// The soft page colour registration screens sit on in the light theme, so
+/// the white form card reads as a card.
+Color onboardingPageColour(ThemeData theme) =>
+    theme.brightness == Brightness.dark
+        ? theme.colorScheme.surface
+        : AppColors.surfaceTint;
+
+/// Shared chrome for every onboarding step: a brand header carrying the step
+/// count, a progress rail and the step's own headline; a scrolling body; and a
+/// pinned action bar.
 ///
 /// The action bar is pinned to the viewport rather than to the end of the
 /// content, which is the opposite of what `AuthScaffold` does. An auth screen
@@ -23,6 +39,8 @@ class OnboardingScaffold extends StatelessWidget {
     required this.children,
     required this.onPrimary,
     required this.primaryLabel,
+    this.icon,
+    this.bodyInCard = true,
     this.isBusy = false,
     this.onBack,
     this.banner,
@@ -36,6 +54,14 @@ class OnboardingScaffold extends StatelessWidget {
   final String title;
   final String subtitle;
   final List<Widget> children;
+
+  /// Shown beside the headline, so each step is recognisable at a glance.
+  final IconData? icon;
+
+  /// True wraps [children] in one white card, which is right for a form. A
+  /// step whose children are already cards — the document checklist, the
+  /// review — passes false so cards do not nest inside a card.
+  final bool bodyInCard;
 
   /// Null disables the primary button — used while a required choice is
   /// unmade, rather than letting the rider submit a form the API will refuse.
@@ -62,91 +88,239 @@ class OnboardingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final AppLocalizations l10n = AppLocalizations.of(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      if (onBack != null)
-                        IconButton(
-                          onPressed: isBusy ? null : onBack,
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 40,
-                            height: 40,
-                          ),
-                          tooltip: l10n.backLabel,
-                        ),
-                      if (onBack != null) const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l10n.stepOfSteps(stepIndex + 1, stepCount),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
+      backgroundColor: onboardingPageColour(theme),
+      body: Column(
+        children: <Widget>[
+          _Header(
+            stepIndex: stepIndex,
+            stepCount: stepCount,
+            title: title,
+            subtitle: subtitle,
+            icon: icon,
+            onBack: isBusy ? null : onBack,
+            showBack: onBack != null,
+          ),
+          Expanded(child: _body(theme)),
+          _ActionBar(
+            banner: banner,
+            label: primaryLabel,
+            isBusy: isBusy,
+            onPressed: onPrimary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(ThemeData theme) {
+    final List<Widget> content = bodyInCard
+        ? <Widget>[
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 4),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.6,
                   ),
-                  const SizedBox(height: 12),
-                  _ProgressRail(current: stepIndex, total: stepCount),
-                  const SizedBox(height: 22),
-                  // Re-keyed on the step, so moving between steps replays the
-                  // entrance and the header reads as new rather than as the
-                  // same words silently swapping underneath.
-                  ...entranceGroup(
-                    <Widget>[
-                      Text(
-                        title,
-                        key: ValueKey<String>('title-$stepIndex'),
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          letterSpacing: -0.6,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        child: Text(
-                          subtitle,
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
+                ),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: theme.brightness == Brightness.dark ? 0 : 0.035,
+                    ),
+                    blurRadius: 24,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: children,
+              ),
             ),
-            const SizedBox(height: 20),
-            Expanded(child: _body()),
-            _ActionBar(
-              banner: banner,
-              label: primaryLabel,
-              isBusy: isBusy,
-              onPressed: onPrimary,
+          ]
+        : children;
+
+    final Widget list = ListView(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 20),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      children: content,
+    );
+    final GlobalKey<FormState>? key = formKey;
+    return key == null ? list : Form(key: key, child: list);
+  }
+}
+
+/// The green panel at the top: back, "Step 3 of 7", the rail, and the step's
+/// icon and headline in white.
+class _Header extends StatelessWidget {
+  const _Header({
+    required this.stepIndex,
+    required this.stepCount,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onBack,
+    required this.showBack,
+  });
+
+  final int stepIndex;
+  final int stepCount;
+  final String title;
+  final String subtitle;
+  final IconData? icon;
+  final VoidCallback? onBack;
+  final bool showBack;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(gradient: kOnboardingHeaderGradient),
+        child: Stack(
+          children: <Widget>[
+            // Two soft discs for depth, the way the big delivery apps dress a
+            // flat brand panel. Decoration only.
+            const Positioned(right: -46, top: -38, child: _Disc(size: 170)),
+            const Positioned(right: 60, bottom: -64, child: _Disc(size: 130)),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 20, 22),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        if (showBack) ...<Widget>[
+                          Material(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            shape: const CircleBorder(),
+                            child: IconButton(
+                              onPressed: onBack,
+                              icon: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white,
+                              ),
+                              tooltip: l10n.backLabel,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                        ] else
+                          const SizedBox(width: 4, height: 48),
+                        Expanded(
+                          child: Text(
+                            l10n.stepOfSteps(stepIndex + 1, stepCount),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 4),
+                      child: _ProgressRail(current: stepIndex, total: stepCount),
+                    ),
+                    const SizedBox(height: 20),
+                    // Re-keyed on the step, so moving between steps replays the
+                    // entrance and the header reads as new rather than as the
+                    // same words silently swapping underneath.
+                    ...entranceGroup(
+                      <Widget>[
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              if (icon != null) ...<Widget>[
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Icon(
+                                    icon,
+                                    color: Colors.white,
+                                    size: 26,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                              ],
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      title,
+                                      key: ValueKey<String>('title-$stepIndex'),
+                                      style: theme.textTheme.headlineSmall
+                                          ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      subtitle,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _body() {
-    final Widget list = ListView(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      children: children,
+class _Disc extends StatelessWidget {
+  const _Disc({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.07),
+        ),
+      ),
     );
-    final GlobalKey<FormState>? key = formKey;
-    return key == null ? list : Form(key: key, child: list);
   }
 }
 
@@ -161,29 +335,27 @@ class _ProgressRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
     return Row(
       children: <Widget>[
         for (int i = 0; i < total; i++) ...<Widget>[
           if (i > 0) const SizedBox(width: 5),
           Expanded(
-            // The current segment is thicker and carries the brand sweep;
-            // everything behind it is a flat green. Eleven fields into a form,
-            // "how much is left" is the question the rail has to answer, and a
-            // row of identical dashes answers it slowly.
+            // Done segments solid, the current one thicker, the rest faint:
+            // "how much is left" is the question the rail answers, and on a
+            // green panel white at three strengths answers it at a glance.
             child: AnimatedContainer(
               duration: AppMotion.quick,
               curve: AppMotion.change,
               height: i == current ? 6 : 4,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
-                gradient: i == current ? AppColors.brandGradient : null,
-                color: i == current
-                    ? null
-                    : i < current
-                        ? theme.colorScheme.primary.withValues(alpha: 0.55)
-                        : theme.colorScheme.outlineVariant,
+                color: Colors.white.withValues(
+                  alpha: i == current
+                      ? 1
+                      : i < current
+                          ? 0.75
+                          : 0.28,
+                ),
               ),
             ),
           ),
@@ -209,31 +381,64 @@ class _ActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (banner != null) ...<Widget>[
-            banner!,
-            const SizedBox(height: 14),
-          ],
-          if (isBusy)
-            const _BusyButton()
-          else
-            GradientButton(
-              label: label,
-              icon: Icons.arrow_forward_rounded,
-              onPressed: onPressed,
-            ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, -4),
+          ),
         ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (banner != null) ...<Widget>[
+                banner!,
+                const SizedBox(height: 14),
+              ],
+              if (isBusy)
+                const _BusyButton()
+              else
+                GradientButton(
+                  label: label,
+                  icon: Icons.arrow_forward_rounded,
+                  onPressed: onPressed,
+                ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 14,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      l10n.onboardingSavedNote,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

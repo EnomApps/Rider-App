@@ -115,6 +115,7 @@ class _VehicleStepState extends State<VehicleStep> {
     return OnboardingScaffold(
       stepIndex: step.index,
       stepCount: step.total,
+      icon: Icons.two_wheeler_rounded,
       title: l10n.stepVehicleTitle,
       subtitle: l10n.stepVehicleSubtitle,
       onBack: step.onBack,

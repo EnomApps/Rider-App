@@ -28,6 +28,10 @@ class DeviceSetup {
   Future<void> showOverLockScreen(bool on) =>
       _call<void>('showOverLockScreen', null, on);
 
+  /// Switches the display on for a moment if it is off. For a new order that
+  /// arrives while the phone is locked and dark.
+  Future<void> wakeScreen() => _call<void>('wakeScreen', null);
+
   Future<bool> canUseFullScreenIntent() =>
       _call<bool>('canUseFullScreenIntent', true);
 

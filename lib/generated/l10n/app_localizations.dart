@@ -266,6 +266,36 @@ abstract class AppLocalizations {
   /// **'Enter a valid email address or 10-digit mobile number'**
   String get invalidEmailOrPhone;
 
+  /// Big line on the rider login screen, under the illustration.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver with Nexmile. Earn on your own time.'**
+  String get loginHeadline;
+
+  /// Small heading over the login field. The same field serves new and returning riders.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in or sign up'**
+  String get loginOrSignUp;
+
+  /// Hint inside the login field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address'**
+  String get loginEmailHint;
+
+  /// Error under the login field when the text is not an email address.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get invalidEmail;
+
+  /// Small pill under the Nexmile name on the rider login picture. Must stay short.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery partner'**
+  String get loginHeroBadge;
+
   /// Primary button on the sign-in screen.
   ///
   /// In en, this message translates to:
@@ -2030,6 +2060,264 @@ abstract class AppLocalizations {
   /// **'Turn off any fake-location app to receive orders.'**
   String get mockLocationBlocked;
 
+  /// Label read out for the flat, floor or house number the customer typed.
+  ///
+  /// In en, this message translates to:
+  /// **'Flat / floor'**
+  String get dropoffDoorLabel;
+
+  /// Label read out for the street from the customer's map pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Street'**
+  String get dropoffStreetLabel;
+
+  /// Label read out for the landmark near the drop.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark'**
+  String get dropoffLandmarkLabel;
+
+  /// Caption on the photo of the customer's door or building.
+  ///
+  /// In en, this message translates to:
+  /// **'Door photo'**
+  String get doorPhotoLabel;
+
+  /// Hint on the door photo thumbnail.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see it bigger'**
+  String get doorPhotoHint;
+
+  /// Shown when the door photo cannot load, for example after its link expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo not available right now'**
+  String get doorPhotoUnavailable;
+
+  /// Progress on the first-run permission pages, e.g. '1 of 4'.
+  ///
+  /// In en, this message translates to:
+  /// **'{step} of {total}'**
+  String permStepCount(int step, int total);
+
+  /// Skips one first-run permission page without asking.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get permNotNow;
+
+  /// Title of the first-run page that asks for location.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location'**
+  String get permLocationTitle;
+
+  /// Why the rider app needs location.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders go to the rider closest to the restaurant, and customers follow their food on the map.'**
+  String get permLocationBody;
+
+  /// First reason for location.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders near you'**
+  String get permLocationNearTitle;
+
+  /// Supporting line for the first location reason.
+  ///
+  /// In en, this message translates to:
+  /// **'We offer you orders from restaurants close by, so you ride less and earn more.'**
+  String get permLocationNearBody;
+
+  /// Second reason for location.
+  ///
+  /// In en, this message translates to:
+  /// **'Live tracking'**
+  String get permLocationTrackTitle;
+
+  /// Supporting line for the second location reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers see you on the map, so they call you less.'**
+  String get permLocationTrackBody;
+
+  /// Third reason: location is shared only during a shift.
+  ///
+  /// In en, this message translates to:
+  /// **'Only while you\'re online'**
+  String get permLocationOnlineTitle;
+
+  /// Supporting line for the third location reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Go offline and it stops. A notification shows whenever it is in use.'**
+  String get permLocationOnlineBody;
+
+  /// Button that shows the system location prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location'**
+  String get permLocationAllow;
+
+  /// Title of the first-run page that asks for notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Never miss an order'**
+  String get permNotifyTitle;
+
+  /// Why the rider app needs notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'New orders ring like a phone call, even when your screen is locked.'**
+  String get permNotifyBody;
+
+  /// First reason for notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Order alerts that ring'**
+  String get permNotifyRingTitle;
+
+  /// Supporting line for the first notification reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept or decline straight from the alert.'**
+  String get permNotifyRingBody;
+
+  /// Second reason for notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Payouts and approvals'**
+  String get permNotifyUpdatesTitle;
+
+  /// Supporting line for the second notification reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Know when your documents are approved and when money is sent.'**
+  String get permNotifyUpdatesBody;
+
+  /// Third reason: the rider can change this later.
+  ///
+  /// In en, this message translates to:
+  /// **'You stay in control'**
+  String get permNotifyControlTitle;
+
+  /// Supporting line for the third notification reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Change it any time in your phone\'s Settings.'**
+  String get permNotifyControlBody;
+
+  /// Button that shows the system notification prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notifications'**
+  String get permNotifyAllow;
+
+  /// Title of the first-run page that asks to stop battery optimisation.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep orders coming'**
+  String get permBatteryTitle;
+
+  /// Why the rider app asks to be left out of battery optimisation.
+  ///
+  /// In en, this message translates to:
+  /// **'Phones close apps in the background to save battery. Let Nexmile Rider keep running while you\'re online.'**
+  String get permBatteryBody;
+
+  /// First reason for the battery setting.
+  ///
+  /// In en, this message translates to:
+  /// **'No missed orders'**
+  String get permBatteryOrdersTitle;
+
+  /// Supporting line for the first battery reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Offers reach you with the app closed and the phone in your pocket.'**
+  String get permBatteryOrdersBody;
+
+  /// Second reason for the battery setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking stays live'**
+  String get permBatteryLiveTitle;
+
+  /// Supporting line for the second battery reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers keep seeing you on the map until you deliver.'**
+  String get permBatteryLiveBody;
+
+  /// Third reason for the battery setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Light on battery'**
+  String get permBatteryLightTitle;
+
+  /// Supporting line for the third battery reason.
+  ///
+  /// In en, this message translates to:
+  /// **'It only works hard while you\'re online.'**
+  String get permBatteryLightBody;
+
+  /// Button that shows the system battery optimisation prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow background use'**
+  String get permBatteryAllow;
+
+  /// Title of the first-run page about full-screen order alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders on your lock screen'**
+  String get permFullScreenTitle;
+
+  /// Why the rider app asks for full-screen alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Let new orders appear over the lock screen, like an incoming call, so you can accept in one tap.'**
+  String get permFullScreenBody;
+
+  /// First reason for full-screen alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer like a call'**
+  String get permFullScreenCallTitle;
+
+  /// Supporting line for the first full-screen reason.
+  ///
+  /// In en, this message translates to:
+  /// **'See the order and accept it without unlocking.'**
+  String get permFullScreenCallBody;
+
+  /// Second reason for full-screen alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond in time'**
+  String get permFullScreenTimeTitle;
+
+  /// Supporting line for the second full-screen reason.
+  ///
+  /// In en, this message translates to:
+  /// **'An offer you don\'t answer moves on to another rider.'**
+  String get permFullScreenTimeBody;
+
+  /// Third reason: nothing else uses the lock screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for new orders'**
+  String get permFullScreenOnlyTitle;
+
+  /// Supporting line for the third full-screen reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing else ever appears over your lock screen.'**
+  String get permFullScreenOnlyBody;
+
   /// Title of the guided permissions screen.
   ///
   /// In en, this message translates to:
@@ -2161,6 +2449,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About {distance} from you'**
   String offerFromYou(String distance);
+
+  /// Title of the dialog shown when back is pressed on the main screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Nexmile Rider?'**
+  String get exitTitle;
+
+  /// Body of the exit confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to exit the app?'**
+  String get exitBody;
+
+  /// Button that closes the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exitConfirm;
+
+  /// Heading of the welcome screen before registration.
+  ///
+  /// In en, this message translates to:
+  /// **'Become a Nexmile delivery partner'**
+  String get onboardingWelcomeTitle;
+
+  /// Under the welcome heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Deliver in your area, pick your own hours, and get paid every week.'**
+  String get onboardingWelcomeSubtitle;
+
+  /// Heading over the list of documents a rider needs to register.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep these ready'**
+  String get onboardingWelcomeNeed;
+
+  /// Item in the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhaar card'**
+  String get onboardingNeedAadhaar;
+
+  /// Item in the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'PAN card'**
+  String get onboardingNeedPan;
+
+  /// Item in the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Driving licence and vehicle RC'**
+  String get onboardingNeedLicence;
+
+  /// Item in the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle insurance'**
+  String get onboardingNeedInsurance;
+
+  /// Item in the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account details'**
+  String get onboardingNeedBank;
+
+  /// Under the documents-needed list.
+  ///
+  /// In en, this message translates to:
+  /// **'Riding a bicycle or on foot? You only need Aadhaar, PAN and a bank account.'**
+  String get onboardingNeedNote;
+
+  /// How long registration takes.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes about 10 minutes'**
+  String get onboardingWelcomeTime;
+
+  /// Button that starts registration.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingGetStarted;
+
+  /// Reassurance under the save button on every registration step.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved securely after every step'**
+  String get onboardingSavedNote;
+
+  /// Tip at the top of the document checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear photos in good light get approved fastest.'**
+  String get docsTip;
+
+  /// Shown on the document checklist once nothing required is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'All required documents are in. Continue to review.'**
+  String get docsAllDone;
+
+  /// Heading over Aadhaar and PAN on the document checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity proof'**
+  String get docGroupIdentity;
+
+  /// Heading over licence, RC and insurance on the document checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence and vehicle papers'**
+  String get docGroupVehicle;
+
+  /// Heading over the remaining documents on the checklist.
+  ///
+  /// In en, this message translates to:
+  /// **'More documents'**
+  String get docGroupMore;
+
+  /// Status line on a document not yet uploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add'**
+  String get docTapToAdd;
+
+  /// While a document uploads.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get docUploading;
+
+  /// Opens a larger preview of an uploaded document.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get docView;
+
+  /// Under the document name in the upload sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'How to get it approved the first time'**
+  String get docSheetSubtitle;
+
+  /// Upload tip.
+  ///
+  /// In en, this message translates to:
+  /// **'All four corners inside the photo'**
+  String get docTipCorners;
+
+  /// Upload tip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharp text, no glare or shadows'**
+  String get docTipGlare;
+
+  /// Upload tip.
+  ///
+  /// In en, this message translates to:
+  /// **'The original document, not a photocopy'**
+  String get docTipOriginal;
+
+  /// Upload tip for the profile photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your face clearly visible, looking straight ahead'**
+  String get docTipFace;
+
+  /// Upload tip for the profile photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain background and good light'**
+  String get docTipBackground;
+
+  /// Upload tip for the profile photo.
+  ///
+  /// In en, this message translates to:
+  /// **'No cap, mask or sunglasses'**
+  String get docTipNoCap;
+
+  /// Upload tip for insurance and bank papers.
+  ///
+  /// In en, this message translates to:
+  /// **'The full page, with every line readable'**
+  String get docTipFullPage;
+
+  /// Upload option: take a photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get docSourceCamera;
+
+  /// Upload option: choose a photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get docSourceGallery;
+
+  /// Upload option: choose a file.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF or file'**
+  String get docSourceFile;
+
+  /// Section heading on the review step.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details'**
+  String get reviewSectionDetails;
+
+  /// Section heading on the review step.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get reviewSectionDocuments;
+
+  /// Section heading on the review step.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account'**
+  String get reviewSectionBank;
+
+  /// Bank account line on the review step; the number is never shown back.
+  ///
+  /// In en, this message translates to:
+  /// **'Added · hidden for your security'**
+  String get reviewBankHidden;
+
+  /// Link that reopens a step from the review summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get reviewEdit;
+
+  /// Heading over the after-submission timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens next'**
+  String get reviewNextTitle;
+
+  /// First item of the after-submission timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'You submit your application'**
+  String get reviewNext1;
+
+  /// Second item of the after-submission timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Our team checks your details and documents'**
+  String get reviewNext2;
+
+  /// Third item of the after-submission timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re notified, go online and start earning'**
+  String get reviewNext3;
+
+  /// First stop on the verification timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Application submitted'**
+  String get kycStepSubmitted;
+
+  /// Current stop on the verification timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying your documents'**
+  String get kycStepVerifying;
+
+  /// Last stop on the verification timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved — go online and start earning'**
+  String get kycStepApproved;
 }
 
 class _AppLocalizationsDelegate

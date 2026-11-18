@@ -276,13 +276,32 @@ class OrderDropoff {
     required this.address,
     this.latitude,
     this.longitude,
+    this.line1,
+    this.line2,
+    this.landmark,
+    this.photoUrl,
   });
 
+  /// Who takes the delivery: the customer, or the person they named as the
+  /// receiver. The number is the one to call either way.
   final String contactName;
   final String contactPhone;
   final String address;
   final double? latitude;
   final double? longitude;
+
+  /// The door: flat, floor, house number, as the customer typed it.
+  final String? line1;
+
+  /// The street, from the customer's map pin.
+  final String? line2;
+
+  final String? landmark;
+
+  /// A photo of the door or building the customer added, or null. Signed and
+  /// short-lived (three hours): refetch the order for a fresh link rather
+  /// than keeping this one.
+  final String? photoUrl;
 
   bool get hasCoordinates => latitude != null && longitude != null;
 
@@ -293,6 +312,10 @@ class OrderDropoff {
       address: nullableString(json['address']) ?? '',
       latitude: _nullableNum(json['latitude']),
       longitude: _nullableNum(json['longitude']),
+      line1: nullableString(json['line1']),
+      line2: nullableString(json['line2']),
+      landmark: nullableString(json['landmark']),
+      photoUrl: nullableString(json['photo_url']),
     );
   }
 }

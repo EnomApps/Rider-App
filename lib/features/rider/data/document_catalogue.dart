@@ -29,8 +29,38 @@ class DocumentPresentation {
   final String? hint;
 }
 
+/// Where a document sits on the checklist. Grouped the way a rider thinks of
+/// their papers — who they are, then what they ride — rather than as one long
+/// list.
+enum DocumentGroup { identity, vehicle, more }
+
 class DocumentCatalogue {
   const DocumentCatalogue._();
+
+  /// The group for [type]. Anything unrecognised goes under [DocumentGroup.more]
+  /// rather than being dropped, so a document the backend adds still shows.
+  static DocumentGroup groupOf(String type) {
+    switch (_normalise(type)) {
+      case 'aadhaar_front':
+      case 'aadhaar_back':
+      case 'pan':
+      case 'pan_card':
+        return DocumentGroup.identity;
+      case 'driving_licence':
+      case 'driving_license':
+      case 'rc':
+      case 'rc_book':
+      case 'vehicle_rc':
+      case 'insurance':
+      case 'vehicle_insurance':
+        return DocumentGroup.vehicle;
+      default:
+        return DocumentGroup.more;
+    }
+  }
+
+  /// True for the selfie, which wants face tips rather than document tips.
+  static bool isPortrait(String type) => _normalise(type) == 'profile_photo';
 
   /// The six a rider is normally asked for, plus the two the API lists as
   /// allowed. Keys are the API's own type slugs.

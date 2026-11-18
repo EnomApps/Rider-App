@@ -30,6 +30,10 @@ class _OfferRepository implements RiderRepository {
         'contact_name': 'Anand',
         'contact_phone': '9876500011',
         'address': '12 Anna Nagar',
+        'line1': 'Flat 3B, 2nd floor',
+        'line2': 'Gandhi Street',
+        'landmark': 'Near the water tank',
+        'photo_url': 'https://cdn.example/addresses/12/photo.jpg',
       },
     });
   }
@@ -205,6 +209,14 @@ void main() {
 
       expect(outcome, isA<OfferWon>());
       expect((outcome as OfferWon).order.dropoff?.address, '12 Anna Nagar');
+      // The accept answer is the full order: the door arrives with it.
+      expect(outcome.order.dropoff?.line1, 'Flat 3B, 2nd floor');
+      expect(outcome.order.dropoff?.line2, 'Gandhi Street');
+      expect(outcome.order.dropoff?.landmark, 'Near the water tank');
+      expect(
+        outcome.order.dropoff?.photoUrl,
+        'https://cdn.example/addresses/12/photo.jpg',
+      );
       expect(offers.offer, isNull);
       expect(alert.silences, 1);
     });

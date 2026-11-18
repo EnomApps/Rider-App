@@ -62,6 +62,7 @@ class _BankStepState extends State<BankStep> {
     return OnboardingScaffold(
       stepIndex: step.index,
       stepCount: step.total,
+      icon: Icons.account_balance_rounded,
       title: l10n.stepBankTitle,
       subtitle: l10n.stepBankSubtitle,
       onBack: step.onBack,

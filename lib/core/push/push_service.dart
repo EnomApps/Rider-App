@@ -28,6 +28,23 @@ const String kTapAction = '_action';
 /// ordinary Dart that runs in a test. Only the implementation of this talks to
 /// Firebase, which is the one part that needs a `google-services.json` and a
 /// real device to prove.
+/// Where notification permission stands.
+enum NotificationAccess {
+  /// Allowed, or allowed quietly (iOS provisional).
+  granted,
+
+  /// Not allowed, and asking shows the system prompt. Android 13 and later
+  /// reports "not asked yet" and "refused once" the same way, and prompts
+  /// again after one refusal, so both land here.
+  askable,
+
+  /// Refused in a way only Settings can undo, which on iOS is any refusal.
+  blocked,
+
+  /// No push transport in this build, so there is nothing to ask for.
+  unavailable,
+}
+
 abstract class PushService {
   /// The current registration token, or null when push is unavailable —
   /// permission refused, no Play Services, or a build with no Firebase in it.
@@ -61,6 +78,9 @@ abstract class PushService {
   /// Whether notifications are allowed right now, without asking. The setup
   /// screen reads this to tick its first step.
   Future<bool> notificationsAllowed();
+
+  /// Where permission stands, without prompting.
+  Future<NotificationAccess> notificationAccess();
 }
 
 /// What the app runs with until Firebase is wired in.
@@ -96,6 +116,10 @@ class NoopPushService implements PushService {
 
   @override
   Future<bool> notificationsAllowed() async => false;
+
+  @override
+  Future<NotificationAccess> notificationAccess() async =>
+      NotificationAccess.unavailable;
 }
 
 /// Which store the token belongs to, as the API names it.

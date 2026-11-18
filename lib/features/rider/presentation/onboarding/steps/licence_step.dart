@@ -91,6 +91,7 @@ class _LicenceStepState extends State<LicenceStep> {
     return OnboardingScaffold(
       stepIndex: step.index,
       stepCount: step.total,
+      icon: Icons.credit_card_rounded,
       title: l10n.stepLicenceTitle,
       subtitle: l10n.stepLicenceSubtitle,
       onBack: step.onBack,

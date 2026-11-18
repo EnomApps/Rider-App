@@ -7,6 +7,7 @@ class PreferencesService {
   static const String _languageCodeKey = 'nexmile.language_code';
   static const String _languageChosenKey = 'nexmile.language_chosen';
   static const String _sessionKey = 'nexmile.session';
+  static const String _permissionsAskedKey = 'nexmile.permissions_asked';
 
   final SharedPreferences _prefs;
 
@@ -43,4 +44,11 @@ class PreferencesService {
       _prefs.setString(_sessionKey, encodedUser);
 
   Future<void> clearSession() => _prefs.remove(_sessionKey);
+
+  /// True once the first-run permission pages have been shown. They are not
+  /// shown again: after that, the phone setup screen and each feature ask.
+  bool get permissionsAsked => _prefs.getBool(_permissionsAskedKey) ?? false;
+
+  Future<void> markPermissionsAsked() =>
+      _prefs.setBool(_permissionsAskedKey, true);
 }

@@ -19,6 +19,7 @@ import 'widgets/contact_actions.dart';
 import 'widgets/order_empty_state.dart';
 import 'widgets/pickup_code_sheet.dart';
 import 'widgets/release_order_sheet.dart';
+import '../widgets/dropoff_details.dart';
 
 /// The order in hand, and the one thing to do about it next.
 ///
@@ -68,7 +69,9 @@ class ActiveDeliveryScreen extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => orders.loadActive(silent: true),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        // Room at the end, so the main button can always be scrolled clear of
+        // a message bar such as "Picked up. Deliver to the customer."
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
         physics: const AlwaysScrollableScrollPhysics(),
         children: <Widget>[
           Row(
@@ -132,6 +135,12 @@ class ActiveDeliveryScreen extends StatelessWidget {
               address: order.dropoff!.address,
               distance: formatDistance(l10n, order.deliveryDistanceMetres),
               dimmed: !collected,
+              // The door matters at the drop. Before the food is collected
+              // the rider is heading to the restaurant, and this leg stays
+              // short.
+              details: !collected || DropoffDetails.isEmpty(order.dropoff!)
+                  ? null
+                  : DropoffDetails(dropoff: order.dropoff!),
               actions: ContactActions(
                 callLabel: l10n.callCustomer,
                 directionsLabel: l10n.navStart,
@@ -444,6 +453,7 @@ class _Leg extends StatelessWidget {
     this.name,
     this.distance,
     this.dimmed = false,
+    this.details,
   });
 
   final IconData icon;
@@ -452,6 +462,9 @@ class _Leg extends StatelessWidget {
   final String address;
   final String? distance;
   final Widget actions;
+
+  /// More about the place, under the address: for the drop, the door.
+  final Widget? details;
 
   /// True for the leg that is behind the rider. Kept on screen rather than
   /// removed — a rider who has to go back for a forgotten item still needs the
@@ -520,6 +533,13 @@ class _Leg extends StatelessWidget {
                 ],
               ],
             ),
+            if (details != null) ...<Widget>[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 34),
+                child: details!,
+              ),
+            ],
             const SizedBox(height: 14),
             actions,
           ],

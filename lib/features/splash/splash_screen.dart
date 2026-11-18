@@ -3,10 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_assets.dart';
-import '../../core/localization/locale_controller.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/services/preferences_service.dart';
 import '../auth/state/auth_controller.dart';
+import '../permissions/permission_gateway.dart';
 import 'widgets/glow_burst.dart';
 import 'widgets/shine_sweep.dart';
 
@@ -114,9 +115,17 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    _pending = pendingPermissions(
+      preferences: context.read<PreferencesService>(),
+      gateway: context.read<PermissionGateway>(),
+    );
     _c.addStatusListener(_onStatus);
     _c.forward();
   }
+
+  /// Which permission pages to show, worked out while the animation plays so
+  /// it costs no time at the end of it.
+  late final Future<List<RiderPermission>> _pending;
 
   @override
   void dispose() {
@@ -126,29 +135,31 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  void _onStatus(AnimationStatus status) {
+  Future<void> _onStatus(AnimationStatus status) async {
     if (status != AnimationStatus.completed || !mounted) return;
 
-    // Three-stage hand-off:
-    //   fresh install   -> language screen
-    //   language chosen -> login
-    //   session restored-> the rider gate, which decides between the
-    //                      onboarding wizard, the waiting room and the home
-    //                      screen once it has asked the API
-    final bool chosenLanguage =
-        context.read<LocaleController>().hasChosenLanguage;
+    // The hand-off:
+    //   permission pages, if a fresh install still has any to show
+    //   then login, or for a restored session the rider gate, which decides
+    //   between the onboarding wizard, the waiting room and the home screen
+    //   once it has asked the API
+    //
+    // There is no language screen in the way. The app starts in English, and
+    // the login screen has "Change language" for anyone who wants another.
+    final NavigatorState navigator = Navigator.of(context);
     final bool signedIn = context.read<AuthController>().isSignedIn;
 
-    final String next;
-    if (!chosenLanguage) {
-      next = AppRoutes.language;
-    } else if (!signedIn) {
-      next = AppRoutes.login;
+    final String next = signedIn ? AppRoutes.home : AppRoutes.login;
+    final List<RiderPermission> pending = await _pending;
+    if (!mounted) return;
+    if (pending.isEmpty) {
+      navigator.pushReplacementNamed(next);
     } else {
-      next = AppRoutes.home;
+      navigator.pushReplacementNamed(
+        AppRoutes.permissions,
+        arguments: PermissionsArgs(steps: pending, next: next),
+      );
     }
-
-    Navigator.of(context).pushReplacementNamed(next);
   }
 
   @override

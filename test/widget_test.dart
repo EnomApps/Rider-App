@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,7 @@ import 'package:nexmile_rider/core/network/api_exception.dart';
 import 'package:nexmile_rider/core/network/api_log.dart';
 import 'package:nexmile_rider/core/router/app_router.dart';
 import 'package:nexmile_rider/core/services/preferences_service.dart';
+import 'package:nexmile_rider/features/permissions/permission_gateway.dart';
 import 'package:nexmile_rider/features/auth/data/auth_repository.dart';
 import 'package:nexmile_rider/features/auth/data/auth_session.dart';
 import 'package:nexmile_rider/features/auth/data/auth_user.dart';
@@ -769,6 +771,10 @@ const OrderDropoff _testDropoff = OrderDropoff(
   address: '12 Anna Nagar, Madurai',
   latitude: 9.9250,
   longitude: 78.1400,
+  line1: 'Flat 3B, 2nd floor',
+  line2: 'Gandhi Street',
+  landmark: 'Near the water tank',
+  photoUrl: 'https://cdn.example/addresses/12/photo.jpg',
 );
 
 /// A board entry: no drop address, no item list. That is not laziness in the
@@ -844,6 +850,7 @@ Future<void> _pumpApp(
   AuthSession? session,
   FakeLocationService? location,
   FakePayoutRepository? payoutRepository,
+  FakePermissionGateway? permissions,
 }) async {
   final PreferencesService preferences = await _prefs(seed);
   _controller = AuthController(
@@ -872,8 +879,36 @@ Future<void> _pumpApp(
         repository: payoutRepository ?? FakePayoutRepository(),
       ),
       offerController: _offers,
+      // Nothing missing unless a test says so: the real gateway would ask
+      // plugins that never answer here.
+      permissionGateway: permissions ?? FakePermissionGateway(),
     ),
   );
+}
+
+/// The phone, as far as the first-run permission pages can see it.
+class FakePermissionGateway implements PermissionGateway {
+  FakePermissionGateway([this.missingNow = const <RiderPermission>[]]);
+
+  List<RiderPermission> missingNow;
+  final List<RiderPermission> requested = <RiderPermission>[];
+
+  @override
+  Future<List<RiderPermission>> missing() async => missingNow;
+
+  @override
+  Future<void> request(RiderPermission permission) async =>
+      requested.add(permission);
+}
+
+/// A phone whose permission checks never answer.
+class _SilentGateway implements PermissionGateway {
+  @override
+  Future<List<RiderPermission>> missing() =>
+      Completer<List<RiderPermission>>().future;
+
+  @override
+  Future<void> request(RiderPermission permission) async {}
 }
 
 /// Signs in an approved rider and opens the payouts screen from the shift tab.
@@ -933,6 +968,25 @@ Future<void> _pumpLive(
 Future<void> _settleSplashLive(WidgetTester tester) async {
   await tester.pump(SplashScreen.totalDuration);
   await _pumpLive(tester, const Duration(milliseconds: 1200));
+}
+
+/// Scrolls the delivery screen until [finder] is on screen, the way a rider
+/// scrolls down to the button under the addresses.
+Future<void> _scrollToDelivery(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    200,
+    scrollable: find
+        .descendant(
+          of: find.byType(ActiveDeliveryScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  // Then all the way into view: at the bottom edge it sits under the
+  // "Picked up" message bar.
+  await tester.ensureVisible(finder.last);
+  await _pumpLive(tester);
 }
 
 NavigatorState _nav(WidgetTester tester) =>
@@ -1287,7 +1341,7 @@ void main() {
 
   // -------------------------------------------------------------------------
   group('splash hand-off', () {
-    testWidgets('fresh install lands on the language screen',
+    testWidgets('a fresh install goes straight to login, in English',
         (WidgetTester tester) async {
       await _pumpApp(tester);
       await tester.pump();
@@ -1297,7 +1351,11 @@ void main() {
       expect(find.image(const AssetImage(AppAssets.wordmark)), findsOneWidget);
 
       await _settleSplash(tester);
-      expect(find.byType(LanguageScreen), findsOneWidget);
+      // No language screen to get past first: English until changed.
+      expect(find.byType(LanguageScreen), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
+      expect(find.text('Change language'), findsOneWidget);
     });
 
     testWidgets('language chosen, no session -> login',
@@ -1328,39 +1386,178 @@ void main() {
         expect(tester.takeException(), isNull, reason: 'frame $i');
       }
       await tester.pumpAndSettle();
-      expect(find.byType(LanguageScreen), findsOneWidget);
+      expect(find.byType(LoginScreen), findsOneWidget);
     });
   });
 
   // -------------------------------------------------------------------------
   group('language screen', () {
-    testWidgets('continues into login', (WidgetTester tester) async {
+    testWidgets('change language on login opens the picker, and back is free',
+        (WidgetTester tester) async {
+      _useTallPhone(tester);
       await _pumpApp(tester);
       await _settleSplash(tester);
 
-      expect(find.text('Choose your language'), findsOneWidget);
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.text('Change language'));
       await tester.pumpAndSettle();
+      expect(find.text('Choose your language'), findsOneWidget);
 
+      // Not first-run setup: there is a way back without choosing.
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.pumpAndSettle();
       expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
     });
 
-    testWidgets('picking Tamil carries through to login',
+    testWidgets('picking Tamil from login switches the login to Tamil',
         (WidgetTester tester) async {
+      _useTallPhone(tester);
       await _pumpApp(tester);
       await _settleSplash(tester);
 
+      await tester.tap(find.text('Change language'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('தமிழ்'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('தொடரவும்'));
       await tester.pumpAndSettle();
 
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('Nexmile-இல் உள்நுழையவும்'), findsOneWidget);
+      // The language row and the button are now in Tamil.
+      expect(find.text('தமிழ்'), findsOneWidget);
+      expect(find.text('தொடரவும்'), findsOneWidget);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('nexmile.language_code'), 'ta');
     });
   });
 
   // -------------------------------------------------------------------------
+  group('first-run permissions', () {
+    testWidgets('a fresh install is walked through every missing permission',
+        (WidgetTester tester) async {
+      final FakePermissionGateway gateway =
+          FakePermissionGateway(RiderPermission.values.toList());
+      _useTallPhone(tester);
+      await _pumpApp(tester, permissions: gateway);
+      await _settleSplash(tester);
+
+      // Straight after the splash: no language screen in front of them.
+      expect(find.text('Turn on location'), findsOneWidget);
+      expect(find.text('1 of 4'), findsOneWidget);
+      // The reasons come before the system prompt, not after it.
+      expect(find.text('Orders near you'), findsOneWidget);
+      expect(gateway.requested, isEmpty);
+      await tester.tap(find.text('Allow location'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Never miss an order'), findsOneWidget);
+      await tester.tap(find.text('Turn on notifications'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keep orders coming'), findsOneWidget);
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Orders on your lock screen'), findsOneWidget);
+      expect(find.text('4 of 4'), findsOneWidget);
+      await tester.tap(find.text('Open settings'));
+      await tester.pumpAndSettle();
+
+      // "Not now" asked nothing; every Allow asked exactly once.
+      expect(gateway.requested, <RiderPermission>[
+        RiderPermission.location,
+        RiderPermission.notifications,
+        RiderPermission.fullScreen,
+      ]);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('nexmile.permissions_asked'), isTrue);
+    });
+
+    testWidgets('only what is missing is asked for, and only once',
+        (WidgetTester tester) async {
+      final FakePermissionGateway gateway =
+          FakePermissionGateway(<RiderPermission>[RiderPermission.battery]);
+      _useTallPhone(tester);
+      await _pumpApp(tester, seed: _languageChosen, permissions: gateway);
+      await _settleSplash(tester);
+
+      expect(find.text('Keep orders coming'), findsOneWidget);
+      // One page needs no "1 of 1".
+      expect(find.text('1 of 1'), findsNothing);
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
+
+      // The next launch goes straight past them, though nothing was allowed.
+      await _pumpApp(
+        tester,
+        seed: <String, Object>{
+          ..._languageChosen,
+          'nexmile.permissions_asked': true,
+        },
+        permissions: gateway,
+      );
+      await _settleSplash(tester);
+      expect(find.text('Keep orders coming'), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
+
+    testWidgets('back goes to the previous page before it leaves',
+        (WidgetTester tester) async {
+      _useTallPhone(tester);
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        permissions: FakePermissionGateway(<RiderPermission>[
+          RiderPermission.location,
+          RiderPermission.notifications,
+        ]),
+      );
+      await _settleSplash(tester);
+
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.text('Never miss an order'), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Turn on location'), findsOneWidget);
+      // Stepping back is not leaving the app.
+      expect(find.text('Exit Nexmile Rider?'), findsNothing);
+    });
+
+    testWidgets('a signed-in rider carries on to their shift',
+        (WidgetTester tester) async {
+      _useTallPhone(tester);
+      await _pumpApp(
+        tester,
+        seed: _languageChosen,
+        session: _testSession(),
+        permissions: FakePermissionGateway(<RiderPermission>[
+          RiderPermission.notifications,
+        ]),
+      );
+      await _settleSplash(tester);
+
+      await tester.tap(find.text('Not now'));
+      await tester.pumpAndSettle();
+      expect(find.byType(RiderHomeScreen), findsOneWidget);
+    });
+
+    test('a check that never answers skips the pages instead of hanging',
+        () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final PreferencesService preferences = await PreferencesService.create();
+      final List<RiderPermission> pending = await pendingPermissions(
+        preferences: preferences,
+        gateway: _SilentGateway(),
+        timeout: const Duration(milliseconds: 10),
+      );
+      expect(pending, isEmpty);
+    });
+  });
+
   group('sign in', () {
     testWidgets('an email requests a code and opens the OTP screen',
         (WidgetTester tester) async {
@@ -1369,7 +1566,7 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), 'priya@example.com');
-      await tester.tap(find.text('Send code'));
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(find.byType(OtpVerificationScreen), findsOneWidget);
@@ -1385,7 +1582,7 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), '+91 98765 43210');
-      await tester.tap(find.text('Send code'));
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(repo.lastIdentifier?.isPhone, isTrue);
@@ -1401,13 +1598,10 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), 'not-valid');
-      await tester.tap(find.text('Send code'));
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Enter a valid email address or 10-digit mobile number'),
-        findsWidgets,
-      );
+      expect(find.text('Enter a valid email address'), findsWidgets);
       expect(repo.requestCount, 0);
       expect(find.byType(OtpVerificationScreen), findsNothing);
     });
@@ -1424,7 +1618,8 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), '9876543210');
-      await tester.tap(find.text('குறியீட்டை அனுப்பு'));
+      // "Continue", in Tamil.
+      await tester.tap(find.text('தொடரவும்'));
       await tester.pumpAndSettle();
 
       expect(
@@ -1445,7 +1640,7 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), '9876543210');
-      await tester.tap(find.text('Send code'));
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(
@@ -1461,7 +1656,7 @@ void main() {
       await _settleSplash(tester);
 
       await tester.enterText(find.byType(TextFormField), '9876543210');
-      await tester.tap(find.text('Send code'));
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       expect(
@@ -1483,7 +1678,7 @@ void main() {
       await _pumpApp(tester, seed: seed, repository: repo);
       await _settleSplash(tester);
       await tester.enterText(find.byType(TextFormField), identifier);
-      await tester.tap(find.byType(InkWell).last);
+      await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
       return repo;
     }
@@ -2055,6 +2250,44 @@ void main() {
       expect(find.text('12 Anna Nagar, Madurai'), findsOneWidget);
     });
 
+    testWidgets('at the drop, the order shows the door, street and photo',
+        (WidgetTester tester) async {
+      final FakeRiderRepository rider = workingRider()..pickupCode = '4321';
+      await onBoard(tester, rider);
+      // Not on the board: those details arrive only with the accepted order.
+      expect(find.text('Flat 3B, 2nd floor'), findsNothing);
+
+      await tester.tap(find.text('Accept'));
+      await _pumpLive(tester);
+      // On the way to the restaurant the drop leg stays short.
+      expect(find.text('Flat 3B, 2nd floor'), findsNothing);
+
+      await tester.tap(find.text('I have collected it'));
+      await _pumpLive(tester);
+      await tester.enterText(find.byType(TextField), '4321');
+      await tester.tap(find.text('I have collected it').last);
+      await _pumpLive(tester);
+
+      expect(find.byType(ActiveDeliveryScreen), findsOneWidget);
+      final Finder door = find.text('Flat 3B, 2nd floor');
+      await tester.ensureVisible(door);
+      await _pumpLive(tester);
+      expect(door, findsOneWidget);
+      expect(find.text('Gandhi Street'), findsOneWidget);
+      expect(find.text('Near the water tank'), findsOneWidget);
+
+      // The photo opens full screen, where it can be zoomed.
+      final Finder photo = find.text('Door photo');
+      await tester.ensureVisible(photo);
+      await _pumpLive(tester);
+      await tester.tap(photo);
+      await _pumpLive(tester);
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await _pumpLive(tester);
+      expect(find.byType(InteractiveViewer), findsNothing);
+    });
+
     testWidgets('accepting brings the delivery tab forward',
         (WidgetTester tester) async {
       final FakeRiderRepository rider = workingRider();
@@ -2153,6 +2386,37 @@ void main() {
       expect(rider.offerRejects, 1);
       expect(rider.lastRejectReason, 'Too far');
       expect(find.byType(IncomingOfferCard), findsNothing);
+    });
+
+    testWidgets('back on the main screen asks before closing the app',
+        (WidgetTester tester) async {
+      await onBoard(tester, workingRider());
+
+      await tester.binding.handlePopRoute();
+      await _pumpLive(tester);
+      expect(find.text('Exit Nexmile Rider?'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await _pumpLive(tester);
+      expect(find.text('Exit Nexmile Rider?'), findsNothing);
+    });
+
+    testWidgets('back is ignored while an offer is ringing',
+        (WidgetTester tester) async {
+      await onBoard(tester, workingRider());
+      _offers.present(liveOffer());
+      await _pumpLive(tester);
+
+      await tester.binding.handlePopRoute();
+      await _pumpLive(tester);
+
+      // Answered with Accept or Reject, never by a stray back press.
+      expect(find.byType(IncomingOfferCard), findsOneWidget);
+      expect(find.text('Exit Nexmile Rider?'), findsNothing);
+
+      // Clears the card and its countdown before the test ends.
+      _offers.reset();
+      await _pumpLive(tester);
     });
 
     testWidgets('a withdrawn offer disappears on its own',
@@ -2338,6 +2602,9 @@ void main() {
       await tester.tap(find.text('I have collected it').last);
       await _pumpLive(tester);
 
+      // At the drop the door details sit above the button; scroll to it as a
+      // rider would.
+      await _scrollToDelivery(tester, find.text('Delivered'));
       await tester.tap(find.text('Delivered').last);
       await _pumpLive(tester);
 
@@ -2372,6 +2639,7 @@ void main() {
       await tester.tap(find.text('I have collected it').last);
       await _pumpLive(tester);
 
+      await _scrollToDelivery(tester, find.text('Delivered'));
       await tester.tap(find.text('Delivered').last);
       await _pumpLive(tester);
       await tester.tap(find.text('Delivered').last);
@@ -2614,6 +2882,12 @@ void main() {
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
       expect(find.byType(RiderHomeScreen), findsNothing);
+      // A new rider is told what to have in hand before the first question.
+      expect(find.text('Become a Nexmile delivery partner'), findsOneWidget);
+      expect(find.text('Keep these ready'), findsOneWidget);
+
+      await tester.tap(find.text('Get started'));
+      await tester.pumpAndSettle();
       expect(find.text('About you'), findsOneWidget);
     });
 
@@ -2733,7 +3007,10 @@ void main() {
       // Verified KYC normally locks the file; expired documents are the one
       // case where re-uploading has to stay open.
       expect(_rider.canEditDocuments, isTrue);
-      expect(find.text('Replace'), findsWidgets);
+      // Replace sits in each document card's menu.
+      await tester.tap(find.byIcon(Icons.more_vert_rounded).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Replace'), findsOneWidget);
     });
 
     testWidgets('an approved rider goes straight to work',
@@ -2840,7 +3117,7 @@ void main() {
       );
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
-      expect(find.text('About you'), findsOneWidget);
+      expect(find.text('Get started'), findsOneWidget);
       expect(_rider.loadFailure, isNull);
     });
 
@@ -2901,6 +3178,9 @@ void main() {
         riderRepository: rider,
       );
       await _settleSplash(tester);
+      // Past the welcome screen a brand-new rider sees first.
+      await tester.tap(find.text('Get started'));
+      await tester.pumpAndSettle();
       return rider;
     }
 
@@ -3585,6 +3865,8 @@ void main() {
         (WidgetTester tester) async {
       _useTallPhone(tester);
       for (final AppLanguage language in AppLanguages.all) {
+        // A fresh tree, or the app keeps the first language for every run.
+        await tester.pumpWidget(const SizedBox.shrink());
         await _pumpApp(tester, seed: _languageChosenAs(language.code));
         await _settleSplash(tester);
 
@@ -3611,6 +3893,8 @@ void main() {
         (WidgetTester tester) async {
       _useTallPhone(tester);
       for (final AppLanguage language in AppLanguages.all) {
+        // A fresh tree, or the app keeps the first language for every run.
+        await tester.pumpWidget(const SizedBox.shrink());
         await _pumpApp(
           tester,
           seed: _languageChosenAs(language.code),
@@ -3635,6 +3919,8 @@ void main() {
       // English are Tamil and Hindi, both of which stack vowel marks.
       _useTallPhone(tester);
       for (final AppLanguage language in AppLanguages.all) {
+        // A fresh tree, or the app keeps the first language for every run.
+        await tester.pumpWidget(const SizedBox.shrink());
         await _pumpApp(
           tester,
           seed: _languageChosenAs(language.code),
@@ -3725,12 +4011,18 @@ void main() {
     testWidgets('the language screen lays out cleanly in every locale',
         (WidgetTester tester) async {
       for (final AppLanguage language in AppLanguages.all) {
+        // A fresh tree, or the app keeps the first language for every run.
+        await tester.pumpWidget(const SizedBox.shrink());
         await _pumpApp(
           tester,
           seed: <String, Object>{'nexmile.language_code': language.code},
         );
         await _settleSplash(tester);
 
+        // Reached from the login screen now, by its translate icon, since
+        // the label is in whichever language this run is in.
+        await tester.tap(find.byIcon(Icons.translate_rounded));
+        await tester.pumpAndSettle();
         expect(find.byType(LanguageScreen), findsOneWidget);
         expect(tester.takeException(), isNull,
             reason: '${language.englishName} overflowed');

@@ -119,6 +119,16 @@ class RiderController extends ChangeNotifier {
 
   bool isUploading(String type) => _uploading.contains(type);
 
+  /// The file uploaded against each type during this session, for a
+  /// thumbnail on the checklist.
+  ///
+  /// Memory only, never written to the phone: these are Aadhaar cards and
+  /// licences. The API does not hand files back, so after a restart the
+  /// checklist shows the document's icon instead, which is the safe default.
+  final Map<String, PickedDocument> _previews = <String, PickedDocument>{};
+
+  PickedDocument? previewOf(String type) => _previews[type];
+
   /// True when there is nothing to show and nothing on its way.
   ///
   /// The gate reads this on every build rather than loading once in
@@ -368,6 +378,7 @@ class RiderController extends ChangeNotifier {
         await _repository.deleteDocument(existing.id);
       }
       await _repository.uploadDocument(type: type, file: file);
+      _previews[type] = file;
       _kyc = await _repository.kyc();
       return null;
     } on ApiException catch (error) {
@@ -393,6 +404,7 @@ class RiderController extends ChangeNotifier {
 
     try {
       await _repository.deleteDocument(existing.id);
+      _previews.remove(type);
       _kyc = await _repository.kyc();
       return null;
     } on ApiException catch (error) {
@@ -495,6 +507,7 @@ class RiderController extends ChangeNotifier {
     _isLoading = false;
     _isSaving = false;
     _uploading.clear();
+    _previews.clear();
     _fieldErrors = const <String, List<String>>{};
     _loadFailure = null;
     _dutyRefusal = null;

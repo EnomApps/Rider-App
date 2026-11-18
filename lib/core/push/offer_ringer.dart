@@ -33,8 +33,10 @@ class AppOfferAlert implements OfferAlert {
   @override
   Future<void> ring(OrderOffer offer) async {
     // Over the lock screen and screen on, like a call, for as long as the
-    // card is up. Switched off again in [silence].
+    // card is up. Switched off again in [silence]. The wake is for a phone
+    // that is already locked and dark when the offer reaches a running app.
     unawaited(_device.showOverLockScreen(true));
+    unawaited(_device.wakeScreen());
 
     final bool onScreen = WidgetsBinding.instance.lifecycleState ==
         AppLifecycleState.resumed;

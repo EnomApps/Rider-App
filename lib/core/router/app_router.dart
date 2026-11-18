@@ -4,6 +4,8 @@ import '../../features/auth/data/login_identifier.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/otp_verification_screen.dart';
 import '../../features/language/language_screen.dart';
+import '../../features/permissions/permission_gateway.dart';
+import '../../features/permissions/permissions_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/rider/presentation/rider_gate_screen.dart';
 import '../../features/splash/splash_screen.dart';
@@ -13,6 +15,9 @@ class AppRoutes {
 
   static const String splash = '/';
   static const String language = '/language';
+
+  /// First-run permission pages, between choosing a language and signing in.
+  static const String permissions = '/permissions';
 
   // Rider auth is two screens, exactly as the customer app's is. The API
   // offers no registration or password recovery — an account is created on the
@@ -30,6 +35,19 @@ class AppRoutes {
   static const String home = '/home';
 
   static const String profile = '/profile';
+}
+
+/// Argument bundle for [AppRoutes.permissions].
+@immutable
+class PermissionsArgs {
+  const PermissionsArgs({required this.steps, required this.next});
+
+  /// The pages to show, in order. Never empty: with nothing to ask the route
+  /// is not pushed at all.
+  final List<RiderPermission> steps;
+
+  /// Where to go after the last page.
+  final String next;
 }
 
 /// Argument bundle for [AppRoutes.otpVerification].
@@ -59,6 +77,13 @@ class AppRouter {
           LanguageScreen(isInitialSetup: isInitialSetup),
           settings,
         );
+
+      case AppRoutes.permissions:
+        final Object? args = settings.arguments;
+        if (args is! PermissionsArgs || args.steps.isEmpty) {
+          return _misroute(settings);
+        }
+        return _fadeRoute(PermissionsScreen(args: args), settings);
 
       case AppRoutes.login:
         return _fadeRoute(const LoginScreen(), settings);

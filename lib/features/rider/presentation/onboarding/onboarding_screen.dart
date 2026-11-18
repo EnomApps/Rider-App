@@ -7,6 +7,7 @@ import '../../data/rider_failure.dart';
 import '../../data/rider_profile.dart';
 import '../../state/rider_controller.dart';
 import 'onboarding_scaffold.dart';
+import 'onboarding_welcome.dart';
 import 'steps/bank_step.dart';
 import 'steps/documents_step.dart';
 import 'steps/identity_numbers_step.dart';
@@ -83,6 +84,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   RiderFailure? _failure;
 
   bool _resumed = false;
+
+  /// Set once the rider taps "Get started" on the welcome screen.
+  bool _welcomed = false;
+
+  /// The welcome screen is for a rider who has not started at all. Anyone the
+  /// gate sends to a particular step, or who has already given their name,
+  /// goes straight to their step.
+  bool _showWelcome(RiderProfile? profile, int index) =>
+      !_welcomed &&
+      widget.initialStep == null &&
+      index == 0 &&
+      !(profile?.hasIdentity ?? false);
 
   @override
   void didChangeDependencies() {
@@ -198,6 +211,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     // the index the rider is standing on, and a rider sitting on the last step
     // when that happens would otherwise index past the end.
     final int index = _index.clamp(0, steps.length - 1);
+
+    if (_showWelcome(rider.profile, index)) {
+      return OnboardingWelcome(
+        onStart: () => setState(() => _welcomed = true),
+      );
+    }
 
     final Widget? banner = _failure == null
         ? null

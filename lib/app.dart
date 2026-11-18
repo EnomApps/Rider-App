@@ -13,7 +13,9 @@ import 'core/router/app_router.dart';
 import 'core/services/preferences_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_typography.dart';
+import 'core/widgets/exit_dialog.dart';
 import 'features/auth/state/auth_controller.dart';
+import 'features/permissions/permission_gateway.dart';
 import 'features/rider/data/offer_models.dart';
 import 'features/rider/data/order_models.dart';
 import 'features/rider/presentation/offers/incoming_offer_card.dart';
@@ -33,6 +35,7 @@ class NexmileRiderApp extends StatefulWidget {
     required this.payoutController,
     required this.offerController,
     this.pushService = const NoopPushService(),
+    this.permissionGateway,
   });
 
   final PreferencesService preferences;
@@ -60,6 +63,11 @@ class NexmileRiderApp extends StatefulWidget {
   /// The push transport. Defaults to the no-op one so a test — and a build
   /// with no Firebase config in it — needs to know nothing about push.
   final PushService pushService;
+
+  /// What the first-run permission pages check and ask. Null means the real
+  /// phone, through [pushService]. Off a device every check reports nothing
+  /// to ask, so a test that does not pass one never meets the pages.
+  final PermissionGateway? permissionGateway;
 
   @override
   State<NexmileRiderApp> createState() => _NexmileRiderAppState();
@@ -112,6 +120,33 @@ class _NexmileRiderAppState extends State<NexmileRiderApp>
       // what the server says, not what it said before.
       if (widget.authController.isSignedIn) unawaited(riderController.refresh());
     }
+  }
+
+  bool _confirmingExit = false;
+
+  /// System back. Anything a screen can go back from goes back as before —
+  /// the onboarding wizard steps back a page, for one. Only when there is
+  /// nowhere left does it ask before closing the app.
+  @override
+  Future<bool> didPopRoute() async {
+    // A ringing offer is answered with Accept or Reject, never by a stray
+    // back press that would leave it ringing behind a closed app.
+    if (offerController.offer != null) return true;
+
+    final NavigatorState? navigator = _navigator.currentState;
+    if (navigator == null) return false;
+    if (await navigator.maybePop()) return true;
+    final BuildContext? context = _navigator.currentContext;
+    if (context == null || !context.mounted) return false;
+    // Not awaited: the back press is handled the moment the question is up.
+    // A second back while it is open pops the dialog, through maybePop above.
+    if (!_confirmingExit) {
+      _confirmingExit = true;
+      unawaited(
+        confirmExit(context).whenComplete(() => _confirmingExit = false),
+      );
+    }
+    return true;
   }
 
   void _onAuthChanged() {
@@ -229,6 +264,11 @@ class _NexmileRiderAppState extends State<NexmileRiderApp>
         ),
         ChangeNotifierProvider<OfferController>.value(value: offerController),
         Provider<PushService>.value(value: widget.pushService),
+        Provider<PreferencesService>.value(value: preferences),
+        Provider<PermissionGateway>.value(
+          value: widget.permissionGateway ??
+              DevicePermissionGateway(push: widget.pushService),
+        ),
       ],
       child: Consumer<LocaleController>(
         builder: (BuildContext context, LocaleController controller, _) {

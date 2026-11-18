@@ -12,6 +12,7 @@ import '../../data/rider_failure.dart';
 import '../../state/order_controller.dart';
 import '../../state/payout_controller.dart';
 import '../../state/rider_controller.dart';
+import '../onboarding/onboarding_scaffold.dart';
 import '../widgets/rider_form_field.dart';
 
 /// The three states between "submitted" and "on the road".
@@ -96,111 +97,142 @@ class KycDecisionScreen extends StatelessWidget {
     final String? reason = rider.profile?.kyc.rejectionReason ??
         rider.kyc.rejectionReason;
 
+    // The header's colour carries the verdict before the words do: brand
+    // green while it is with the team, red when it came back, amber when
+    // something has lapsed.
+    final LinearGradient header = switch (outcome) {
+      KycOutcome.underReview => kOnboardingHeaderGradient,
+      KycOutcome.rejected => const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[Color(0xFF9F1D1D), Color(0xFFD64545)],
+        ),
+      KycOutcome.blocked => const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[Color(0xFFC2410C), AppColors.orange],
+        ),
+    };
+
     return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () => _refresh(context, rider, silent: true),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  TextButton.icon(
-                    onPressed: () => _signOut(context),
-                    icon: const Icon(Icons.logout_rounded, size: 19),
-                    label: Text(l10n.signOut),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: SizedBox(
-                  width: 138,
-                  height: 138,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      Container(
-                        width: 138,
-                        height: 138,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: tint.withValues(alpha: 0.06),
+      backgroundColor: onboardingPageColour(theme),
+      body: RefreshIndicator(
+        onRefresh: () => _refresh(context, rider, silent: true),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: <Widget>[
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(32)),
+              child: DecoratedBox(
+                decoration: BoxDecoration(gradient: header),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 12, 30),
+                    child: Column(
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            TextButton.icon(
+                              onPressed: () => _signOut(context),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                              ),
+                              icon: const Icon(Icons.logout_rounded, size: 19),
+                              label: Text(l10n.signOut),
+                            ),
+                          ],
                         ),
-                      ),
-                      Container(
-                        width: 108,
-                        height: 108,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: tint.withValues(alpha: 0.09),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 112,
+                          height: 112,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.16),
+                          ),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: Icon(icon, size: 40, color: tint),
+                          ),
                         ),
-                      ),
-                      Container(
-                        width: 78,
-                        height: 78,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: <Color>[
-                              tint.withValues(alpha: 0.26),
-                              tint.withValues(alpha: 0.11),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 8),
+                          child: Column(
+                            children: <Widget>[
+                              Text(
+                                title,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.4,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                body,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                  height: 1.4,
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        child: Icon(icon, size: 36, color: tint),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  letterSpacing: -0.6,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (outcome == KycOutcome.rejected && reason != null) ...<Widget>[
+                    _ReasonCard(reason: reason),
+                    const SizedBox(height: 16),
+                  ],
+                  if (outcome == KycOutcome.underReview) ...<Widget>[
+                    const _Timeline(),
+                    const SizedBox(height: 14),
+                    if (rider.kyc.verifiedAt == null) ...<Widget>[
+                      const _SubmittedSummary(),
+                      const SizedBox(height: 14),
+                    ],
+                  ],
+                  const SizedBox(height: 10),
+                  if (outcome == KycOutcome.underReview)
+                    GradientButton(
+                      label: l10n.checkAgain,
+                      icon: Icons.refresh_rounded,
+                      onPressed: rider.isLoading
+                          ? null
+                          : () => _refresh(context, rider),
+                    )
+                  else
+                    GradientButton(
+                      label: outcome == KycOutcome.rejected
+                          ? l10n.fixAndResubmit
+                          : l10n.updateDocuments,
+                      icon: Icons.arrow_forward_rounded,
+                      onPressed: rider.isLoading ? null : onReopenWizard,
+                    ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
-              ),
-              if (outcome == KycOutcome.rejected && reason != null) ...<Widget>[
-                const SizedBox(height: 24),
-                _ReasonCard(reason: reason),
-              ],
-              if (outcome == KycOutcome.underReview &&
-                  rider.kyc.verifiedAt == null) ...<Widget>[
-                const SizedBox(height: 24),
-                const _SubmittedSummary(),
-              ],
-              const SizedBox(height: 34),
-              if (outcome == KycOutcome.underReview)
-                GradientButton(
-                  label: l10n.checkAgain,
-                  icon: Icons.refresh_rounded,
-                  onPressed: rider.isLoading
-                      ? null
-                      : () => _refresh(context, rider),
-                )
-              else
-                GradientButton(
-                  label: outcome == KycOutcome.rejected
-                      ? l10n.fixAndResubmit
-                      : l10n.updateDocuments,
-                  icon: Icons.arrow_forward_rounded,
-                  onPressed: rider.isLoading ? null : onReopenWizard,
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -315,9 +347,9 @@ class _SubmittedSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        border: Border.all(color: theme.colorScheme.outline),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Row(
         children: <Widget>[
@@ -353,6 +385,126 @@ class _SubmittedSummary extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Where the application is: sent, being checked, then on the road. The
+/// middle stop carries a halo, so the screen reads as something in progress
+/// rather than something stuck. Still rather than pulsing: this screen can sit
+/// open for days, and a light that never stops blinking reads as a fault.
+class _Timeline extends StatelessWidget {
+  const _Timeline();
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    final List<(String, int)> stops = <(String, int)>[
+      (l10n.kycStepSubmitted, 0),
+      (l10n.kycStepVerifying, 1),
+      (l10n.kycStepApproved, 2),
+    ];
+
+    Widget dot(int state) {
+      // 0 done, 1 in progress, 2 still to come.
+      if (state == 0) {
+        return Container(
+          width: 30,
+          height: 30,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.greenDeep,
+          ),
+          child: const Icon(Icons.check_rounded, size: 18, color: Colors.white),
+        );
+      }
+      if (state == 1) {
+        return SizedBox.square(
+          dimension: 30,
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.orange.withValues(alpha: 0.22),
+                ),
+              ),
+              Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.orange,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.colorScheme.outline, width: 2),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        children: <Widget>[
+          for (int i = 0; i < stops.length; i++)
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      dot(stops[i].$2),
+                      if (i < stops.length - 1)
+                        Expanded(
+                          child: Container(
+                            width: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 3),
+                            color: i == 0
+                                ? AppColors.greenDeep
+                                : theme.colorScheme.outlineVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 5, bottom: 18),
+                      child: Text(
+                        stops[i].$1,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: stops[i].$2 == 1
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: stops[i].$2 == 2
+                              ? theme.colorScheme.onSurfaceVariant
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

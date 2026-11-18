@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
@@ -22,6 +23,57 @@ import io.flutter.plugin.common.MethodChannel
  */
 class MainActivity : FlutterActivity() {
 
+    /**
+     * Opened by a new-order alert while the phone is locked: over the lock
+     * screen and screen on from the very first frame, the way a call is.
+     *
+     * Waiting for Flutter to draw the order card first is too late. Android
+     * decides whether to switch the display on when it starts the activity,
+     * and by the time Dart asks, the app is already sitting dark behind the
+     * lock screen.
+     */
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (isOrderAlert(intent)) wakeForOrder()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (isOrderAlert(intent)) wakeForOrder()
+    }
+
+    /**
+     * The alert's full-screen intent carries its push data in the `payload`
+     * extra (flutter_local_notifications), and an order offer's says so.
+     */
+    private fun isOrderAlert(intent: Intent?): Boolean {
+        val payload = intent?.getStringExtra("payload") ?: return false
+        return payload.contains("ORDER_OFFER")
+    }
+
+    private fun wakeForOrder() {
+        showOverLockScreen(true)
+        wakeScreen()
+    }
+
+    /**
+     * Switches the display on for a moment. The backup for when the alert
+     * cannot open the app over the lock screen (Android 14 without the
+     * full-screen permission, or a phone that ignores it): the rider at least
+     * sees the alert on a lit lock screen instead of a dark one.
+     */
+    @Suppress("DEPRECATION")
+    private fun wakeScreen() {
+        val power = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (power.isInteractive) return
+        power.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or
+                PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                PowerManager.ON_AFTER_RELEASE,
+            "nexmile:new-order",
+        ).acquire(15_000L)
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "nexmile/device")
@@ -29,6 +81,10 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "showOverLockScreen" -> {
                         showOverLockScreen(call.arguments as? Boolean ?: false)
+                        result.success(null)
+                    }
+                    "wakeScreen" -> {
+                        wakeScreen()
                         result.success(null)
                     }
                     "canUseFullScreenIntent" -> result.success(canUseFullScreenIntent())

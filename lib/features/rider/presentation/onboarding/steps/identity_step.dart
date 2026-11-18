@@ -58,6 +58,7 @@ class _IdentityStepState extends State<IdentityStep> {
     return OnboardingScaffold(
       stepIndex: step.index,
       stepCount: step.total,
+      icon: Icons.person_rounded,
       title: l10n.stepIdentityTitle,
       subtitle: l10n.stepIdentitySubtitle,
       onBack: step.onBack,
